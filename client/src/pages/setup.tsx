@@ -1,6 +1,6 @@
 
 import Navbar from "@/components/Navbar";
-import ProfileSetupForm from "@/components/profile/ProfileSetupForm";
+import ProfileSetupForm from "@/components/profile/SetupProfile/ProfileSetupForm";
 
 
 export default function SetupProfile() {

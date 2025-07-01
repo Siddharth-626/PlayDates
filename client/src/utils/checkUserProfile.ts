@@ -1,8 +1,8 @@
-import { doc, getDoc } from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/services/config";
 
-export const checkIfProfileExist = async(uid:string): Promise<boolean> =>{
-     const profileRef = doc(db,"users",uid,"profile","info");
-     const profileSnap = await getDoc(profileRef);
-     return profileSnap.exists();
-  }
+export const checkIfProfileExist = async (uid: string): Promise<boolean> => {
+   const profileCollectionRef = collection(db, "users", uid, "profile");
+   const profileSnapshot = await getDocs(profileCollectionRef);
+   return !profileSnapshot.empty;
+};

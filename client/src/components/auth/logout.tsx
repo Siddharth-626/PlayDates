@@ -6,6 +6,7 @@ import { auth } from '@/services/config';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { FaWalking } from 'react-icons/fa';
+import toast from 'react-hot-toast';
 
 export default function AnimatedLogoutManButton() {
   const [step, setStep] = useState<'idle' | 'walking' | 'falling'>('idle');
@@ -21,7 +22,8 @@ export default function AnimatedLogoutManButton() {
     setTimeout(async () => {
       await signOut(auth);
       router.push('/login');
-    }, 1800); // after falling animation
+    }, 1800);
+    toast.success('User succesfully lodgedout');
   };
 
   return (

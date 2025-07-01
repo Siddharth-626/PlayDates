@@ -13,6 +13,8 @@ import Navbar from "../Navbar";
 import { X } from "lucide-react";
 import { Bars3Icon } from "@heroicons/react/16/solid";
 import AvailabilitySelector from "../availability/AvailabilitySelector ";
+import PlayerProfileDropdown from "../profile/ViewProfile/PlayerProfile";
+import { FindPlayers } from "../FindPlayers/Main";
 
 const SidebarItem = ({ icon, label, isActive, onClick }: any) => (
     <div
@@ -40,13 +42,13 @@ const Dashboard = () => {
             case "Find Programs":
                 return <div>📍 Find Programs Component</div>;
             case "Find Players":
-                return <div>🔍 Find Players Component</div>;
+                return <FindPlayers />;
             case "My Calendar":
                 return <div>📅 My Calendar Component</div>;
             case "Add Availability":
                 return <AvailabilitySelector />;
             case "Player Profile":
-                return <div>📝 Player Profile Component</div>;
+                return <PlayerProfileDropdown />;
             default:
                 return <div>Select an option</div>;
         }
@@ -123,7 +125,6 @@ const Dashboard = () => {
                     <div className="text-2xl font-semibold mb-4">{activeTab}</div>
                     <div className="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-md">
                         {renderContent()}
-                          
                     </div>
                 </main>
             </div>

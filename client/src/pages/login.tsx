@@ -1,19 +1,20 @@
-import { useState } from 'react';
-import Link from 'next/link';
-import { FiMail, FiLock } from 'react-icons/fi';
-import { AiOutlineEyeInvisible, AiOutlineEye } from 'react-icons/ai';
-import Navbar from '../components/Navbar';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../services/config';
-import { useRouter } from 'next/router';
-import { checkIfProfileExist } from '@/utils/checkUserProfile';
-import { GoogleLogin } from '@/components/auth/GoogleLogin';
-
+import { useState } from "react";
+import Link from "next/link";
+import { FiMail, FiLock } from "react-icons/fi";
+import { AiOutlineEyeInvisible, AiOutlineEye } from "react-icons/ai";
+import Navbar from "../components/Navbar";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../services/config";
+import { useRouter } from "next/router";
+import { checkIfProfileExist } from "@/utils/checkUserProfile";
+import { GoogleLogin } from "@/components/auth/GoogleLogin";
+import toast from "react-hot-toast";
+import { FirebaseError } from "firebase/app";
 export default function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const router = useRouter();
 
   const validateEmail = (email: string) => {
@@ -21,41 +22,65 @@ export default function Login() {
   };
 
   const handleLogin = async () => {
-    setError('');
+    setError("");
 
     if (!email || !password) {
       setError("Please enter both email and password.");
+      toast.error("Please enter both email and password.");
       return;
     }
 
     if (!validateEmail(email)) {
       setError("Please enter a valid email address.");
+      toast.error("Please enter a valid email address.");
       return;
     }
 
     try {
-      const userCredentials = await signInWithEmailAndPassword(auth, email, password);
+      const userCredentials = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
       const uid = userCredentials.user.uid;
-      const profileExist = await checkIfProfileExist(uid);
 
-      if (profileExist) {
-        router.push('/');
-      } else {
-        router.push('/setup');
-      }
+      const profileExist = await checkIfProfileExist(uid);
+      router.push(profileExist ? "/" : "/setup");
     } catch (err: any) {
       console.error("Login error:", err);
-      setError(err.message || "Login failed. Please try again.");
+
+      let message = "Login failed. Please try again.";
+
+      // Optional: Add Firebase-specific error handling
+      if (err instanceof FirebaseError) {
+        switch (err.code) {
+          case "auth/invalid-credential":
+            message = "Invalid Email or Password";
+            break;
+          case "auth/wrong-password":
+            message = "Incorrect password.";
+            break;
+          case "auth/too-many-requests":
+            message = "Too many attempts. Please try again later.";
+            break;
+          case "auth/network-request-failed":
+            message = "Network error. Please check your connection.";
+            break;
+          default:
+            message = err.message;
+        }
+      }
+
+      setError(message);
+      toast.error(message);
     }
   };
-
   return (
     <div className="min-h-screen bg-green-50 dark:bg-gray-900 transition-colors duration-300">
       <Navbar />
 
       <div className="flex items-center justify-center px-4 py-16">
         <div className="w-full max-w-md p-8 bg-white dark:bg-gray-800 shadow-md rounded-lg">
-
           <h2 className="text-3xl font-bold text-green-800 dark:text-green-200 mb-1">
             HELLO!
           </h2>

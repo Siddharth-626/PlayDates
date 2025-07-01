@@ -1,10 +1,12 @@
 import { auth, db, googleProvider } from "@/services/config";
 import { signInWithPopup } from "firebase/auth";
 import { doc, serverTimestamp, setDoc } from "firebase/firestore";
+import { useRouter } from "next/router";
+import toast from "react-hot-toast";
 
 
 export const GoogleLogin = () => {
-
+    const router = useRouter();
     const handelGoogleLogin = async () => {
         try {
             const result = await signInWithPopup(auth, googleProvider);
@@ -22,9 +24,11 @@ export const GoogleLogin = () => {
 
             await setDoc(doc(db, 'users', user.uid), userData, { merge: true });
             console.log('Google user data saved');
-
+            toast.success(`Lodgin as ${userData.name}`)
+            router.push('/')
         } catch (error) {
             console.log("err while google login", error);
+            toast.error('err while loging in with google')
         }
     }
     return (

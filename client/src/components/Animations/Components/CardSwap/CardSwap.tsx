@@ -44,7 +44,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
 );
 Card.displayName = "Card";
 
-type CardRef = RefObject<HTMLDivElement>;
+type CardRef = React.RefObject<HTMLDivElement | null>;
 interface Slot {
   x: number;
   y: number;

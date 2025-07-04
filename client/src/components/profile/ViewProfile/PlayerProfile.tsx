@@ -2,28 +2,28 @@ import { useAuth } from "@/context/authContext";
 import {
   FetchPlayerProfiles,
   PlayerProfile,
-} from "@/utils/FetchPlayerProfiles";
+} from "@/utils/PlayerProfile/FetchPlayerProfiles";
 import { useEffect, useState } from "react";
 import { FiChevronDown, FiEdit, FiPlus } from "react-icons/fi";
 import ProfileSetupForm from "../SetupProfile/ProfileSetupForm";
 import { motion, AnimatePresence } from "framer-motion";
+import { useProfile } from "@/context/profileContext";
 
 export default function PlayerProfileDropdown() {
+  const { selectedProfile,setSelectedProfile,refreshProfile} = useProfile();
   const { user } = useAuth();
   const [profiles, setProfiles] = useState<PlayerProfile[]>([]);
-  const [selectedProfileId, setSelectedProfileId] = useState<string>("");
+  const [selectedProfileId, setSelectedProfileId] = useState<string | undefined>(undefined);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isAddingNew, setIsAddingNew] = useState(false);
-  const [selectedProfile, setSelectedProfile] = useState<PlayerProfile | null>(null);
 
   const loadProfiles = async (selectNewId?: string) => {
     if (!user?.uid) return;
     try {
       const data = await FetchPlayerProfiles(user.uid);
       setProfiles(data);
-      const defaultId = selectNewId || (data.length > 0 ? data[0].id : "");
-      setSelectedProfileId(defaultId);
+      setSelectedProfileId(selectedProfile?.id);
     } catch (err) {
       console.error("Failed to fetch profiles:", err);
     }
@@ -62,6 +62,7 @@ export default function PlayerProfileDropdown() {
 
   const handleProfileSaved = async (newId: string) => {
     await loadProfiles(newId);
+    await refreshProfile(newId);
     setIsEditing(false);
     setIsAddingNew(false);
   };
@@ -87,7 +88,7 @@ export default function PlayerProfileDropdown() {
     <div className="w-full space-y-6">
       {/* Profile Dropdown Box */}
       <div
-        className="relative bg-white/20 dark:bg-gray-800/20 backdrop-blur-3xl rounded-xl shadow-xl border border-green-300 p-4"
+        className="relative bg-white dark:bg-gray-800/20 backdrop-blur-3xl rounded-xl shadow-xl border border-green-300 p-4"
       >
         <div
           className="flex items-center justify-between cursor-pointer"
@@ -126,8 +127,8 @@ export default function PlayerProfileDropdown() {
                 <div
                   key={profile.id}
                   onClick={() => handleSelect(profile.id)}
-                  className={`flex items-center gap-3 p-3 cursor-pointer transition hover:bg-gray-100 dark:hover:bg-gray-700 ${profile.id === selectedProfileId
-                    ? "bg-gray-100 dark:bg-gray-700"
+                  className={`flex items-center gap-3 p-3 cursor-pointer transition hover:bg-green-400  dark:hover:bg-green-800 ${profile.id === selectedProfileId
+                    ? "bg-white dark:bg-gray-700"
                     : ""
                     }`}
                 >

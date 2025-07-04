@@ -1,7 +1,7 @@
 'use client'
 
 import { db } from "@/services/config";
-import { PlayerProfile } from "@/utils/FetchPlayerProfiles";
+import { PlayerProfile } from "@/utils/PlayerProfile/FetchPlayerProfiles";
 import { collectionGroup, getDocs } from "firebase/firestore";
 import { motion, AnimatePresence } from 'framer-motion';
 import PlayerCard from './PlayerCard';

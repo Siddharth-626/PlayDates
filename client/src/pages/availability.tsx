@@ -1,4 +1,4 @@
-import  AvailabilitySelector  from "@/components/availability/AvailabilitySelector "
+import  AvailabilitySelector  from "@/components/availability/Recuring-availlability/AvailabilitySelector "
 import Navbar from "@/components/Navbar";
 
 

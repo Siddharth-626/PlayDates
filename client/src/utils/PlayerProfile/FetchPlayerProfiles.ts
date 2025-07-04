@@ -1,6 +1,10 @@
 import { db } from "@/services/config";
 import { collection, getDocs } from "firebase/firestore"
 
+type Playmate = {
+  userUid: string;
+  profileId: string;
+};
 export type PlayerProfile = {
     id: string;
     userUid:string;
@@ -10,7 +14,7 @@ export type PlayerProfile = {
     skill: string;
     preferences: string[];
     locations: string[];
-    playmates:string[];
+    playmates:Playmate[];
     photoUrl:string;
     completed: boolean;
 };

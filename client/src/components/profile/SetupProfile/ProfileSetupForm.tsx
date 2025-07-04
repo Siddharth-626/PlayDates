@@ -10,7 +10,7 @@ import SkillLevelDropdown from "./SkillLevelDropdown";
 import PreferencesSelector from "./PreferencesSelector";
 import LocationSelector from "./LocationSelector";
 import { v4 as uuidv4 } from "uuid";
-import { PlayerProfile } from "@/utils/FetchPlayerProfiles";
+import { PlayerProfile } from "@/utils/PlayerProfile/FetchPlayerProfiles";
 import toast from "react-hot-toast";
 import { X } from "lucide-react";
 

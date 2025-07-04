@@ -4,7 +4,7 @@ import LogoutButton from './auth/logout';
 import { useTheme } from '@/context/ThemeContext';
 import { MoonIcon, SunIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { createCourt } from '@/utils/createCourt';
+import { createCourt } from '@/utils/testFunctions/createCourt';
 
 export default function Navbar() {
   const { user } = useAuth();

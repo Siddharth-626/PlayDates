@@ -1,4 +1,4 @@
-import { PlayerProfile } from "@/utils/FetchPlayerProfiles";
+import { PlayerProfile } from "@/utils/PlayerProfile/FetchPlayerProfiles";
 import { SkillBasedTennisBallsUi } from "../ui/SkillTennisBalls";
 
 export default function PlayerCard(player: PlayerProfile) {

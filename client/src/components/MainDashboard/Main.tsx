@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
     FiUsers,
     FiGlobe,
@@ -8,13 +8,20 @@ import {
     FiCalendar,
     FiEdit,
     FiUser,
+    FiBell,
 } from "react-icons/fi";
 import Navbar from "../Navbar";
 import { X } from "lucide-react";
 import { Bars3Icon } from "@heroicons/react/16/solid";
-import AvailabilitySelector from "../availability/AvailabilitySelector ";
+import AvailabilitySelector from "../availability/Recuring-availlability/AvailabilitySelector ";
 import PlayerProfileDropdown from "../profile/ViewProfile/PlayerProfile";
 import { FindPlayers } from "../FindPlayers/Main";
+import { NotificationTab } from "../notifications/notification";
+import { useAuth } from "@/context/authContext";
+import { useProfile } from "@/context/profileContext";
+import { FetchAllProfileNotification, NotificationsType } from "@/utils/Notifications/FetchAllProfileNotification";
+import { DisplayPlaymates } from "../Playmates/displayPlaymates/Main";
+import AnimatedLogoutManButton from "../auth/logout";
 
 const SidebarItem = ({ icon, label, isActive, onClick }: any) => (
     <div
@@ -28,13 +35,29 @@ const SidebarItem = ({ icon, label, isActive, onClick }: any) => (
 );
 
 const Dashboard = () => {
+    const { user } = useAuth();
+    const { selectedProfile } = useProfile();
     const [activeTab, setActiveTab] = useState("My Playmates");
     const [sideBar, setSideBar] = useState(true);
+    const [notifications, setNotifications] = useState<NotificationsType[]>([]);
+
+    const fetchNotifications = async () => {
+            if (user?.uid && selectedProfile?.id) {
+                const data = await FetchAllProfileNotification({
+                    userUid: user.uid,
+                    profileId: selectedProfile.id
+                });
+                setNotifications(data);
+            }
+        }
+    useEffect(() => {
+        fetchNotifications()
+    }, [user, selectedProfile])
 
     const renderContent = () => {
         switch (activeTab) {
             case "My Playmates":
-                return <div>🎾 My Playmates Component</div>;
+                return <DisplayPlaymates />;
             case "My Matches":
                 return <div>🌐 My Matches Component</div>;
             case "Find Courts":
@@ -49,6 +72,11 @@ const Dashboard = () => {
                 return <AvailabilitySelector />;
             case "Player Profile":
                 return <PlayerProfileDropdown />;
+            case "Notifications":
+                return <NotificationTab
+                    notifications={notifications}
+                    setNotifications={setNotifications}
+                />
             default:
                 return <div>Select an option</div>;
         }
@@ -57,9 +85,9 @@ const Dashboard = () => {
     return (
         <>
             <Navbar />
-            <div className="flex min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
+            <div className="flex min-h-screen bg-slate-200 dark:bg-gray-900 text-gray-900 dark:text-white">
                 <aside
-                    className={`transition-all duration-500 ease-in-out bg-gray-50 dark:bg-gray-800 border-r rounded-tr-3xl dark:border-gray-700 ${sideBar ? 'w-64 p-4' : 'w-0 p-0'
+                    className={`transition-all duration-500 ease-in-out bg-slate-100 m-3 dark:bg-gray-800 border-r rounded-3xl dark:border-gray-700 ${sideBar ? 'w-64 p-4' : 'w-0 p-0'
                         } overflow-hidden`}
                 >
                     <div className={sideBar ? "block" : "None"}>
@@ -69,6 +97,8 @@ const Dashboard = () => {
                                 <X className="w-5 h-5 hover:text-red-600" />
                             </button>
                         </div>
+                        <div className="flex flex-col h-screen justify-between">
+                        <div>
                         <SidebarItem
                             icon={<FiUsers />}
                             label="My Playmates"
@@ -100,6 +130,21 @@ const Dashboard = () => {
                             onClick={() => setActiveTab("Find Players")}
                         />
                         <SidebarItem
+                            icon={
+                                <div className="relative">
+                                    <FiBell />
+                                    {notifications.some(n => !n.isRead) && (
+                                        <span className="absolute -top-2 -right-2 text-xs bg-red-500 text-white rounded-full px-1">
+                                            {notifications.filter(n => !n.isRead).length}
+                                        </span>
+                                    )}
+                                </div>
+                            }
+                            label="Notifications"
+                            isActive={activeTab === "Notifications"}
+                            onClick={() => setActiveTab("Notifications")}
+                        />
+                        <SidebarItem
                             icon={<FiCalendar />}
                             label="My Calendar"
                             isActive={activeTab === "My Calendar"}
@@ -117,13 +162,16 @@ const Dashboard = () => {
                             isActive={activeTab === "Player Profile"}
                             onClick={() => setActiveTab("Player Profile")}
                         />
+                        </div>
+                        <p>test p</p>
+                        </div>
                     </div>
                 </aside>
                 <main className={`flex-1 p-6 transition-all duration-500 ${sideBar ? "ml-0" : "ml-0"
-                    } bg-gray-100 dark:bg-gray-900`}>
-                    {!sideBar ?(<button className="" onClick={()=> setSideBar(true)}><Bars3Icon  className="w-5 h-5 text-gray-700 dark:text-white"/></button>):(<></>)}
+                    } bg-slate-200 dark:bg-gray-900`}>
+                    {!sideBar ? (<button className="" onClick={() => setSideBar(true)}><Bars3Icon className="w-5 h-5 text-gray-700 dark:text-white" /></button>) : (<></>)}
                     <div className="text-2xl font-semibold mb-4">{activeTab}</div>
-                    <div className="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-md">
+                    <div className="p-4 bg-slate-200 dark:bg-gray-900">
                         {renderContent()}
                     </div>
                 </main>

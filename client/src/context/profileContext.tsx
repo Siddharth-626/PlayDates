@@ -1,0 +1,63 @@
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { FetchPlayerProfiles, PlayerProfile } from '../utils/PlayerProfile/FetchPlayerProfiles';
+import { useAuth } from './authContext';
+
+// Define the context type
+type ProfileContextType = {
+    selectedProfile: PlayerProfile | null;
+    setSelectedProfile: (profile: PlayerProfile | null) => void;
+    profiles: PlayerProfile[];
+    refreshProfile: (newId?: string) => Promise<void>;
+};
+
+// Create context
+const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
+
+// Provider component
+export const ProfileProvider = ({ children }: { children: React.ReactNode }) => {
+    const { user } = useAuth();
+    const [selectedProfile, setSelectedProfile] = useState<PlayerProfile | null>(null);
+    const [profiles, setProfiles] = useState<PlayerProfile[]>([]);
+
+    // Refresh profile list and optionally select one by id
+    const refreshProfile = async (newId?: string) => {
+        if (!user) return;
+
+        try {
+            const data = await FetchPlayerProfiles(user.uid);
+            setProfiles(data);
+
+            const defaultProfile = newId
+                ? data.find((p) => p.id === newId)
+                : data.length > 0
+                    ? data[0]
+                    : null;
+
+            setSelectedProfile(defaultProfile || null);
+        } catch (error) {
+            console.error('Error refreshing profile:', error);
+        }
+    };
+
+    // Initial load on auth user change
+    useEffect(() => {
+        if (user?.uid) {
+            refreshProfile();
+        }
+    }, [user?.uid]);
+
+    return (
+        <ProfileContext.Provider value={{ selectedProfile, setSelectedProfile, profiles, refreshProfile }}>
+            {children}
+        </ProfileContext.Provider>
+    );
+};
+
+// Custom hook to use context safely
+export const useProfile = () => {
+    const context = useContext(ProfileContext);
+    if (context === undefined) {
+        throw new Error('useProfile must be used within a ProfileProvider');
+    }
+    return context;
+};

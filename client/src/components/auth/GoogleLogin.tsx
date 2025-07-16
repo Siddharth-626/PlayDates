@@ -1,4 +1,5 @@
 import { auth, db, googleProvider } from "@/services/config";
+import { checkIfProfileExist } from "@/utils/checkUserProfile";
 import { signInWithPopup } from "firebase/auth";
 import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { useRouter } from "next/router";
@@ -25,7 +26,9 @@ export const GoogleLogin = () => {
             await setDoc(doc(db, 'users', user.uid), userData, { merge: true });
             console.log('Google user data saved');
             toast.success(`Lodgin as ${userData.name}`)
-            router.push('/')
+
+            const profileExist = await checkIfProfileExist(user.uid);
+            router.push(profileExist ? "/" : "/setup");
         } catch (error) {
             console.log("err while google login", error);
             toast.error('err while loging in with google')

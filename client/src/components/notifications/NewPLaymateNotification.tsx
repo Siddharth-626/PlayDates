@@ -1,9 +1,9 @@
 // components/Notifications/PlaymateRequestNotification.tsx
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { PlayerProfile } from "@/utils/PlayerProfile/FetchPlayerProfiles";
+import { PlayerProfile } from "@/utils/TYPE";
 import { FetchPlayerProfile } from "@/utils/PlayerProfile/FetchPlayerProfile";
-import { NotificationsType } from "@/utils/Notifications/FetchAllProfileNotification";
+import { NotificationsType } from "@/utils/TYPE";
 
 
 

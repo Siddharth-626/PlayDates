@@ -10,18 +10,18 @@ import {
     FiUser,
     FiBell,
 } from "react-icons/fi";
-import Navbar from "../Navbar";
 import { X } from "lucide-react";
 import { Bars3Icon } from "@heroicons/react/16/solid";
-import AvailabilitySelector from "../availability/Recuring-availlability/AvailabilitySelector ";
 import PlayerProfileDropdown from "../profile/ViewProfile/PlayerProfile";
 import { FindPlayers } from "../FindPlayers/Main";
 import { NotificationTab } from "../notifications/notification";
 import { useAuth } from "@/context/authContext";
 import { useProfile } from "@/context/profileContext";
-import { FetchAllProfileNotification, NotificationsType } from "@/utils/Notifications/FetchAllProfileNotification";
+import { FetchAllProfileNotification} from "@/utils/Notifications/FetchAllProfileNotification";
 import { DisplayPlaymates } from "../Playmates/displayPlaymates/Main";
-import AnimatedLogoutManButton from "../auth/logout";
+import { NotificationsType } from "@/utils/TYPE";
+import { DisplayAvailability } from "../availability/displayAvailability/displayAvailability";
+import { DisplayCourts } from "../courts/displayCourts/court";
 
 const SidebarItem = ({ icon, label, isActive, onClick }: any) => (
     <div
@@ -61,7 +61,7 @@ const Dashboard = () => {
             case "My Matches":
                 return <div>🌐 My Matches Component</div>;
             case "Find Courts":
-                return <div>🗺️ Find Courts Component</div>;
+                return <DisplayCourts />;
             case "Find Programs":
                 return <div>📍 Find Programs Component</div>;
             case "Find Players":
@@ -69,7 +69,7 @@ const Dashboard = () => {
             case "My Calendar":
                 return <div>📅 My Calendar Component</div>;
             case "Add Availability":
-                return <AvailabilitySelector />;
+                return <DisplayAvailability />;
             case "Player Profile":
                 return <PlayerProfileDropdown />;
             case "Notifications":
@@ -84,7 +84,6 @@ const Dashboard = () => {
 
     return (
         <>
-            <Navbar />
             <div className="flex min-h-screen bg-slate-200 dark:bg-gray-900 text-gray-900 dark:text-white">
                 <aside
                     className={`transition-all duration-500 ease-in-out bg-slate-100 m-3 dark:bg-gray-800 border-r rounded-3xl dark:border-gray-700 ${sideBar ? 'w-64 p-4' : 'w-0 p-0'

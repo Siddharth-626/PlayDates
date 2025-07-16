@@ -8,15 +8,15 @@ export const createCourt = async () => {
         const courtRef = doc(db, "courts", courtId);
 
         await setDoc(courtRef, {
-            title: "City Central Tennis Court",
-            description: "Great court with lighting and clay surface",
+            title: "Anna Nagar Court",
+            description: "Nice court with lighting and good surface",
             location: {
                 lat: 12.9716,
                 lng: 77.5946,
-                address: "MG Road, Bangalore"
+                address: "Anna Nagar, Chennai"
             },
-            images: ["https://.../court1.jpg"],
-            amenities: ["floodlight", "parking", "shower"],
+            images: ["/images/Home/pexels-ozanyavuz-31054362.jpg","images/Home/pexels-tima-miroshnichenko-6010279.jpg","images/Home/pexels-zetong-li-880728-13425628.jpg"],
+            amenities: ["floodlight", "shower"],
             createdBy: "admin_uid_or_user_uid",
             isApproved: true,
             createdAt: new Date().toISOString()

@@ -2,9 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
-*{
-    @apply transition-colors duration-700 ease-in-out;
+@import "swiper/css";
+@import "swiper/css/navigation";
+@import "swiper/css/pagination";
+
+* {
+  @apply transition-colors duration-700 ease-in-out;
 }
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -22,8 +27,7 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
 .card-style {
-  @apply bg-gradient-to-br from-black via-gray-900 to-gray-800 dark:from-zinc-800 dark:to-black 
-         rounded-3xl shadow-2xl border border-green-500 p-6 transform transition-all duration-300 
-         hover:scale-[1.03] hover:shadow-green-500/50;
+  @apply bg-gradient-to-br from-black via-gray-900 to-gray-800 dark:from-zinc-800 dark:to-black rounded-3xl shadow-2xl border border-green-500 p-6 transform transition-all duration-300 hover:scale-[1.03] hover:shadow-green-500/50;
 }

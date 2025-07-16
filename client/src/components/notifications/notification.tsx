@@ -3,9 +3,14 @@ import { respontToPlaymatesRequest } from "@/utils/Playmates/respondToPlaymatesR
 import PlaymateRequestNotification from "./NewPLaymateNotification";
 import { useAuth } from "@/context/authContext";
 import { useProfile } from "@/context/profileContext";
-import { NotificationsType } from "@/utils/Notifications/FetchAllProfileNotification";
+import { NotificationsType } from "@/utils/TYPE";
 import { useState } from "react";
-export const NotificationTab = ({ notifications, setNotifications }: any) => {
+
+type NotificationTabProps = {
+    notifications: NotificationsType[];
+    setNotifications: (updated: NotificationsType[]) => void;
+};
+export const NotificationTab = ({ notifications, setNotifications }: NotificationTabProps) => {
     const { user } = useAuth();
     const { selectedProfile } = useProfile();
     const [NotificationRefresh, setNotificationRefersh] = useState(true);

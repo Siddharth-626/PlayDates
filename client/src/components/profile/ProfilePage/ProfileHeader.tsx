@@ -1,5 +1,5 @@
 import { SkillBasedTennisBallsUi } from "@/components/ui/SkillTennisBalls";
-import { PlayerProfile } from "@/utils/PlayerProfile/FetchPlayerProfiles";
+import { PlayerProfile } from "@/utils/TYPE";
 import { GiTennisBall } from "react-icons/gi";
 
 export default function ProfileHeader({ profile }: { profile: PlayerProfile }) {

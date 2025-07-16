@@ -10,6 +10,8 @@ import { checkIfProfileExist } from "@/utils/checkUserProfile";
 import { GoogleLogin } from "@/components/auth/GoogleLogin";
 import toast from "react-hot-toast";
 import { FirebaseError } from "firebase/app";
+
+
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

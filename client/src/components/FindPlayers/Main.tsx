@@ -1,7 +1,7 @@
 'use client'
 
 import { db } from "@/services/config";
-import { PlayerProfile } from "@/utils/PlayerProfile/FetchPlayerProfiles";
+import { PlayerProfile } from "@/utils/TYPE";
 import { collectionGroup, getDocs } from "firebase/firestore";
 import { motion, AnimatePresence } from 'framer-motion';
 import PlayerCard from './PlayerCard';
@@ -28,7 +28,8 @@ export const FindPlayers = () => {
 
             try {
                 const snapshot = await getDocs(collectionGroup(db, 'profile'));
-                const Players = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as PlayerProfile[];
+                const allPlayers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as PlayerProfile[];
+                const Players = allPlayers.filter((player) => player.userUid != user.uid)
                 setPlayers(Players);
                 setFiltered(Players);
             } catch (error) {
@@ -42,9 +43,16 @@ export const FindPlayers = () => {
 
     useEffect(() => {
         const result = players.filter(player =>
-            (!locationFilter || player.locations.includes(locationFilter)) &&
-            (!skillFilter || player.skill === skillFilter) &&
-            (!searchItem || player.name.toLowerCase().includes(searchItem.toLowerCase()))
+            (
+                !locationFilter ||
+                player.locations.some(loc => loc.name.toLowerCase().includes(locationFilter.toLowerCase()))
+            ) &&
+            (
+                !skillFilter || player.skill === skillFilter
+            ) &&
+            (
+                !searchItem || player.name.toLowerCase().includes(searchItem.toLowerCase())
+            )
         );
         setFiltered(result);
         setSelectedProfile(null);

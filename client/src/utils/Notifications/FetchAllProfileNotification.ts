@@ -1,17 +1,10 @@
 
 import { db } from "@/services/config";
 import { collection, getDocs } from "firebase/firestore";
+import { NotificationsType } from "../TYPE";
 
 
- export type NotificationsType = {
-    id: string,
-    type: string,
-    fromUserUid: string;
-    fromProfileId: string;
-    message: string,
-    isRead: boolean,
-    status: string,
-}
+
 
 export const FetchAllProfileNotification = async ({userUid,profileId}:{userUid:string,profileId:string}): Promise<NotificationsType[]> => {
 

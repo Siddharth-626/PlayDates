@@ -1,6 +1,6 @@
 import { db } from "@/services/config"
 import { doc, getDoc } from "firebase/firestore"
-import { PlayerProfile } from "../PlayerProfile/FetchPlayerProfiles";
+import { PlayerProfile } from "../TYPE";
 
 
 export const FetchPlaymates = async ({ userUid, profileId }: { userUid: string | undefined, profileId: string | undefined }) => {

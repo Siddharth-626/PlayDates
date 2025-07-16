@@ -1,11 +1,7 @@
 import { useEffect } from 'react';
 import { useAuth } from '@/context/authContext';
-import Navbar from '../Navbar';
 import Link from 'next/link';
-import gsap from 'gsap';
 import SplitText from '../Animations/TextAnimations/SplitText/SplitText';
-import TrueFocus from '../Animations/TextAnimations/TrueFocus/TrueFocus';
-import GradientText from '../Animations/TextAnimations/GradientText/GradientText';
 import CardSwap, { Card } from '../Animations/Components/CardSwap/CardSwap';
 
 const handleAnimationComplete = () => {
@@ -35,7 +31,6 @@ export const Startup = () => {
 
   return (
     <>
-      <Navbar />
       <div className="relative min-h-screen px-4 py-20 bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
         <div className="flex flex-col lg:flex-row items-center justify-between max-w-7xl mx-auto gap-12">
           {/* LEFT SECTION */}

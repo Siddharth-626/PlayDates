@@ -1,6 +1,4 @@
 import { useAuth } from "@/context/authContext";
-import { db } from "@/services/config";
-import { doc, getDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { motion } from 'framer-motion';
 import ProfileHeader from "@/components/profile/ProfilePage/ProfileHeader";

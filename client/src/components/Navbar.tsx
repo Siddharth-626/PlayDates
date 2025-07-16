@@ -5,6 +5,7 @@ import { useTheme } from '@/context/ThemeContext';
 import { MoonIcon, SunIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { createCourt } from '@/utils/testFunctions/createCourt';
+import { ProfileInfo } from './auth/ProfileInfo';
 
 export default function Navbar() {
   const { user } = useAuth();
@@ -35,7 +36,7 @@ export default function Navbar() {
             </Link>
           </>
         ) : (
-          <LogoutButton />
+          <ProfileInfo />
         )}
 
         {/* Theme Toggle */}

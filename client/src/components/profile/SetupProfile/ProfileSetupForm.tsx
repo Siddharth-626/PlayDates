@@ -10,9 +10,10 @@ import SkillLevelDropdown from "./SkillLevelDropdown";
 import PreferencesSelector from "./PreferencesSelector";
 import LocationSelector from "./LocationSelector";
 import { v4 as uuidv4 } from "uuid";
-import { PlayerProfile } from "@/utils/PlayerProfile/FetchPlayerProfiles";
+import { PlayerProfile } from "@/utils/TYPE";
 import toast from "react-hot-toast";
 import { X } from "lucide-react";
+import { uploadImage } from "@/utils/Image/uploadImage";
 
 type ProfileProps = {
   profile?: PlayerProfile;
@@ -35,7 +36,7 @@ export default function ProfileSetupForm({
     skill: profile?.skill || "3.5",
     preferences: profile?.preferences || [],
     locations: profile?.locations || [],
-    playmates:[],
+    playmates: [],
     image: null as File | null,
   });
 
@@ -52,16 +53,21 @@ export default function ProfileSetupForm({
       const profileId = uuidv4();
       const profileRef = doc(db, "users", uid, "profile", profileId);
 
+      let photoUrl = "/images/players/defaultProfilePhoto.jpg";
+      if (profileData.image) {
+        photoUrl = await uploadImage(uid, profileData.image, profileId);
+      }
+
       await setDoc(profileRef, {
-        userUid:auth.currentUser?.uid,
+        userUid: auth.currentUser?.uid,
         name: profileData.name,
         gender: profileData.gender,
         age: profileData.age,
         skill: profileData.skill,
         preferences: profileData.preferences,
         locations: profileData.locations,
-        photoUrl: "/images/players/donald.jpeg",
-        playmates:[],
+        photoUrl: photoUrl,
+        playmates: [],
         completed: true,
       });
 
@@ -83,6 +89,10 @@ export default function ProfileSetupForm({
       setIsLoading(true);
       const profileRef = doc(db, "users", uid, "profile", profile.id);
 
+      let photoUrl = profile.photoUrl || "/images/players/defaultProfilePhoto.jpg";
+      if (profileData.image) {
+        photoUrl = await uploadImage(uid, profileData.image, profile.id);
+      }
       await updateDoc(profileRef, {
         name: profileData.name,
         gender: profileData.gender,
@@ -90,7 +100,7 @@ export default function ProfileSetupForm({
         skill: profileData.skill,
         preferences: profileData.preferences,
         locations: profileData.locations,
-        photoUrl: "/images/players/donald.jpeg",
+        photoUrl: photoUrl,
         completed: true,
       });
 
@@ -105,7 +115,7 @@ export default function ProfileSetupForm({
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-6 py-10 bg-green-50 dark:bg-gray-900">
+    <div className="min-h-screen flex items-center justify-center px-6 py-10 bg-slate-200 dark:bg-gray-900">
       <div className="w-full max-w-3xl relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-10 space-y-8">
         {/* Close Button */}
         <button
@@ -155,11 +165,10 @@ export default function ProfileSetupForm({
         <button
           onClick={update ? handleUpdate : handleSubmit}
           disabled={isLoading}
-          className={`w-full py-3 text-white text-lg font-semibold rounded-xl transition duration-200 focus:outline-none focus:ring-4 ${
-            isLoading
-              ? "bg-green-400 cursor-not-allowed"
-              : "bg-green-700 hover:bg-green-800 focus:ring-green-300 dark:focus:ring-green-500"
-          }`}
+          className={`w-full py-3 text-white text-lg font-semibold rounded-xl transition duration-200 focus:outline-none focus:ring-4 ${isLoading
+            ? "bg-green-400 cursor-not-allowed"
+            : "bg-green-700 hover:bg-green-800 focus:ring-green-300 dark:focus:ring-green-500"
+            }`}
         >
           {isLoading ? "Saving..." : update ? "Update" : "Save"}
         </button>

@@ -1,13 +1,13 @@
 import { useAuth } from "@/context/authContext";
 import {
   FetchPlayerProfiles,
-  PlayerProfile,
 } from "@/utils/PlayerProfile/FetchPlayerProfiles";
 import { useEffect, useState } from "react";
 import { FiChevronDown, FiEdit, FiPlus } from "react-icons/fi";
 import ProfileSetupForm from "../SetupProfile/ProfileSetupForm";
 import { motion, AnimatePresence } from "framer-motion";
 import { useProfile } from "@/context/profileContext";
+import { PlayerProfile } from "@/utils/TYPE";
 
 export default function PlayerProfileDropdown() {
   const { selectedProfile,setSelectedProfile,refreshProfile} = useProfile();
@@ -68,7 +68,7 @@ export default function PlayerProfileDropdown() {
   };
 
   const ProfileDetails = selectedProfile
-    ? [
+  ? [
       { label: "Name", value: selectedProfile.name },
       { label: "Skill Level", value: selectedProfile.skill },
       { label: "Gender", value: selectedProfile.gender },
@@ -79,10 +79,13 @@ export default function PlayerProfileDropdown() {
       },
       {
         label: "Preferred Locations",
-        value: selectedProfile.locations?.join(", ") || "None",
+        value:
+          selectedProfile.locations?.length > 0
+            ? selectedProfile.locations.map((loc) => loc.name).join(", ")
+            : "None",
       },
     ]
-    : [];
+  : [];
 
   return (
     <div className="w-full space-y-6">

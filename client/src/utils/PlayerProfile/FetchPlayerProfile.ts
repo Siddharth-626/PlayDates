@@ -1,6 +1,6 @@
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/services/config";
-import { PlayerProfile } from "./FetchPlayerProfiles";
+import { PlayerProfile } from "../TYPE";
 
 export const FetchPlayerProfile = async ({ userUid, profileId }: { userUid: string; profileId: string }) => {
     if (!userUid || !profileId) {

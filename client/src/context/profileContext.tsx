@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { FetchPlayerProfiles, PlayerProfile } from '../utils/PlayerProfile/FetchPlayerProfiles';
+import { FetchPlayerProfiles} from '../utils/PlayerProfile/FetchPlayerProfiles';
 import { useAuth } from './authContext';
+import { PlayerProfile } from '@/utils/TYPE';
 
 // Define the context type
 type ProfileContextType = {

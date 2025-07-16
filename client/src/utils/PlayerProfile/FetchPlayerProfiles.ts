@@ -1,23 +1,8 @@
 import { db } from "@/services/config";
 import { collection, getDocs } from "firebase/firestore"
+import { PlayerProfile } from "../TYPE";
 
-type Playmate = {
-  userUid: string;
-  profileId: string;
-};
-export type PlayerProfile = {
-    id: string;
-    userUid:string;
-    name: string;
-    age: string;
-    gender: string;
-    skill: string;
-    preferences: string[];
-    locations: string[];
-    playmates:Playmate[];
-    photoUrl:string;
-    completed: boolean;
-};
+
 
 export const FetchPlayerProfiles = async (uid: string): Promise<PlayerProfile[]> => {
     const profileRef = collection(db, `users/${uid}/profile`);

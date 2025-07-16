@@ -8,24 +8,24 @@ interface authContextType {
     loading: boolean
 }
 
-const AuthContext = createContext<authContextType>({user:null , loading:true});
+const AuthContext = createContext<authContextType>({ user: null, loading: true });
 
-export const AuthProvider = ({children}:{children:React.ReactNode})=>{
-     const [user , setUser] = useState<User | null>(null);
-     const [loading,setloading] = useState(true);
-     
-     useEffect(()=>{
-            const unsubscribe = onAuthStateChanged(auth,(firebaseUser)=>{  
-                setUser(firebaseUser);
-                setloading(false)
-            })
-            return ()=>unsubscribe();
-     },[])
-     return(
-        <AuthContext.Provider value = {{user, loading}}>
-           {children}
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+    const [user, setUser] = useState<User | null>(null);
+    const [loading, setloading] = useState(true);
+
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+            setUser(firebaseUser);
+            setloading(false)
+        })
+        return () => unsubscribe();
+    }, [])
+    return (
+        <AuthContext.Provider value={{ user, loading }}>
+            {children}
         </AuthContext.Provider>
-     );
-   
-} 
-  export const useAuth = ()=> useContext(AuthContext);
+    );
+
+}
+export const useAuth = () => useContext(AuthContext);

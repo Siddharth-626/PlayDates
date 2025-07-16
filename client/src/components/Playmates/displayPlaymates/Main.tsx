@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from "react";
-import { PlayerProfile } from "@/utils/PlayerProfile/FetchPlayerProfiles";
+import { PlayerProfile } from "@/utils/TYPE";
 import { Button } from "@/components/ui/button";
 import { AnimatePresence, motion } from "framer-motion";
 import { useAuth } from "@/context/authContext";

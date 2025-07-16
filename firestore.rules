@@ -1,0 +1,88 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ======= Public Collections =======
+
+    match /courts/{courtId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    match /matches/{matchId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    match /profiles/{profileId} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == profileId;
+    }
+
+    // ======= User Collections =======
+
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      match /profile/{profileId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+
+        match /availability/{availabilityId} {
+          allow read, write: if request.auth != null && request.auth.uid == userId;
+        }
+
+        match /notifications/{notifId} {
+          allow read, write: if request.auth != null && request.auth.uid == userId;
+        }
+      }
+
+      match /profiles/{profileId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+
+        match /notifications/{notifId} {
+          allow read, write: if request.auth != null && request.auth.uid == userId;
+        }
+      }
+
+      match /playmates/{playmateId} {
+        allow read, write: if request.auth != null &&
+          (request.auth.uid == userId || request.auth.uid == playmateId);
+      }
+    }
+
+    // Extra profile rule
+    match /users/{userId}/profiles/{profileId} {
+      allow read: if request.auth != null;
+    }
+
+    match /users/{toUserUid}/profile/{toProfileId}/notifications/{notificationId} {
+      allow create: if request.auth != null
+                    && request.resource.data.keys().hasAll([
+                      'id',
+                      'type',
+                      'fromUserUid',
+                      'fromProfileId',
+                      'isRead',
+                      'status'
+                    ])
+                    && request.resource.data.fromUserUid == request.auth.uid
+                    && request.resource.data.status == "pending"
+                    && request.resource.data.type == "playmates request"
+                    && request.resource.data.isRead == false;
+    }
+
+    // ✅ Collection group access to 'profile'
+    match /{documentPath=**}/profile/{profileId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+		match /users/{userUid}/profile/{profileId}/selectedCourts/{docId} {
+  allow read, write: if request.auth != null && request.auth.uid == userUid;
+}
+
+    // ======= Catch-All Deny =======
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

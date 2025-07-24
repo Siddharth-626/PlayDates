@@ -1,5 +1,8 @@
 {
   "projects": {
-    "default": "playdates-dev"
-  }
+    "default": "playdates-dev",
+    "staging": "playdates-dev"
+  },
+  "targets": {},
+  "etags": {}
 }

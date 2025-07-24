@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import DurationSelector from "./DurationSelector";
 import { motion } from "framer-motion";
@@ -18,24 +18,25 @@ export const Availability = () => {
     const [date, setDate] = useState<Date | null>(new Date());
     const [time, setTime] = useState("");
     const [duration, setDuration] = useState("");
-    const [AvailabilityData,setAvalabilityData] = useState<AvailabilityType>();
-    const [locations,setLocations]= useState<LocationStorageType[]>([]);
-    const [preference,setPreference] = useState<string[]>([]);
+    const [AvailabilityData, setAvalabilityData] = useState<AvailabilityType>();
+    const [locations, setLocations] = useState<LocationStorageType[]>([]);
+    const [preference, setPreference] = useState<string[]>([]);
 
     const { user } = useAuth();
     const { selectedProfile } = useProfile();
 
-    const SelectLocation = (val:LocationStorageType[])=>{
-        if(!val) return;
+    const SelectLocation = (val: LocationStorageType[]) => {
+
+        if (!val) return;
         setLocations(val);
     }
-    const SelectPreference = (val:string[])=>{
-        if(!val) return;
+    const SelectPreference = (val: string[]) => {
+        if (!val) return;
         setPreference(val);
     }
     const handleSubmit = async () => {
         setloading(true)
-        if (!date || !time || !duration || !locations) { toast.error("please enter all the fields"); return };
+        if (!date || !time || !duration || !locations) { toast.error("please enter all the fields"); setloading(false); return };
 
         const AvailibilityId = uuidv4()
         const data = {
@@ -43,8 +44,8 @@ export const Availability = () => {
             date: Timestamp.fromDate(date),
             time: time,
             duration: duration,
-            locations:locations,
-            preference:preference || [],
+            locations: locations,
+            preference: preference || [],
         }
         await AddAvailability({
             userUid: user?.uid,
@@ -55,6 +56,7 @@ export const Availability = () => {
         toast.success("Availability added!")
         setloading(false);
     }
+
     return (
         <>
             <motion.div
@@ -73,11 +75,13 @@ export const Availability = () => {
                 <PreferencesSelector selected={preference} onChange={SelectPreference} />
                 <LocationSelector selected={locations} onChange={SelectLocation} />
                 <button
+                    style={{ zIndex: 50 }}
                     onClick={handleSubmit}
-                    className="w-full bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-md transition duration-200"
+                    className="relative w-full bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-md transition duration-200"
                 >
                     {loading ? "Saving....." : "Save Availability"}
                 </button>
+
             </motion.div>
         </>
     );

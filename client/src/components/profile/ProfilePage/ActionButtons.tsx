@@ -36,7 +36,7 @@ export default function ActionButtons({ onAdd, player }: { onAdd: () => void, pl
         {"Add as my playmate"}
       </button>
       ):(<></>)}
-      {btnStatus == "pending" ?(<button className="bg-transperent text-white px-6 py-2 rounded-lg shadow-md hover:bg-green-700 transition">Requested</button>):(<></>)}
+      {btnStatus == "pending" ?(<button className="bg-transperent border border-green-500 text-green-600 dark:text-green-800 px-6 py-2 rounded-lg shadow-md  transition">Requested</button>):(<></>)}
       <button className="border border-green-600 text-green-600 px-6 py-2 rounded-lg hover:bg-green-100 dark:hover:bg-green-900 transition">
         Chat
       </button>

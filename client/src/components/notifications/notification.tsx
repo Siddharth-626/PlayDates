@@ -3,21 +3,26 @@ import { respontToPlaymatesRequest } from "@/utils/Playmates/respondToPlaymatesR
 import PlaymateRequestNotification from "./NewPLaymateNotification";
 import { useAuth } from "@/context/authContext";
 import { useProfile } from "@/context/profileContext";
-import { NotificationsType } from "@/utils/TYPE";
+import { MatchPreposalNotificationType, NotificationsType } from "@/utils/TYPE";
 import { useState } from "react";
+import toast from "react-hot-toast";
+import { MatchPreposalNotification } from "./MatchPreposalNoptification";
+import { respondToMatchPreposal } from "@/utils/MatchPreposal/respondToMAtchPreposal";
 
 type NotificationTabProps = {
-    notifications: NotificationsType[];
+    notifications: NotificationsType[] | MatchPreposalNotificationType[];
     setNotifications: (updated: NotificationsType[]) => void;
 };
 export const NotificationTab = ({ notifications, setNotifications }: NotificationTabProps) => {
     const { user } = useAuth();
     const { selectedProfile } = useProfile();
     const [NotificationRefresh, setNotificationRefersh] = useState(true);
+
     const handleMarkAllRead = () => {
         const updated = notifications.map((n) => ({ ...n, isRead: true }));
         setNotifications(updated);
     };
+
     const handlePlaymateResponse = (accepted: boolean, note: NotificationsType) => {
         try {
             if (!user?.uid || !selectedProfile?.id) return;
@@ -41,11 +46,24 @@ export const NotificationTab = ({ notifications, setNotifications }: Notificatio
                     accepted: false
                 })
             }
-            setNotificationRefersh(NotificationRefresh ? false : true);
+            setNotificationRefersh(!NotificationRefresh);
         } catch (error) {
             console.log("err while mannaging the playmates request");
         }
     }
+
+    const handleMatchPreposalResponse = async (status: string, matchId: string) => {
+        if (!user?.uid || !selectedProfile?.id || !matchId) return;
+
+        await respondToMatchPreposal({
+            matchId,
+            userUid: user.uid,
+            profileId: selectedProfile.id,
+            status,
+        });
+
+        toast.success("You accepted the Match Proposal");
+    };
     return (
         <div className="space-y-4 animate-fade-in">
             <div className="flex justify-between items-center">
@@ -64,9 +82,10 @@ export const NotificationTab = ({ notifications, setNotifications }: Notificatio
                     notifications.map((note: any) => (
                         <div
                             key={note.id}
-                            className={`p-4 rounded-lg transition-all duration-300 border`}
+                            className={`p-4 rounded-lg transition-all duration-300`}
                         >
-                            <PlaymateRequestNotification note={note} onRespond={handlePlaymateResponse} />
+                            {note.type == "playmates request" ? <PlaymateRequestNotification note={note} onRespond={handlePlaymateResponse} /> : <></>}
+                            <MatchPreposalNotification note={note} onRespond={handleMatchPreposalResponse} />
                         </div>
                     ))
                 )}

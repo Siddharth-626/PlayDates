@@ -1,16 +1,14 @@
 {
   "functions": {
-    "source": "functions"
+    "source": "functions",
+    "region": "asia-south1"
   },
   "hosting": {
-    "site": "playdates-dev",
-    "public": "client/.next",
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
-    "rewrites": [
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
+    "public": "client/out",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
     ]
   }
 }

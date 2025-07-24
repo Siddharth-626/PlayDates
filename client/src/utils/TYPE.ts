@@ -19,7 +19,11 @@ export type PlayerProfile = {
     completed: boolean;
 };
 
-export type NotificationsType = {
+export type NotificationsType =
+    | MatchPreposalNotificationType
+    | BaseNotification
+
+type BaseNotification = {
     id: string,
     type: string,
     fromUserUid: string;
@@ -29,13 +33,18 @@ export type NotificationsType = {
     status: string,
 }
 
+ export type MatchPreposalNotificationType = BaseNotification & {
+    type: "match proposal";
+    matchId:string;
+}
+
 export type AvailabilityType = {
     id: string;
     date: Date | Timestamp;
     time: string;
     duration: string;
-    locations:LocationStorageType[];
-    preference:string[];
+    locations: LocationStorageType[];
+    preference: string[];
 }
 
 export type courtType = {
@@ -55,6 +64,6 @@ export type courtType = {
 }
 
 export type LocationStorageType = {
-    name:string;
-    courtId:string;
+    name: string;
+    courtId: string;
 }

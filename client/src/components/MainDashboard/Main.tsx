@@ -17,9 +17,9 @@ import { FindPlayers } from "../FindPlayers/Main";
 import { NotificationTab } from "../notifications/notification";
 import { useAuth } from "@/context/authContext";
 import { useProfile } from "@/context/profileContext";
-import { FetchAllProfileNotification} from "@/utils/Notifications/FetchAllProfileNotification";
+import { FetchAllProfileNotification } from "@/utils/Notifications/FetchAllProfileNotification";
 import { DisplayPlaymates } from "../Playmates/displayPlaymates/Main";
-import { NotificationsType } from "@/utils/TYPE";
+import { MatchPreposalNotificationType, NotificationsType } from "@/utils/TYPE";
 import { DisplayAvailability } from "../availability/displayAvailability/displayAvailability";
 import { DisplayCourts } from "../courts/displayCourts/court";
 
@@ -37,19 +37,19 @@ const SidebarItem = ({ icon, label, isActive, onClick }: any) => (
 const Dashboard = () => {
     const { user } = useAuth();
     const { selectedProfile } = useProfile();
-    const [activeTab, setActiveTab] = useState("My Playmates");
+    const [activeTab, setActiveTab] = useState("Player Profile");
     const [sideBar, setSideBar] = useState(true);
-    const [notifications, setNotifications] = useState<NotificationsType[]>([]);
+    const [notifications, setNotifications] = useState<NotificationsType[] | MatchPreposalNotificationType[]>([]);
 
     const fetchNotifications = async () => {
-            if (user?.uid && selectedProfile?.id) {
-                const data = await FetchAllProfileNotification({
-                    userUid: user.uid,
-                    profileId: selectedProfile.id
-                });
-                setNotifications(data);
-            }
+        if (user?.uid && selectedProfile?.id) {
+            const data = await FetchAllProfileNotification({
+                userUid: user.uid,
+                profileId: selectedProfile.id
+            });
+            setNotifications(data);
         }
+    }
     useEffect(() => {
         fetchNotifications()
     }, [user, selectedProfile])
@@ -81,13 +81,18 @@ const Dashboard = () => {
                 return <div>Select an option</div>;
         }
     };
-
+    const handleSidebarItemClick = (tabName:string) => {
+        setActiveTab(tabName);
+        if (window.innerWidth < 768) {   // If mobile
+            setSideBar(false);
+        }
+    };
     return (
         <>
             <div className="flex min-h-screen bg-slate-200 dark:bg-gray-900 text-gray-900 dark:text-white">
                 <aside
-                    className={`transition-all duration-500 ease-in-out bg-slate-100 m-3 dark:bg-gray-800 border-r rounded-3xl dark:border-gray-700 ${sideBar ? 'w-64 p-4' : 'w-0 p-0'
-                        } overflow-hidden`}
+                    className={`fixed z-50 md:static transition-all duration-500 ease-in-out bg-slate-100 m-3 dark:bg-gray-800 border-r rounded-3xl dark:border-gray-700 ${sideBar ? 'w-64 p-4' : 'w-0 p-0'
+                        } overflow-hidden h-full`}
                 >
                     <div className={sideBar ? "block" : "None"}>
                         <div className="text-xl font-bold mb-4 flex justify-between">
@@ -97,72 +102,71 @@ const Dashboard = () => {
                             </button>
                         </div>
                         <div className="flex flex-col h-screen justify-between">
-                        <div>
-                        <SidebarItem
-                            icon={<FiUsers />}
-                            label="My Playmates"
-                            isActive={activeTab === "My Playmates"}
-                            onClick={() => setActiveTab("My Playmates")}
-                        />
-                        <SidebarItem
-                            icon={<FiGlobe />}
-                            label="My Matches"
-                            isActive={activeTab === "My Matches"}
-                            onClick={() => setActiveTab("My Matches")}
-                        />
-                        <SidebarItem
-                            icon={<FiMapPin />}
-                            label="Find Courts"
-                            isActive={activeTab === "Find Courts"}
-                            onClick={() => setActiveTab("Find Courts")}
-                        />
-                        <SidebarItem
-                            icon={<FiMap />}
-                            label="Find Programs"
-                            isActive={activeTab === "Find Programs"}
-                            onClick={() => setActiveTab("Find Programs")}
-                        />
-                        <SidebarItem
-                            icon={<FiSearch />}
-                            label="Find Players"
-                            isActive={activeTab === "Find Players"}
-                            onClick={() => setActiveTab("Find Players")}
-                        />
-                        <SidebarItem
-                            icon={
-                                <div className="relative">
-                                    <FiBell />
-                                    {notifications.some(n => !n.isRead) && (
-                                        <span className="absolute -top-2 -right-2 text-xs bg-red-500 text-white rounded-full px-1">
-                                            {notifications.filter(n => !n.isRead).length}
-                                        </span>
-                                    )}
-                                </div>
-                            }
-                            label="Notifications"
-                            isActive={activeTab === "Notifications"}
-                            onClick={() => setActiveTab("Notifications")}
-                        />
-                        <SidebarItem
-                            icon={<FiCalendar />}
-                            label="My Calendar"
-                            isActive={activeTab === "My Calendar"}
-                            onClick={() => setActiveTab("My Calendar")}
-                        />
-                        <SidebarItem
-                            icon={<FiEdit />}
-                            label="Add Availability"
-                            isActive={activeTab === "Add Availability"}
-                            onClick={() => setActiveTab("Add Availability")}
-                        />
-                        <SidebarItem
-                            icon={<FiUser />}
-                            label="Player Profile"
-                            isActive={activeTab === "Player Profile"}
-                            onClick={() => setActiveTab("Player Profile")}
-                        />
-                        </div>
-                        <p>test p</p>
+                            <div>
+                                <SidebarItem
+                                    icon={<FiUsers />}
+                                    label="My Playmates"
+                                    isActive={activeTab === "My Playmates"}
+                                    onClick={() => handleSidebarItemClick("My Playmates")}
+                                />
+                                <SidebarItem
+                                    icon={<FiGlobe />}
+                                    label="My Matches"
+                                    isActive={activeTab === "My Matches"}
+                                    onClick={() => handleSidebarItemClick("My Matches")}
+                                />
+                                <SidebarItem
+                                    icon={<FiMapPin />}
+                                    label="Find Courts"
+                                    isActive={activeTab === "Find Courts"}
+                                    onClick={() => handleSidebarItemClick("Find Courts")}
+                                />
+                                <SidebarItem
+                                    icon={<FiMap />}
+                                    label="Find Programs"
+                                    isActive={activeTab === "Find Programs"}
+                                    onClick={() => handleSidebarItemClick("Find Programs")}
+                                />
+                                <SidebarItem
+                                    icon={<FiSearch />}
+                                    label="Find Players"
+                                    isActive={activeTab === "Find Players"}
+                                    onClick={() => handleSidebarItemClick("Find Players")}
+                                />
+                                <SidebarItem
+                                    icon={
+                                        <div className="relative">
+                                            <FiBell />
+                                            {notifications.some(n => !n.isRead) && (
+                                                <span className="absolute -top-2 -right-2 text-xs bg-red-500 text-white rounded-full px-1">
+                                                    {notifications.filter(n => !n.isRead).length}
+                                                </span>
+                                            )}
+                                        </div>
+                                    }
+                                    label="Notifications"
+                                    isActive={activeTab === "Notifications"}
+                                    onClick={() => handleSidebarItemClick("Notifications")}
+                                />
+                                <SidebarItem
+                                    icon={<FiCalendar />}
+                                    label="My Calendar"
+                                    isActive={activeTab === "My Calendar"}
+                                    onClick={() => handleSidebarItemClick("My Calendar")}
+                                />
+                                <SidebarItem
+                                    icon={<FiEdit />}
+                                    label="Add Availability"
+                                    isActive={activeTab === "Add Availability"}
+                                    onClick={() => handleSidebarItemClick("Add Availability")}
+                                />
+                                <SidebarItem
+                                    icon={<FiUser />}
+                                    label="Player Profile"
+                                    isActive={activeTab === "Player Profile"}
+                                    onClick={() => handleSidebarItemClick("Player Profile")}
+                                />
+                            </div>
                         </div>
                     </div>
                 </aside>

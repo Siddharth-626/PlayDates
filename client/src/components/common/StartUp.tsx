@@ -74,11 +74,6 @@ export const Startup = () => {
                     Login
                   </button>
                 </Link>
-                <Link href="/signup">
-                  <button className="px-6 py-2 bg-green-100 text-green-800 rounded-full shadow hover:bg-green-200 dark:bg-green-700 dark:text-white dark:hover:bg-green-600 transition">
-                    Create Account
-                  </button>
-                </Link>
               </div>
             )}
           </div>

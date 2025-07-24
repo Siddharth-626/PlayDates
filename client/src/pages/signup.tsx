@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import Navbar from '../components/Navbar';
 import { FiMail, FiLock, FiUser, FiPhone } from 'react-icons/fi';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
@@ -6,6 +6,8 @@ import { auth, db } from '@/services/config';
 import { doc, setDoc } from 'firebase/firestore';
 import { useRouter } from 'next/router';
 import { checkIfProfileExist } from '@/utils/checkUserProfile';
+import { debounce } from '@/utils/debounce';
+import toast from 'react-hot-toast';
 
 export default function Signup() {
   const [name, setName] = useState('');
@@ -39,7 +41,7 @@ export default function Signup() {
         phoneNumber,
         createdAt: new Date().toISOString(),
       });
-
+      toast.success("user Registered sucessfully")
       const uid = user.uid;
       const profileExist = await checkIfProfileExist(uid);
       router.push(profileExist ? '/' : '/setup');
@@ -54,6 +56,11 @@ export default function Signup() {
       console.error('Error while signing up:', err);
     }
   };
+  const debounceHandleSubmit = useCallback(
+      debounce(()=>{
+        handleSignup()
+      },1000)
+  ,[])
 
   return (
     <>
@@ -138,7 +145,7 @@ export default function Signup() {
           {/* Submit Button */}
           <button
             className="w-full bg-green-700 hover:bg-green-600 text-white font-semibold py-2 rounded-lg transition"
-            onClick={handleSignup}
+            onClick={debounceHandleSubmit}
           >
             Register
           </button>

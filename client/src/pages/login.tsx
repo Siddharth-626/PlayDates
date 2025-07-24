@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import Link from "next/link";
 import { FiMail, FiLock } from "react-icons/fi";
 import { AiOutlineEyeInvisible, AiOutlineEye } from "react-icons/ai";
@@ -10,6 +10,7 @@ import { checkIfProfileExist } from "@/utils/checkUserProfile";
 import { GoogleLogin } from "@/components/auth/GoogleLogin";
 import toast from "react-hot-toast";
 import { FirebaseError } from "firebase/app";
+import { debounce } from "@/utils/debounce";
 
 
 export default function Login() {
@@ -77,6 +78,11 @@ export default function Login() {
       toast.error(message);
     }
   };
+  const debounceHandleLogin =useCallback(
+      debounce(()=>{
+        handleLogin()
+      },1000)
+  ,[])
   return (
     <div className="min-h-screen bg-green-50 dark:bg-gray-900 transition-colors duration-300">
       <Navbar />
@@ -159,7 +165,7 @@ export default function Login() {
           {/* Login Button */}
           <button
             className="w-full bg-green-700 dark:bg-green-600 text-white py-2 rounded-lg hover:bg-green-800 dark:hover:bg-green-700 transition font-semibold cursor-pointer"
-            onClick={handleLogin}
+            onClick={debounceHandleLogin}
           >
             Login
           </button>

@@ -11,14 +11,6 @@ import { createMatch } from '@/utils/testFunctions/createMatch';
 
 export default function Home() {
   const { user } = useAuth();
-  const { selectedProfile } = useProfile();
-
-
-  useEffect(() => {
-    if (user?.uid && selectedProfile?.id) {
-      clearOldAvalability(user.uid, selectedProfile.id)
-    }
-  }, [user, selectedProfile])
 
   return (
     <>

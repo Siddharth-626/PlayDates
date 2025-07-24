@@ -36,7 +36,7 @@ export const respontToPlaymatesRequest = async (
                 status: "accepted",
                 isRead: true
             })
-            toast.success("Horray you got a new Playmate!!!")
+            toast.success("You got a new Playmate!!!")
         }
         else {
             await updateDoc(notifiRef, {

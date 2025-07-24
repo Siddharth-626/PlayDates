@@ -1,10 +1,8 @@
 import { useAuth } from '@/context/authContext';
 import Link from 'next/link';
-import LogoutButton from './auth/logout';
 import { useTheme } from '@/context/ThemeContext';
 import { MoonIcon, SunIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { createCourt } from '@/utils/testFunctions/createCourt';
 import { ProfileInfo } from './auth/ProfileInfo';
 
 export default function Navbar() {

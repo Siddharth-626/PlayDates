@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useRouter } from "next/router";
 import { auth, db } from "@/services/config";
 import { doc, setDoc, updateDoc } from "firebase/firestore";
@@ -14,6 +14,7 @@ import { PlayerProfile } from "@/utils/TYPE";
 import toast from "react-hot-toast";
 import { X } from "lucide-react";
 import { uploadImage } from "@/utils/Image/uploadImage";
+import { debounce } from "@/utils/debounce";
 
 type ProfileProps = {
   profile?: PlayerProfile;
@@ -39,6 +40,7 @@ export default function ProfileSetupForm({
     playmates: [],
     image: null as File | null,
   });
+  const router = useRouter();
 
   const updateField = (field: string, value: unknown) => {
     setProfileData((prev) => ({ ...prev, [field]: value }));
@@ -73,6 +75,7 @@ export default function ProfileSetupForm({
 
       toast.success("Profile added successfully!");
       onSuccess(profileId);
+      router.push('/')
     } catch (error) {
       console.error("Error while creating profile:", error);
       toast.error("Something went wrong while saving.");
@@ -80,6 +83,11 @@ export default function ProfileSetupForm({
       setIsLoading(false);
     }
   };
+  const debounceHandleSubmit = useCallback(
+      debounce(()=>{
+        handleSubmit()
+      },1000)
+  ,[])
 
   const handleUpdate = async () => {
     const uid = auth.currentUser?.uid;
@@ -163,7 +171,7 @@ export default function ProfileSetupForm({
         </div>
 
         <button
-          onClick={update ? handleUpdate : handleSubmit}
+          onClick={update ? handleUpdate : debounceHandleSubmit}
           disabled={isLoading}
           className={`w-full py-3 text-white text-lg font-semibold rounded-xl transition duration-200 focus:outline-none focus:ring-4 ${isLoading
             ? "bg-green-400 cursor-not-allowed"

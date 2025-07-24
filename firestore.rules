@@ -2,85 +2,91 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    function isAdmin() {
+      // Allow requests from Firebase Admin SDK
+      return request.auth != null && request.auth.token.admin == true;
+    }
+
     // ======= Public Collections =======
 
     match /courts/{courtId} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if request.auth != null || isAdmin();
     }
 
     match /matches/{matchId} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if request.auth != null || isAdmin();
     }
 
     match /profiles/{profileId} {
       allow read: if true;
-      allow write: if request.auth != null && request.auth.uid == profileId;
+      allow write: if (request.auth != null && request.auth.uid == profileId) || isAdmin();
     }
 
     // ======= User Collections =======
 
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read, write: if (request.auth != null && request.auth.uid == userId) || isAdmin();
 
       match /profile/{profileId} {
-        allow read, write: if request.auth != null && request.auth.uid == userId;
+        allow read, write: if (request.auth != null && request.auth.uid == userId) || isAdmin();
 
         match /availability/{availabilityId} {
-          allow read, write: if request.auth != null && request.auth.uid == userId;
+          allow read, write: if (request.auth != null && request.auth.uid == userId) || isAdmin();
         }
 
         match /notifications/{notifId} {
-          allow read, write: if request.auth != null && request.auth.uid == userId;
+          allow read, write: if (request.auth != null && request.auth.uid == userId) || isAdmin();
         }
       }
 
       match /profiles/{profileId} {
-        allow read, write: if request.auth != null && request.auth.uid == userId;
+        allow read, write: if (request.auth != null && request.auth.uid == userId) || isAdmin();
 
         match /notifications/{notifId} {
-          allow read, write: if request.auth != null && request.auth.uid == userId;
+          allow read, write: if (request.auth != null && request.auth.uid == userId) || isAdmin();
         }
       }
 
       match /playmates/{playmateId} {
-        allow read, write: if request.auth != null &&
-          (request.auth.uid == userId || request.auth.uid == playmateId);
+        allow read, write: if (request.auth != null && 
+          (request.auth.uid == userId || request.auth.uid == playmateId)) || isAdmin();
       }
     }
 
     // Extra profile rule
     match /users/{userId}/profiles/{profileId} {
-      allow read: if request.auth != null;
+      allow read: if request.auth != null || isAdmin();
     }
 
     match /users/{toUserUid}/profile/{toProfileId}/notifications/{notificationId} {
-      allow create: if request.auth != null
-                    && request.resource.data.keys().hasAll([
+      allow create: if (request.auth != null &&
+                    request.resource.data.keys().hasAll([
                       'id',
                       'type',
                       'fromUserUid',
                       'fromProfileId',
                       'isRead',
                       'status'
-                    ])
-                    && request.resource.data.fromUserUid == request.auth.uid
-                    && request.resource.data.status == "pending"
-                    && request.resource.data.type == "playmates request"
-                    && request.resource.data.isRead == false;
+                    ]) &&
+                    request.resource.data.fromUserUid == request.auth.uid &&
+                    request.resource.data.status == "pending" &&
+                    request.resource.data.type == "playmates request" &&
+                    request.resource.data.isRead == false) || isAdmin();
     }
 
-    // ✅ Collection group access to 'profile'
+    // Collection group access to 'profile'
     match /{documentPath=**}/profile/{profileId} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if request.auth != null || isAdmin();
     }
-		match /users/{userUid}/profile/{profileId}/selectedCourts/{docId} {
-  allow read, write: if request.auth != null && request.auth.uid == userUid;
-}
 
-    // ======= Catch-All Deny =======
+    match /users/{userUid}/profile/{profileId}/selectedCourts/{docId} {
+      allow read, write: if (request.auth != null && request.auth.uid == userUid) || isAdmin();
+    }
+
+    // Catch-All Deny
     match /{document=**} {
       allow read, write: if false;
     }

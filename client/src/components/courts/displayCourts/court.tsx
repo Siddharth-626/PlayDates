@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { courtType, LocationStorageType } from "@/utils/TYPE";
 import { Search } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -11,6 +11,8 @@ import { useCourt } from "@/context/courtContext";
 import { AddLocationToProfile } from "@/utils/PlayerProfile/AddLocationToProfile";
 import { useAuth } from "@/context/authContext";
 import { useProfile } from "@/context/profileContext";
+import { debounce } from "@/utils/debounce";
+import toast from "react-hot-toast";
 
 export const DisplayCourts = () => {
     const { courts } = useCourt();
@@ -23,11 +25,16 @@ export const DisplayCourts = () => {
     if (!courts) {
         return <p className="text-center text-gray-500 mt-10">Loading courts...</p>;
     }
-    const ProfileLocations: string[] | undefined = selectedProfile?.locations.map((loc) => loc.name);
 
     const filteredCourts = courts.filter((court) =>
         court.title.toLowerCase().includes(search.toLowerCase()) ||
         court.location.address.toLowerCase().includes(search.toLowerCase())
+    );
+    const debouncedToggleSelect = useCallback(
+        debounce((court: courtType) => {
+            toggleSelect(court);
+        }, 1000),
+        [] // dependencies can be added if needed
     );
     const toggleSelect = (court: courtType) => {
         const LocationData: LocationStorageType = {
@@ -35,14 +42,22 @@ export const DisplayCourts = () => {
             courtId: court.id
         }
         AddLocationToProfile(user?.uid, selectedProfile?.id, LocationData);
-        if (!ProfileLocations) return;
-        setProfilePreferedLocations(ProfileLocations)
+        toast.success("Location added to Profile")
+
+        setProfilePreferedLocations((prev)=>{
+            if(prev.includes(court.title)){
+                return prev;
+            }
+            return [...prev,court.title];
+        })
     }
 
     useEffect(() => {
-        if (!ProfileLocations) return;
-        setProfilePreferedLocations(ProfileLocations)
-    }, [ProfileLocations])
+    if (selectedProfile?.locations) {
+        const initialLocations = selectedProfile.locations.map((loc) => loc.name);
+        setProfilePreferedLocations(initialLocations);
+    }
+}, [selectedProfile]);
 
     return (
         <div className="p-4 max-w-6xl mx-auto">
@@ -110,7 +125,7 @@ export const DisplayCourts = () => {
                                         ))}
                                     </div>
                                     <button
-                                        onClick={() => toggleSelect(court)}
+                                        onClick={() => debouncedToggleSelect(court)}
                                         className={`mt-4 w-full py-2 text-sm rounded-lg font-semibold transition ${ProfilePreferedLocations?.includes(court.title)
                                             ? "bg-gray-200 text-gray-800 dark:bg-gray-800 dark:text-white"
                                             : "bg-green-600 text-white"

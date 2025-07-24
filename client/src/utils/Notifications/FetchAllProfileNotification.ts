@@ -11,17 +11,12 @@ export const FetchAllProfileNotification = async ({userUid,profileId}:{userUid:s
     const NotificationsRef = collection(db, `users/${userUid}/profile/${profileId}/notifications`);
     const NotificationSnap = await getDocs(NotificationsRef);
 
-    const notifications: NotificationsType[] = NotificationSnap.docs.map((doc) => {
+    const notifications: any[] = NotificationSnap.docs.map((doc) => {
         const data = doc.data();
 
         return {
-            id: data.id || doc.id, // fallback if `id` isn't in the document
-            type: data.type || "",
-            fromUserUid: data.fromUserUid || "",
-            fromProfileId: data.fromProfileId || "",
-            message: data.message || "",
-            isRead: data.isRead ?? false,
-            status: data.status || "pending",
+            id: doc.id,
+            ...data
         };
     });
     return notifications;

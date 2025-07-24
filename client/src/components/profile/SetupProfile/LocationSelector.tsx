@@ -1,19 +1,14 @@
 import { useCourt } from "@/context/courtContext";
-import { courtType } from "@/utils/TYPE";
+import { courtType, LocationStorageType } from "@/utils/TYPE";
 import { Search } from "lucide-react";
 import { useState } from "react";
-
-type SelectedLocation = {
-  name: string;
-  courtId: string;
-};
 
 export default function LocationSelector({
   selected,
   onChange,
 }: {
-  selected: SelectedLocation[];                     // List of selected locations as objects
-  onChange: (val: SelectedLocation[]) => void;      // Same format in handler
+  selected: LocationStorageType[];                     // List of selected locations as objects
+  onChange: (val: LocationStorageType[]) => void;      // Same format in handler
 }) {
   const { courts } = useCourt();
 

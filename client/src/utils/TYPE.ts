@@ -19,11 +19,7 @@ export type PlayerProfile = {
     completed: boolean;
 };
 
-export type NotificationsType =
-    | MatchPreposalNotificationType
-    | BaseNotification
-
-type BaseNotification = {
+export type NotificationsType = {
     id: string,
     type: string,
     fromUserUid: string;
@@ -33,11 +29,13 @@ type BaseNotification = {
     status: string,
 }
 
- export type MatchPreposalNotificationType = BaseNotification & {
+export type MatchPreposalType = {
+    id:string | undefined;
     type: "match proposal";
-    matchId:string;
+    matchId: string;
+    status: string;
+    isRead: boolean;
 }
-
 export type AvailabilityType = {
     id: string;
     date: Date | Timestamp;

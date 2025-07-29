@@ -12,9 +12,10 @@ import LocationSelector from "./LocationSelector";
 import { v4 as uuidv4 } from "uuid";
 import { PlayerProfile } from "@/utils/TYPE";
 import toast from "react-hot-toast";
-import { X } from "lucide-react";
+import { X, UserPlus, Pencil } from "lucide-react";
 import { uploadImage } from "@/utils/Image/uploadImage";
 import { debounce } from "@/utils/debounce";
+import { motion } from "framer-motion";
 
 type ProfileProps = {
   profile?: PlayerProfile;
@@ -75,7 +76,7 @@ export default function ProfileSetupForm({
 
       toast.success("Profile added successfully!");
       onSuccess(profileId);
-      router.push('/')
+      router.push('/');
     } catch (error) {
       console.error("Error while creating profile:", error);
       toast.error("Something went wrong while saving.");
@@ -83,11 +84,13 @@ export default function ProfileSetupForm({
       setIsLoading(false);
     }
   };
+
   const debounceHandleSubmit = useCallback(
-      debounce(()=>{
-        handleSubmit()
-      },1000)
-  ,[])
+    debounce(() => {
+      handleSubmit();
+    }, 1000),
+    [profileData]
+  );
 
   const handleUpdate = async () => {
     const uid = auth.currentUser?.uid;
@@ -123,64 +126,113 @@ export default function ProfileSetupForm({
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-6 py-10 bg-slate-200 dark:bg-gray-900">
-      <div className="w-full max-w-3xl relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-10 space-y-8">
-        {/* Close Button */}
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-gray-600 hover:text-red-600 text-xl font-bold"
-          disabled={isLoading}
-        >
-          <X className="w-5 h-5 hover:text-red-500" />
-        </button>
+    <motion.div
+      initial={{ opacity: 0, y: 40, scale: 0.97 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.6, type: "spring" }}
+      className="w-full max-w-3xl relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 md:p-10 space-y-8"
+      aria-label={update ? "Edit Profile Form" : "Player Profile Form"}
+    >
+      {/* Close Button */}
+      <motion.button
+        whileHover={{ scale: 1.15, rotate: 90 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={onClose}
+        className="absolute top-4 right-4 text-gray-600 hover:text-red-600 text-xl font-bold transition"
+        disabled={isLoading}
+        aria-label="Close profile setup"
+      >
+        <X className="w-5 h-5" />
+      </motion.button>
 
-        <h2 className="text-3xl font-extrabold text-center text-green-700 dark:text-green-400 uppercase tracking-wide">
-          {update ? "Edit Profile" : "Player Profile"}
-        </h2>
+      <motion.h2
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2, duration: 0.5, type: "spring" }}
+        className="text-2xl md:text-3xl font-extrabold text-center text-green-700 dark:text-green-400 uppercase tracking-wide flex items-center justify-center gap-2"
+      >
+        {update ? (
+          <>
+            <Pencil className="w-6 h-6 text-green-500" />
+            Edit Profile
+          </>
+        ) : (
+          <>
+            <UserPlus className="w-6 h-6 text-green-500" />
+            Player Profile
+          </>
+        )}
+      </motion.h2>
 
-        <ProfileImageUploader
-          value={profileData.image}
-          onChange={(img) => updateField("image", img)}
+      <ProfileImageUploader
+        value={profileData.image}
+        onChange={(img) => updateField("image", img)}
+      />
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3, duration: 0.5, type: "spring" }}
+        className="space-y-6"
+      >
+        <NameField
+          value={profileData.name}
+          onChange={(val) => updateField("name", val)}
         />
+        <GenderDropdown
+          value={profileData.gender}
+          onChange={(val) => updateField("gender", val)}
+        />
+        <AgeCategoryDropdown
+          value={profileData.age}
+          onChange={(val) => updateField("age", val)}
+        />
+        <SkillLevelDropdown
+          value={profileData.skill}
+          onChange={(val) => updateField("skill", val)}
+        />
+        <PreferencesSelector
+          selected={profileData.preferences}
+          onChange={(val) => updateField("preferences", val)}
+        />
+        <LocationSelector
+          selected={profileData.locations}
+          onChange={(val) => updateField("locations", val)}
+        />
+      </motion.div>
 
-        <div className="space-y-6">
-          <NameField
-            value={profileData.name}
-            onChange={(val) => updateField("name", val)}
-          />
-          <GenderDropdown
-            value={profileData.gender}
-            onChange={(val) => updateField("gender", val)}
-          />
-          <AgeCategoryDropdown
-            value={profileData.age}
-            onChange={(val) => updateField("age", val)}
-          />
-          <SkillLevelDropdown
-            value={profileData.skill}
-            onChange={(val) => updateField("skill", val)}
-          />
-          <PreferencesSelector
-            selected={profileData.preferences}
-            onChange={(val) => updateField("preferences", val)}
-          />
-          <LocationSelector
-            selected={profileData.locations}
-            onChange={(val) => updateField("locations", val)}
-          />
-        </div>
-
-        <button
-          onClick={update ? handleUpdate : debounceHandleSubmit}
-          disabled={isLoading}
-          className={`w-full py-3 text-white text-lg font-semibold rounded-xl transition duration-200 focus:outline-none focus:ring-4 ${isLoading
+      <motion.button
+        whileHover={{ scale: 1.04 }}
+        whileTap={{ scale: 0.97 }}
+        onClick={update ? handleUpdate : debounceHandleSubmit}
+        disabled={isLoading}
+        className={`w-full py-3 text-white text-lg font-semibold rounded-xl transition duration-200 focus:outline-none focus:ring-4 ${
+          isLoading
             ? "bg-green-400 cursor-not-allowed"
             : "bg-green-700 hover:bg-green-800 focus:ring-green-300 dark:focus:ring-green-500"
-            }`}
-        >
-          {isLoading ? "Saving..." : update ? "Update" : "Save"}
-        </button>
-      </div>
-    </div>
+        } flex items-center justify-center gap-2`}
+        aria-label={update ? "Update Profile" : "Save Profile"}
+      >
+        {isLoading ? (
+          <>
+            <svg className="animate-spin h-5 w-5 text-white mr-2" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+            </svg>
+            Saving...
+          </>
+        ) : update ? (
+          <>
+            <Pencil className="w-5 h-5" />
+            Update
+          </>
+        ) : (
+          <>
+            <UserPlus className="w-5 h-5" />
+            Save
+          </>
+        )}
+      </motion.button>
+    </motion.div>
   );
 }

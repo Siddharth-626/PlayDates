@@ -13,6 +13,7 @@ import { useAuth } from "@/context/authContext";
 import { useProfile } from "@/context/profileContext";
 import { debounce } from "@/utils/debounce";
 import toast from "react-hot-toast";
+import { Loading } from "@/components/ui/Loading";
 
 export const DisplayCourts = () => {
     const { courts } = useCourt();
@@ -23,7 +24,7 @@ export const DisplayCourts = () => {
     const [ProfilePreferedLocations, setProfilePreferedLocations] = useState<string[]>([]);
 
     if (!courts) {
-        return <p className="text-center text-gray-500 mt-10">Loading courts...</p>;
+        return <Loading />;
     }
 
     const filteredCourts = courts.filter((court) =>
@@ -58,7 +59,9 @@ export const DisplayCourts = () => {
         setProfilePreferedLocations(initialLocations);
     }
 }, [selectedProfile]);
-
+    if(!filteredCourts || filteredCourts.length === 0) {
+        return <Loading />;
+    }
     return (
         <div className="p-4 max-w-6xl mx-auto">
             <div className="relative mb-6">

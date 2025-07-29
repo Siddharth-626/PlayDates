@@ -12,6 +12,7 @@ import toast from "react-hot-toast";
 import { AvailabilityType, courtType, LocationStorageType } from "@/utils/TYPE";
 import LocationSelector from "@/components/profile/SetupProfile/LocationSelector";
 import PreferencesSelector from "@/components/profile/SetupProfile/PreferencesSelector";
+import { Calendar, Clock, Timer, MapPin, List } from "lucide-react";
 
 export const Availability = () => {
     const [loading, setloading] = useState(false);
@@ -36,7 +37,7 @@ export const Availability = () => {
     }
     const handleSubmit = async () => {
         setloading(true)
-        if (!date || !time || !duration || !locations) { toast.error("please enter all the fields"); setloading(false); return };
+        if (!date || !time || !duration || !locations || !preference) { toast.error("please enter all the fields"); setloading(false); return };
 
         const AvailibilityId = uuidv4()
         const data = {
@@ -58,31 +59,82 @@ export const Availability = () => {
     }
 
     return (
-        <>
-            <motion.div
-                initial={{ opacity: 0, y: 50 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ type: "spring", duration: 0.6 }}
-                className="max-w-xl mx-auto mt-8 bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 space-y-4"
+        <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ type: "spring", duration: 0.5 }}
+            className="max-w-lg mx-auto mt-10 bg-white/90 dark:bg-gray-900/90 rounded-2xl shadow-xl p-6 space-y-2 border border-green-100 dark:border-green-800 hover:shadow-2xl transition-all duration-300"
+        >
+            <h2 className="text-2xl font-bold text-center text-green-700 dark:text-green-300 flex items-center justify-center gap-2 mb-4">
+                <span>Set Your Availability</span> <span className="text-xl">🎾</span>
+            </h2>
+
+            <div className="space-y-1 divide-y divide-green-100 dark:divide-green-900">
+                <div className="flex items-center gap-3 py-2">
+                    <span className="bg-green-50 dark:bg-green-950 p-1.5 rounded-lg flex items-center justify-center">
+                        <Calendar className="text-green-500" size={18} />
+                    </span>
+                    <div className="flex flex-col flex-1">
+                        <label className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Date</label>
+                        <CustomDatePicker selectedDate={date} onChange={setDate} />
+                    </div>
+                </div>
+                <div className="flex items-center gap-3 py-2">
+                    <span className="bg-green-50 dark:bg-green-950 p-1.5 rounded-lg flex items-center justify-center">
+                        <Clock className="text-green-500" size={18} />
+                    </span>
+                    <div className="flex flex-col flex-1">
+                        <label className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Time</label>
+                        <TimePicker time={time} onChange={setTime} />
+                    </div>
+                </div>
+                <div className="flex items-center gap-3 py-2">
+                    <span className="bg-blue-50 dark:bg-blue-950 p-1.5 rounded-lg flex items-center justify-center">
+                        <Timer className="text-blue-500" size={18} />
+                    </span>
+                    <div className="flex flex-col flex-1">
+                        <label className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Duration</label>
+                        <DurationSelector duration={duration} onChange={setDuration} />
+                    </div>
+                </div>
+                <div className="flex items-center gap-3 py-2">
+                    <span className="bg-yellow-50 dark:bg-yellow-950 p-1.5 rounded-lg flex items-center justify-center">
+                        <List className="text-yellow-500" size={18} />
+                    </span>
+                    <div className="flex flex-col flex-1">
+                        <label className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Preferences</label>
+                        <PreferencesSelector selected={preference} onChange={SelectPreference} />
+                    </div>
+                </div>
+                <div className="flex items-center gap-3 py-2">
+                    <span className="bg-pink-50 dark:bg-pink-950 p-1.5 rounded-lg flex items-center justify-center">
+                        <MapPin className="text-pink-500" size={18} />
+                    </span>
+                    <div className="flex flex-col flex-1">
+                        <label className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Location</label>
+                        <LocationSelector selected={locations} onChange={SelectLocation} />
+                    </div>
+                </div>
+            </div>
+
+            <motion.button
+                style={{ zIndex: 50 }}
+                whileHover={{ scale: 1.03, boxShadow: "0 2px 12px #22c55e33" }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleSubmit}
+                className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-2.5 px-4 rounded-full font-semibold text-base shadow-md transition-all duration-200 flex items-center justify-center gap-2 mt-4"
+                disabled={loading}
             >
-                <h2 className="text-2xl font-bold text-center text-green-600">
-                    Set Your Availability 🎾
-                </h2>
-
-                <CustomDatePicker selectedDate={date} onChange={setDate} />
-                <TimePicker time={time} onChange={setTime} />
-                <DurationSelector duration={duration} onChange={setDuration} />
-                <PreferencesSelector selected={preference} onChange={SelectPreference} />
-                <LocationSelector selected={locations} onChange={SelectLocation} />
-                <button
-                    style={{ zIndex: 50 }}
-                    onClick={handleSubmit}
-                    className="relative w-full bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-md transition duration-200"
-                >
-                    {loading ? "Saving....." : "Save Availability"}
-                </button>
-
-            </motion.div>
-        </>
+                {loading ? (
+                    <>
+                        <Clock className="animate-spin" size={18} /> Saving...
+                    </>
+                ) : (
+                    <>
+                        <Calendar size={18} /> Save Availability
+                    </>
+                )}
+            </motion.button>
+        </motion.div>
     );
 }

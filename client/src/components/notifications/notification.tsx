@@ -1,93 +1,85 @@
-
 import { respontToPlaymatesRequest } from "@/utils/Playmates/respondToPlaymatesRequest";
 import PlaymateRequestNotification from "./NewPLaymateNotification";
 import { useAuth } from "@/context/authContext";
 import { useProfile } from "@/context/profileContext";
-import { MatchPreposalNotificationType, NotificationsType } from "@/utils/TYPE";
 import { useState } from "react";
-import toast from "react-hot-toast";
-import { MatchPreposalNotification } from "./MatchPreposalNoptification";
-import { respondToMatchPreposal } from "@/utils/MatchPreposal/respondToMAtchPreposal";
+import { MatchResultNotification } from "./matchNotifications/matchResultNotification";
 
 type NotificationTabProps = {
-    notifications: NotificationsType[] | MatchPreposalNotificationType[];
-    setNotifications: (updated: NotificationsType[]) => void;
+    notifications: any[] | undefined;
+    setNotifications: (updated: any[]) => void;
 };
+
 export const NotificationTab = ({ notifications, setNotifications }: NotificationTabProps) => {
     const { user } = useAuth();
     const { selectedProfile } = useProfile();
     const [NotificationRefresh, setNotificationRefersh] = useState(true);
 
     const handleMarkAllRead = () => {
-        const updated = notifications.map((n) => ({ ...n, isRead: true }));
+        const updated = notifications?.map((n) => ({ ...n, isRead: true }));
+        if (!updated) return;
         setNotifications(updated);
     };
 
-    const handlePlaymateResponse = (accepted: boolean, note: NotificationsType) => {
+    const handlePlaymateResponse = (accepted: boolean, note: any) => {
         try {
             if (!user?.uid || !selectedProfile?.id) return;
-            if (accepted) {
-                respontToPlaymatesRequest({
-                    currentUserUid: user?.uid,
-                    currentUserProfileId: selectedProfile?.id,
-                    fromUserUid: note.fromUserUid,
-                    fromUserProfileId: note.fromProfileId,
-                    notifiId: note.id,
-                    accepted: true
-                })
-            }
-            if (!accepted) {
-                respontToPlaymatesRequest({
-                    currentUserUid: user?.uid,
-                    currentUserProfileId: selectedProfile?.id,
-                    fromUserUid: note.fromUserUid,
-                    fromUserProfileId: note.fromProfileId,
-                    notifiId: note.id,
-                    accepted: false
-                })
-            }
+            respontToPlaymatesRequest({
+                currentUserUid: user?.uid,
+                currentUserProfileId: selectedProfile?.id,
+                fromUserUid: note.fromUserUid,
+                fromUserProfileId: note.fromProfileId,
+                notifiId: note.id,
+                accepted
+            });
             setNotificationRefersh(!NotificationRefresh);
         } catch (error) {
-            console.log("err while mannaging the playmates request");
+            console.log("err while managing the playmates request");
         }
-    }
-
-    const handleMatchPreposalResponse = async (status: string, matchId: string) => {
-        if (!user?.uid || !selectedProfile?.id || !matchId) return;
-
-        await respondToMatchPreposal({
-            matchId,
-            userUid: user.uid,
-            profileId: selectedProfile.id,
-            status,
-        });
-
-        toast.success("You accepted the Match Proposal");
     };
+
     return (
-        <div className="space-y-4 animate-fade-in">
-            <div className="flex justify-between items-center">
-                <h2 className="text-xl font-semibold">Notifications</h2>
+        <div className="space-y-6 animate-fade-in max-w-2xl mx-auto">
+            <div className="flex justify-between items-center pb-2 border-b border-gray-200 dark:border-gray-700">
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-white tracking-tight flex items-center gap-2">
+                    <span role="img" aria-label="bell">🔔</span> Notifications
+                </h2>
                 <button
-                    className="text-green-600 hover:underline text-sm"
+                    className="text-green-700 dark:text-green-400 hover:underline text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-green-400 rounded px-2 py-1 transition"
                     onClick={handleMarkAllRead}
                 >
                     Mark all as read
                 </button>
             </div>
-            <div className="space-y-2">
-                {notifications.length === 0 ? (
-                    <p className="text-gray-500">No notifications.</p>
+            <div className="space-y-4">
+                {(!notifications || notifications.length === 0) ? (
+                    <div className="flex flex-col items-center py-12 opacity-70">
+                        <span className="text-5xl mb-2">🎉</span>
+                        <p className="text-gray-500 dark:text-gray-400 text-lg">No notifications.</p>
+                    </div>
                 ) : (
-                    notifications.map((note: any) => (
-                        <div
-                            key={note.id}
-                            className={`p-4 rounded-lg transition-all duration-300`}
-                        >
-                            {note.type == "playmates request" ? <PlaymateRequestNotification note={note} onRespond={handlePlaymateResponse} /> : <></>}
-                            <MatchPreposalNotification note={note} onRespond={handleMatchPreposalResponse} />
-                        </div>
-                    ))
+                    notifications.map((note: any) => {
+                        let content = null;
+                        if (note.type === "playmates request") {
+                            content = (
+                                <PlaymateRequestNotification
+                                    note={note}
+                                    onRespond={handlePlaymateResponse}
+                                />
+                            );
+                        } else if (note.type === "match preposal result") {
+                            content = <MatchResultNotification note={note} />;
+                        }
+                        if (!content) return null;
+                        return (
+                            <div
+                                key={note.id}
+                                className={`transition-all duration-300 hover:shadow-2xl hover:-translate-y-1`}
+                            >
+                                <div className="animate-fade-in-down">{content}</div>
+                            </div>
+                        );
+                    })
                 )}
             </div>
         </div>

@@ -15,7 +15,6 @@ export const respondToMatchPreposal = async({
     status
 }: respondToMatchPreposalType) => {
 
-
     const MatchRef = doc(db, "matches", matchId);
     const matchSnap = await getDoc(MatchRef);
 

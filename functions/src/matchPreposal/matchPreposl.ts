@@ -2,7 +2,7 @@ import { onDocumentCreated } from "firebase-functions/v2/firestore";
 import { admin } from "../utils/admin";
 import { LocationStorageType, PlayersType } from "../utils/Type";
 import { PlayersBasedOnPrefernce } from "../utils/PlayersBasedOnPrefernce";
-import { isTimeOverlap } from "../utils/ChekIfTimeOverlap";
+import { getCommonTime, isTimeOverlap } from "../utils/ChekIfTimeOverlap";
 
 const db = admin.firestore();
 
@@ -13,6 +13,7 @@ export const preposeMatch = onDocumentCreated(
     },
     async (event) => {
         try {
+
             const { userUid, profileId } = event.params;
 
             const currentUserAvailability = event.data?.data();
@@ -27,7 +28,7 @@ export const preposeMatch = onDocumentCreated(
             const profileData = profileSnap.data();
             if (!profileData?.playmates?.length) return;
 
-            const players: PlayersType[] = [{ userUid, profileId,status:"pending" }];
+            const players: PlayersType[] = [{ userUid, profileId, status: "pending" }];
 
             for (const playmate of profileData.playmates) {
                 const { userUid: playmateUid, profileId: playmateProfileId } = playmate;
@@ -35,7 +36,7 @@ export const preposeMatch = onDocumentCreated(
                 const playmateAvailabilitySnap = await db
                     .collection(`users/${playmateUid}/profile/${playmateProfileId}/availability`)
                     .get();
-                if(!playmateAvailabilitySnap) return;
+                if (!playmateAvailabilitySnap) return;
 
                 for (const doc of playmateAvailabilitySnap.docs) {
                     const playmateAvailability = doc.data();
@@ -67,25 +68,34 @@ export const preposeMatch = onDocumentCreated(
                         playmatePreferences.includes(pref)
                     );
                     console.log("locationMatch", locationMatch, "dateMatch", dateMatch, "prefence", preference);
-                    if (locationMatch && dateMatch) {
+                    if (locationMatch && dateMatch && preference) {
 
                         if (isTimeOverlap(currentUserAvailability, playmateAvailability)) {
-                            players.push({ userUid: playmateUid, profileId: playmateProfileId,status:"pending" });
-                        }
+                            if (players.length < 4) {
+                                players.push({ userUid: playmateUid, profileId: playmateProfileId, status: "pending" });
+                            }
 
-                        if (players.length >= 2) {
+                        }
+                        let condition = false;
+                        if (preference.toLocaleLowerCase().includes("doubles")) {
+                            condition = players.length == 4;
+                        }
+                        else {
+                            condition = players.length >= 2;
+                        }
+                        if (condition) {
                             const selectedPlayers = PlayersBasedOnPrefernce(preference, players);
                             if (!selectedPlayers) return;
 
-
+                            const commonTime = getCommonTime(currentUserAvailability, playmateAvailability);
                             const matchProposal = {
                                 players: selectedPlayers,
                                 courtId: currentUserProfileLocations.find((courtId) =>
                                     playmateLocations.includes(courtId)
                                 ),
                                 date: currentUserAvailability.date,
-                                startTime:currentUserAvailability.time,
-                                duration: currentUserAvailability.duration,
+                                startTime: commonTime?.startTime,
+                                endTime: commonTime?.endTime,
                                 createdAt: admin.firestore.FieldValue.serverTimestamp(),
                                 status: "proposed",
                                 MatchType: preference,

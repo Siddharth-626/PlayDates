@@ -59,6 +59,9 @@ service cloud.firestore {
     match /users/{userId}/profiles/{profileId} {
       allow read: if request.auth != null || isAdmin();
     }
+     match /users/{userUid}/profile/{profileId}/matches/{matchId} {
+      allow read: if request.auth != null && request.auth.uid == userUid;
+    }
 
     match /users/{toUserUid}/profile/{toProfileId}/notifications/{notificationId} {
       allow create: if (request.auth != null &&

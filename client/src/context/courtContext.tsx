@@ -1,5 +1,4 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { addSelectedCourtToDb } from "@/utils/courts/AddSelectedCourtToDb";
 import { fetchAllCourts } from "@/utils/courts/fetchAllCourts";
 import { fetchSelectedCourt } from "@/utils/courts/fetchSelectedCourt";
 import { courtType } from "@/utils/TYPE";

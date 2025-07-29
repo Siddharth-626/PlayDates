@@ -1,7 +1,8 @@
 import { useCallback, useState } from "react";
 import Link from "next/link";
-import { FiMail, FiLock } from "react-icons/fi";
+import { FiMail } from "react-icons/fi";
 import { AiOutlineEyeInvisible, AiOutlineEye } from "react-icons/ai";
+import { LogInIcon, UserPlus, ShieldCheck, Mail, Lock, } from "lucide-react";
 import Navbar from "../components/Navbar";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../services/config";
@@ -11,7 +12,7 @@ import { GoogleLogin } from "@/components/auth/GoogleLogin";
 import toast from "react-hot-toast";
 import { FirebaseError } from "firebase/app";
 import { debounce } from "@/utils/debounce";
-
+import { motion } from "framer-motion";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -20,41 +21,27 @@ export default function Login() {
   const [error, setError] = useState("");
   const router = useRouter();
 
-  const validateEmail = (email: string) => {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  };
+  const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   const handleLogin = async () => {
     setError("");
-
     if (!email || !password) {
       setError("Please enter both email and password.");
       toast.error("Please enter both email and password.");
       return;
     }
-
     if (!validateEmail(email)) {
       setError("Please enter a valid email address.");
       toast.error("Please enter a valid email address.");
       return;
     }
-
     try {
-      const userCredentials = await signInWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
+      const userCredentials = await signInWithEmailAndPassword(auth, email, password);
       const uid = userCredentials.user.uid;
-
       const profileExist = await checkIfProfileExist(uid);
       router.push(profileExist ? "/" : "/setup");
     } catch (err: any) {
-      console.error("Login error:", err);
-
       let message = "Login failed. Please try again.";
-
-      // Optional: Add Firebase-specific error handling
       if (err instanceof FirebaseError) {
         switch (err.code) {
           case "auth/invalid-credential":
@@ -73,110 +60,157 @@ export default function Login() {
             message = err.message;
         }
       }
-
       setError(message);
       toast.error(message);
     }
   };
-  const debounceHandleLogin =useCallback(
-      debounce(()=>{
-        handleLogin()
-      },1000)
-  ,[])
+
+  const debounceHandleLogin = useCallback(
+    debounce(() => {
+      handleLogin();
+    }, 1000),
+    [email, password]
+  );
+
   return (
-    <div className="min-h-screen bg-green-50 dark:bg-gray-900 transition-colors duration-300">
+    <div className="min-h-screen bg-gradient-to-br from-green-100 via-green-50 to-green-200 dark:from-gray-900 dark:via-green-900 dark:to-gray-800 transition-colors duration-300">
       <Navbar />
+      <div className="flex items-center justify-center px-4 py-12 min-h-[80vh]">
+        <motion.div
+          initial={{ opacity: 0, y: 40, scale: 0.97 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.6, type: "spring" }}
+          className="w-full max-w-md p-8 bg-white/80 dark:bg-gray-900/80 shadow-2xl rounded-3xl backdrop-blur-lg border border-green-200 dark:border-green-700 relative overflow-hidden"
+        >
+          {/* Decorative Tennis Ball */}
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 1, type: "spring" }}
+            className="absolute -top-8 -left-8 w-20 h-20 flex items-center justify-center bg-green-300/40 dark:bg-green-700/40 rounded-full blur-xl z-0"
+          >
+            <ShieldCheck className="w-8 h-8 text-green-700 opacity-70" />
+          </motion.div>
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 1.2, type: "spring" }}
+            className="absolute -bottom-8 -right-8 w-20 h-20 flex items-center justify-center bg-green-400/30 dark:bg-green-800/30 rounded-full blur-xl z-0"
+          >
+            <ShieldCheck className="w-8 h-8 text-green-700 opacity-70" />
+          </motion.div>
 
-      <div className="flex items-center justify-center px-4 py-16">
-        <div className="w-full max-w-md p-8 bg-white dark:bg-gray-800 shadow-md rounded-lg">
-          <h2 className="text-3xl font-bold text-green-800 dark:text-green-200 mb-1">
-            HELLO!
-          </h2>
-
-          <h3 className="text-2xl font-semibold text-green-800 dark:text-green-100 mb-2">
-            Welcome to <span className="italic font-bold">PLAY DATES</span>
-          </h3>
-
-          <p className="text-gray-700 dark:text-gray-300 mb-6">
-            Please login with your account
-          </p>
-
-          {error && (
-            <p className="text-red-600 bg-red-100 dark:bg-red-800 dark:text-red-300 px-4 py-2 mb-4 rounded-md text-sm font-medium">
-              {error}
+          <div className="relative z-10">
+            <h2 className="text-3xl font-extrabold text-green-800 dark:text-green-200 mb-2 flex items-center gap-2">
+              <LogInIcon className="w-7 h-7 text-green-600 dark:text-green-300" />
+              Welcome Back
+            </h2>
+            <h3 className="text-xl font-semibold text-green-700 dark:text-green-100 mb-2 flex items-center gap-2">
+              <span className="italic font-bold">PLAY DATES</span>
+              <span className="text-green-500 animate-bounce">🎾</span>
+            </h3>
+            <p className="text-gray-700 dark:text-gray-300 mb-6 text-base">
+              Sign in to join the fun and track your matches!
             </p>
-          )}
 
-          {/* Email Input */}
-          <label className="text-green-900 dark:text-green-200 text-sm font-semibold mb-1 block">
-            Email
-          </label>
-          <div className="flex items-center border border-green-200 dark:border-green-600 rounded-lg px-3 py-2 mb-4 bg-green-50 dark:bg-gray-700">
-            <FiMail className="text-green-500 mr-2" />
-            <input
-              type="email"
-              placeholder="Enter your email"
-              className="flex-grow bg-transparent outline-none text-green-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
-
-          {/* Password Input */}
-          <label className="text-green-900 dark:text-green-200 text-sm font-semibold mb-1 block">
-            Password
-          </label>
-          <div className="flex items-center border border-green-200 dark:border-green-600 rounded-lg px-3 py-2 mb-2 bg-green-50 dark:bg-gray-700">
-            <FiLock className="text-green-500 mr-2" />
-            <input
-              type={showPassword ? "text" : "password"}
-              placeholder="Enter your password"
-              className="flex-grow bg-transparent outline-none text-green-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            {showPassword ? (
-              <AiOutlineEyeInvisible
-                className="text-gray-500 cursor-pointer ml-2 dark:text-gray-300"
-                onClick={() => setShowPassword(false)}
-              />
-            ) : (
-              <AiOutlineEye
-                className="text-gray-500 cursor-pointer ml-2 dark:text-gray-300"
-                onClick={() => setShowPassword(true)}
-              />
+            {error && (
+              <motion.p
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-red-600 bg-red-100 dark:bg-red-800 dark:text-red-300 px-4 py-2 mb-4 rounded-md text-sm font-medium"
+              >
+                {error}
+              </motion.p>
             )}
-          </div>
 
-          {/* Links */}
-          <Link
-            href="#"
-            className="text-sm text-green-700 dark:text-green-300 font-semibold hover:underline block mb-4 text-right"
-          >
-            Forgot Password?
-          </Link>
-
-          <Link href="/signup">
-            <div className="text-sm text-green-700 dark:text-green-300 font-semibold hover:underline block mb-4 text-left">
-              Create Account
+            {/* Email Input */}
+            <label className="text-green-900 dark:text-green-200 text-sm font-semibold mb-1 block" htmlFor="email">
+              Email
+            </label>
+            <div className="flex items-center border border-green-200 dark:border-green-600 rounded-lg px-3 py-2 mb-4 bg-green-50 dark:bg-gray-700 focus-within:ring-2 focus-within:ring-green-400 transition">
+              <Mail className="text-green-500 mr-2 w-5 h-5" />
+              <input
+                id="email"
+                type="email"
+                placeholder="Enter your email"
+                className="flex-grow bg-transparent outline-none text-green-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                autoComplete="email"
+                aria-label="Email"
+              />
             </div>
-          </Link>
 
-          {/* Login Button */}
-          <button
-            className="w-full bg-green-700 dark:bg-green-600 text-white py-2 rounded-lg hover:bg-green-800 dark:hover:bg-green-700 transition font-semibold cursor-pointer"
-            onClick={debounceHandleLogin}
-          >
-            Login
-          </button>
+            {/* Password Input */}
+            <label className="text-green-900 dark:text-green-200 text-sm font-semibold mb-1 block" htmlFor="password">
+              Password
+            </label>
+            <div className="flex items-center border border-green-200 dark:border-green-600 rounded-lg px-3 py-2 mb-2 bg-green-50 dark:bg-gray-700 focus-within:ring-2 focus-within:ring-green-400 transition">
+              <Lock className="text-green-500 mr-2 w-5 h-5" />
+              <input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="Enter your password"
+                className="flex-grow bg-transparent outline-none text-green-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="current-password"
+                aria-label="Password"
+              />
+              <button
+                type="button"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                className="ml-2 focus:outline-none"
+                onClick={() => setShowPassword((v) => !v)}
+              >
+                {showPassword ? (
+                  <AiOutlineEyeInvisible className="text-gray-500 dark:text-gray-300 w-5 h-5" />
+                ) : (
+                  <AiOutlineEye className="text-gray-500 dark:text-gray-300 w-5 h-5" />
+                )}
+              </button>
+            </div>
 
-          <p className="text-center mt-4 text-gray-600 dark:text-gray-400 font-medium">
-            OR CONTINUE WITH
-          </p>
-          <div className="mt-4 w-full">
-            <GoogleLogin />
+            {/* Links */}
+            <div className="flex justify-between mb-4">
+              <Link
+                href="#"
+                className="text-sm text-green-700 dark:text-green-300 font-semibold hover:underline transition"
+              >
+                Forgot Password?
+              </Link>
+              <Link href="/signup" className="flex items-center gap-1 text-sm text-green-700 dark:text-green-300 font-semibold hover:underline transition">
+                <UserPlus className="w-4 h-4" />
+                Create Account
+              </Link>
+            </div>
+
+            {/* Login Button */}
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full bg-gradient-to-r from-green-600 via-green-700 to-green-800 dark:from-green-700 dark:via-green-800 dark:to-green-900 text-white py-2 rounded-lg hover:bg-green-800 dark:hover:bg-green-700 transition font-semibold cursor-pointer shadow-lg flex items-center justify-center gap-2 text-lg"
+              onClick={debounceHandleLogin}
+              type="button"
+            >
+              <LogInIcon className="w-5 h-5" />
+              Login
+            </motion.button>
+
+            <div className="flex items-center my-6">
+              <div className="flex-grow h-px bg-green-200 dark:bg-green-700" />
+              <span className="mx-3 text-gray-500 dark:text-gray-400 text-sm font-medium">OR</span>
+              <div className="flex-grow h-px bg-green-200 dark:bg-green-700" />
+            </div>
+
+            <motion.div
+              whileHover={{ scale: 1.03 }}
+              className="mt-2 w-full"
+            >
+              <GoogleLogin />
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

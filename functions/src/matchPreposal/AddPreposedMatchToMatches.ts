@@ -3,7 +3,7 @@ import { admin } from "../utils/admin";
 
 const db = admin.firestore();
 
-export const AddProposedMatchToNotification = onDocumentCreated(
+export const AddProposedMatchToProfile = onDocumentCreated(
     {
         document: "matches/{matchId}",
         region: "asia-south1"
@@ -22,16 +22,18 @@ export const AddProposedMatchToNotification = onDocumentCreated(
                 const matchProposal = {
                     type: "match proposal",
                     matchId:matchId,
+                    isRead:false,
+                    status:"pending"
                 };
 
                 await db
-                    .collection(`users/${userUid}/profile/${profileId}/notifications`)
+                    .collection(`users/${userUid}/profile/${profileId}/matches`)
                     .add(matchProposal);
 
-                console.log(`Added proposed match notification for Profile: ${profileId}`);
+                console.log(`Added proposed match for Profile: ${profileId}`);
             }
         } catch (error) {
-            console.error("Error while adding proposed match to notification:", error);
+            console.error("Error while adding proposed match:", error);
         }
     }
 );

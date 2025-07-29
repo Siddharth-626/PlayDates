@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import Navbar from '../components/Navbar';
-import { FiMail, FiLock, FiUser, FiPhone } from 'react-icons/fi';
+import { FiPhone } from 'react-icons/fi';
+import { Mail, Lock, User, ArrowRight } from 'lucide-react';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth, db } from '@/services/config';
 import { doc, setDoc } from 'firebase/firestore';
@@ -8,6 +9,7 @@ import { useRouter } from 'next/router';
 import { checkIfProfileExist } from '@/utils/checkUserProfile';
 import { debounce } from '@/utils/debounce';
 import toast from 'react-hot-toast';
+import { motion } from 'framer-motion';
 
 export default function Signup() {
   const [name, setName] = useState('');
@@ -25,23 +27,20 @@ export default function Signup() {
         setError('Passwords do not match');
         return;
       }
-
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
         setError('Invalid email format');
         return;
       }
-
       const userCredentials = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredentials.user;
-
       await setDoc(doc(db, 'users', user.uid), {
         name,
         email,
         phoneNumber,
         createdAt: new Date().toISOString(),
       });
-      toast.success("user Registered sucessfully")
+      toast.success("User registered successfully");
       const uid = user.uid;
       const profileExist = await checkIfProfileExist(uid);
       router.push(profileExist ? '/' : '/setup');
@@ -56,100 +55,140 @@ export default function Signup() {
       console.error('Error while signing up:', err);
     }
   };
+
   const debounceHandleSubmit = useCallback(
-      debounce(()=>{
-        handleSignup()
-      },1000)
-  ,[])
+    debounce(() => {
+      handleSignup();
+    }, 1000),
+    [name, email, password, confirmPassword, phoneNumber]
+  );
 
   return (
     <>
       <Navbar />
-      <div className="min-h-screen flex items-center justify-center bg-green-50 dark:bg-gray-900 text-gray-900 dark:text-white px-4">
-        <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
-          <h2 className="text-3xl font-bold text-green-500 dark:text-green-400 mb-2 uppercase">Hello!</h2>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 via-white to-green-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 text-gray-900 dark:text-white px-4">
+        <motion.div
+          initial={{ opacity: 0, y: 40, scale: 0.97 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.6, type: "spring" }}
+          className="w-full max-w-md bg-white/90 dark:bg-gray-900/90 rounded-2xl shadow-2xl p-8 backdrop-blur-lg border border-green-200 dark:border-green-700"
+        >
+          <motion.h2
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.5, type: "spring" }}
+            className="text-3xl font-extrabold text-green-600 dark:text-green-300 mb-2 uppercase flex items-center gap-2"
+          >
+            <User className="w-7 h-7" />
+            Sign Up
+          </motion.h2>
           <h3 className="text-xl font-semibold mb-6">
-            Create your <em>PLAY DATES</em> account
+            Create your <span className="font-bold text-green-500 dark:text-green-400">PLAY DATES</span> account
           </h3>
 
           {/* Name */}
-          <label className="block mb-1 text-sm font-medium">Name</label>
-          <div className="flex items-center bg-green-50 dark:bg-gray-700 boder-green-50 rounded-lg px-3 py-2 mb-4">
-            <FiUser className="text-green-500 mr-2" />
+          <label className="block mb-1 text-sm font-medium text-green-900 dark:text-green-200" htmlFor="name">Name</label>
+          <div className="flex items-center border border-green-200 dark:border-green-600 rounded-lg px-3 py-2 mb-4 bg-green-50 dark:bg-gray-700 focus-within:ring-2 focus-within:ring-green-400 transition">
+            <User className="text-green-500 mr-2 w-5 h-5" />
             <input
+              id="name"
               type="text"
               placeholder="Enter your name"
               className="flex-grow bg-transparent outline-none text-green-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              autoComplete="name"
+              aria-label="Name"
             />
           </div>
 
           {/* Email */}
-          <label className="block mb-1 text-sm font-medium">Email</label>
-          <div className="flex items-center bg-green-50 dark:bg-gray-700 boder-green-50 rounded-lg px-3 py-2 mb-4">
-            <FiMail className="text-green-500 mr-2" />
+          <label className="block mb-1 text-sm font-medium text-green-900 dark:text-green-200" htmlFor="email">Email</label>
+          <div className="flex items-center border border-green-200 dark:border-green-600 rounded-lg px-3 py-2 mb-4 bg-green-50 dark:bg-gray-700 focus-within:ring-2 focus-within:ring-green-400 transition">
+            <Mail className="text-green-500 mr-2 w-5 h-5" />
             <input
+              id="email"
               type="email"
               placeholder="Enter your email"
               className="flex-grow bg-transparent outline-none text-green-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
+              aria-label="Email"
             />
           </div>
 
           {/* Password */}
-          <label className="block mb-1 text-sm font-medium">Password</label>
-          <div className="flex items-center bg-green-50 dark:bg-gray-700 boder-green-50 rounded-lg px-3 py-2 mb-4">
-            <FiLock className="text-green-500 mr-2" />
+          <label className="block mb-1 text-sm font-medium text-green-900 dark:text-green-200" htmlFor="password">Password</label>
+          <div className="flex items-center border border-green-200 dark:border-green-600 rounded-lg px-3 py-2 mb-4 bg-green-50 dark:bg-gray-700 focus-within:ring-2 focus-within:ring-green-400 transition">
+            <Lock className="text-green-500 mr-2 w-5 h-5" />
             <input
+              id="password"
               type="password"
               placeholder="Enter your password"
               className="flex-grow bg-transparent outline-none text-green-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              autoComplete="new-password"
+              aria-label="Password"
             />
           </div>
 
           {/* Confirm Password */}
-          <label className="block mb-1 text-sm font-medium">Confirm Password</label>
-          <div className="flex items-center bg-green-50 dark:bg-gray-700 border-green-50 rounded-lg px-3 py-2 mb-4">
-            <FiLock className="text-green-500 mr-2" />
+          <label className="block mb-1 text-sm font-medium text-green-900 dark:text-green-200" htmlFor="confirmPassword">Confirm Password</label>
+          <div className="flex items-center border border-green-200 dark:border-green-600 rounded-lg px-3 py-2 mb-4 bg-green-50 dark:bg-gray-700 focus-within:ring-2 focus-within:ring-green-400 transition">
+            <Lock className="text-green-500 mr-2 w-5 h-5" />
             <input
+              id="confirmPassword"
               type="password"
               placeholder="Re-enter your password"
               className="flex-grow bg-transparent outline-none text-green-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
+              autoComplete="new-password"
+              aria-label="Confirm Password"
             />
           </div>
 
           {/* Phone Number */}
-          <label className="block mb-1 text-sm font-medium">Phone Number</label>
-          <div className="flex items-center bg-green-50 dark:bg-gray-700 border-green-50 rounded-lg px-3 py-2 mb-6">
-            <FiPhone className="text-green-500 mr-2" />
+          <label className="block mb-1 text-sm font-medium text-green-900 dark:text-green-200" htmlFor="phone">Phone Number</label>
+          <div className="flex items-center border border-green-200 dark:border-green-600 rounded-lg px-3 py-2 mb-6 bg-green-50 dark:bg-gray-700 focus-within:ring-2 focus-within:ring-green-400 transition">
+            <FiPhone className="text-green-500 mr-2 w-5 h-5" />
             <input
+              id="phone"
               type="tel"
               placeholder="Enter your phone number"
               className="flex-grow bg-transparent outline-none text-green-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400"
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value)}
+              autoComplete="tel"
+              aria-label="Phone Number"
             />
           </div>
 
           {/* Error Message */}
           {error && (
-            <p className="text-sm font-medium text-red-500 mb-4">{error}</p>
+            <motion.p
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-red-600 bg-red-100 dark:bg-red-800 dark:text-red-300 px-4 py-2 mb-4 rounded-md text-sm font-medium"
+            >
+              {error}
+            </motion.p>
           )}
 
           {/* Submit Button */}
-          <button
-            className="w-full bg-green-700 hover:bg-green-600 text-white font-semibold py-2 rounded-lg transition"
+          <motion.button
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.97 }}
+            className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white font-semibold py-2 rounded-lg shadow-lg hover:bg-green-800 dark:hover:bg-green-700 transition flex items-center justify-center gap-2 text-lg"
             onClick={debounceHandleSubmit}
+            type="button"
+            aria-label="Register"
           >
-            Register
-          </button>
-        </div>
+            Register <ArrowRight className="w-5 h-5" />
+          </motion.button>
+        </motion.div>
       </div>
     </>
   );

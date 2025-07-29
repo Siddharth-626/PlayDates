@@ -1,7 +1,24 @@
-import { onDocumentUpdated } from "firebase-functions/firestore";
+import { onDocumentUpdated } from "firebase-functions/v2/firestore";
 import { admin } from "../utils/admin";
 
 const db = admin.firestore();
+
+const SendStatus = async (status: string, matchId: string, players: any[]) => {
+
+    for (const player of players) {
+        const notification = {
+            type: "match preposal result",
+            message: `The Match is ${status} `,
+            idRead: false
+        }
+        await db.collection(`users/${player.userUid}/profile/${player.profileId}/notifications`).add(notification);
+    }
+    await db.doc(`matches/${matchId}`).update({
+        status: status
+    })
+    console.log(`chandged match status to ${status}`);
+}
+
 
 export const changeStatusOfMatch = onDocumentUpdated({
     document: "matches/{matchId}",
@@ -10,8 +27,7 @@ export const changeStatusOfMatch = onDocumentUpdated({
     try {
         const { matchId } = event.params;
 
-        const MatchSnap = await db.doc(`matches/${matchId}`).get();
-        const MatchData = MatchSnap?.data();
+        const MatchData = event.data?.after.data();
 
         if (!MatchData) return;
 
@@ -20,15 +36,17 @@ export const changeStatusOfMatch = onDocumentUpdated({
         const isValid = players.every((player: any) =>
             player.status === "accepted"
         )
+        const isRejection = players.some((player: any) =>
+            player.status == "rejected"
+        )
 
-        if (isValid) {
-            await db.doc(`matches/${matchId}`).update({
-                status: "accepted"
-            })
-            console.log("chandged match status to accepted");
+        if (isValid && MatchData.status != "accepted" ) {
+            await SendStatus("accepted", matchId, players);
         }
-
+        if (isRejection) {
+            await SendStatus("proposed", matchId, players);
+        }
     } catch (error) {
-        console.log("error while handleing match status change", error);
+        console.log("Error while handling match status change", error);
     }
 })

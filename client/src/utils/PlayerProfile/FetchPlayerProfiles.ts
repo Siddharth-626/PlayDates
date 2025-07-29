@@ -4,7 +4,9 @@ import { PlayerProfile } from "../TYPE";
 
 
 
-export const FetchPlayerProfiles = async (uid: string): Promise<PlayerProfile[]> => {
+export const FetchPlayerProfiles = async (uid: string | undefined): Promise<PlayerProfile[]> => {
+    if(!uid){return [];}
+
     const profileRef = collection(db, `users/${uid}/profile`);
     const snapshot = await getDocs(profileRef);
 

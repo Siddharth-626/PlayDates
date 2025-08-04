@@ -1,17 +1,17 @@
 import React, { useCallback, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
-import DurationSelector from "./DurationSelector";
+import DurationSelector from "../../commonComponents/Availability/DurationSelector";
 import { motion } from "framer-motion";
-import CustomDatePicker from "./DateSelector";
-import TimePicker from "./TimeSelector";
+import CustomDatePicker from "../../commonComponents/Availability/DateSelector";
+import TimePicker from "../../commonComponents/Availability/TimeSelector";
 import { useAuth } from "@/context/authContext";
 import { useProfile } from "@/context/profileContext";
 import { AddAvailability } from "@/utils/Availability/AddAvailability";
 import { Timestamp } from "firebase/firestore";
 import toast from "react-hot-toast";
 import { AvailabilityType, courtType, LocationStorageType } from "@/utils/TYPE";
-import LocationSelector from "@/components/profile/SetupProfile/LocationSelector";
-import PreferencesSelector from "@/components/profile/SetupProfile/PreferencesSelector";
+import LocationSelector from "@/components/commonComponents/Profile/LocationSelector";
+import PreferencesSelector from "@/components/commonComponents/Profile/PreferencesSelector";
 import { Calendar, Clock, Timer, MapPin, List } from "lucide-react";
 
 export const Availability = () => {
@@ -19,7 +19,6 @@ export const Availability = () => {
     const [date, setDate] = useState<Date | null>(new Date());
     const [time, setTime] = useState("");
     const [duration, setDuration] = useState("");
-    const [AvailabilityData, setAvalabilityData] = useState<AvailabilityType>();
     const [locations, setLocations] = useState<LocationStorageType[]>([]);
     const [preference, setPreference] = useState<string[]>([]);
 

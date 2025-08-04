@@ -9,27 +9,14 @@ import { FetchPlaymates } from "@/utils/Playmates/FetchPlaymates";
 import { useProfile } from "@/context/profileContext";
 import { Users, ArrowLeft } from "lucide-react";
 import { Loading } from "@/components/ui/Loading";
+import { useFetchPlaymates } from "@/hooks/useFetchPlaymates";
+import { usePlaymates } from "@/context/playmatesContext";
 
 export const DisplayPlaymates = () => {
   const [SelectedProfile, setSelectedProfile] = useState<PlayerProfile | null>(null);
-  const [playmates, setPlaymates] = useState<PlayerProfile[]>([]);
-  const [loadingPlaymates, setLoadingPlaymates] = useState(true);
-  const { loading, user } = useAuth();
-  const { selectedProfile } = useProfile();
+  const { playmates, loading } = usePlaymates()
 
-  useEffect(() => {
-    if (!user?.uid || !selectedProfile?.id) return;
-    setLoadingPlaymates(true);
-    FetchPlaymates({
-      userUid: user.uid,
-      profileId: selectedProfile.id,
-    }).then((data) => {
-      setPlaymates(data || []);
-      setLoadingPlaymates(false);
-    });
-  }, [selectedProfile?.id, user?.uid]);
 
-  // Memoize the grid for performance
   const playmatesGrid = useMemo(
     () => (
       <motion.div
@@ -41,7 +28,7 @@ export const DisplayPlaymates = () => {
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
         aria-label="Playmates Grid"
       >
-        {playmates.map((player, i) => (
+        {playmates?.map((player, i) => (
           <motion.div
             key={player.id}
             initial={{ opacity: 0, y: 30 }}
@@ -67,6 +54,7 @@ export const DisplayPlaymates = () => {
     [playmates]
   );
 
+  if (loading) return <Loading />
   return (
     <div className="p-4 md:p-6 min-h-[70vh]">
       <h1 className="font-mono text-3xl font-bold mb-6 text-center text-green-700 dark:text-green-200 flex items-center justify-center gap-2">
@@ -74,10 +62,8 @@ export const DisplayPlaymates = () => {
       </h1>
 
       <AnimatePresence mode="wait">
-        {loadingPlaymates ? (
-          <Loading />
-        ) : !SelectedProfile ? (
-          playmates.length === 0 ? (
+        {
+          playmates!.length === 0 ? (
             <motion.div
               key="empty"
               initial={{ opacity: 0, y: 20 }}
@@ -91,7 +77,8 @@ export const DisplayPlaymates = () => {
           ) : (
             playmatesGrid
           )
-        ) : (
+        }
+        {SelectedProfile ? (
           <motion.div
             key="player-detail"
             initial={{ opacity: 0, y: 20 }}
@@ -112,7 +99,7 @@ export const DisplayPlaymates = () => {
             </div>
             <PlayerPage profileId={SelectedProfile.id} userId={SelectedProfile.userUid} />
           </motion.div>
-        )}
+        ) : null}
       </AnimatePresence>
     </div>
   );

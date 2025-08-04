@@ -20,7 +20,6 @@ export const ProfileProvider = ({ children }: { children: React.ReactNode }) => 
     const [selectedProfile, setSelectedProfile] = useState<PlayerProfile | null>(null);
     const [profiles, setProfiles] = useState<PlayerProfile[]>([]);
 
-    // Refresh profile list and optionally select one by id
     const refreshProfile = async (newId?: string) => {
         if (!user) return;
 
@@ -40,7 +39,6 @@ export const ProfileProvider = ({ children }: { children: React.ReactNode }) => 
         }
     };
 
-    // Initial load on auth user change
     useEffect(() => {
         if (user?.uid) {
             refreshProfile();
@@ -54,7 +52,7 @@ export const ProfileProvider = ({ children }: { children: React.ReactNode }) => 
     );
 };
 
-// Custom hook to use context safely
+
 export const useProfile = () => {
     const context = useContext(ProfileContext);
     if (context === undefined) {

@@ -1,7 +1,7 @@
 import { Timestamp } from "firebase/firestore";
 
 
-type Playmate = {
+export type Playmate = {
     userUid: string;
     profileId: string;
 };
@@ -31,7 +31,7 @@ export type NotificationsType = {
 
 export type MatchPreposalType = {
     id:string | undefined;
-    type: "match proposal";
+    type: string;
     matchId: string;
     status: string;
     isRead: boolean;

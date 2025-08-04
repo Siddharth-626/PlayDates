@@ -1,32 +1,35 @@
-import { db } from "@/services/config"
-import { doc, getDoc } from "firebase/firestore"
+import { db } from "@/services/config";
+import { doc, getDoc } from "firebase/firestore";
 import { PlayerProfile } from "../TYPE";
 
-
-export const FetchPlaymates = async ({ userUid, profileId }: { userUid: string | undefined, profileId: string | undefined }) => {
+export const FetchPlaymates = async ({
+    userUid,
+    profileId,
+}: {
+    userUid: string | undefined;
+    profileId: string | undefined;
+}) => {
     try {
-        if(!userUid || !profileId)return
-        const ProfileRef = doc(db, "users", userUid, "profile", profileId)
-        const ProfileSnap = await getDoc(ProfileRef);
+        if (!userUid || !profileId) return;
 
+        const ProfileRef = doc(db, "users", userUid, "profile", profileId);
+        const ProfileSnap = await getDoc(ProfileRef);
         const ProfileData = ProfileSnap.data();
 
-        if (!ProfileData || !Array.isArray(ProfileData.playmates)) return
+        if (!ProfileData || !Array.isArray(ProfileData.playmates)) return [];
 
-        const PlayMates: PlayerProfile[] = [];
+        const playmateFetches = ProfileData.playmates.map(async (playmate: any) => {
+            if (!playmate) return null;
 
-        for (const playmate of ProfileData.playmates) {
-            if (!playmate) return
             const { userUid, profileId } = playmate;
-
-            if (!userUid || !profileId) return;
+            if (!userUid || !profileId) return null;
 
             const PlaymateRef = doc(db, "users", userUid, "profile", profileId);
             const PlaymateSnap = await getDoc(PlaymateRef);
             const data = PlaymateSnap.data();
+            if (!data) return null;
 
-            if(data){
-            PlayMates.push({
+            return {
                 id: PlaymateSnap.id,
                 userUid: data.userUid,
                 name: data.name || "",
@@ -38,12 +41,16 @@ export const FetchPlaymates = async ({ userUid, profileId }: { userUid: string |
                 playmates: data.playmates || [],
                 photoUrl: data.photoUrl || "",
                 completed: data.completed || false,
-            })
-            }
-            console.log("playmates fetch sucess");
-        }
+            } as PlayerProfile;
+        });
+
+        const PlaymateDocs = await Promise.all(playmateFetches);
+        const PlayMates: PlayerProfile[] = PlaymateDocs.filter(Boolean) as PlayerProfile[];
+
+        console.log("playmates fetch success");
         return PlayMates;
     } catch (err) {
-        console.log("er while fetching playmates");
+        console.log("err while fetching playmates", err);
+        return [];
     }
-}
+};

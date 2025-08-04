@@ -12,7 +12,9 @@ export const AddProposedMatchToProfile = onDocumentCreated(
         try {
             const {matchId} = event.params;
             const matchData = event.data?.data();
+            
             if (!matchData) return;
+            const type = matchData.status == "proposed" ? "match proposal" : "created match"
 
             const players = matchData.players;
 
@@ -20,7 +22,7 @@ export const AddProposedMatchToProfile = onDocumentCreated(
                 const { userUid, profileId } = player;
 
                 const matchProposal = {
-                    type: "match proposal",
+                    type: type,
                     matchId:matchId,
                     isRead:false,
                     status:"pending"

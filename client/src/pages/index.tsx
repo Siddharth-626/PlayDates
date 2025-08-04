@@ -1,5 +1,5 @@
 import { useAuth } from '@/context/authContext';
-import { Startup } from '@/components/common/StartUp';
+import { Startup } from '@/components/HomeComponents/StartUp';
 import Dashboard from '../components/MainDashboard/Main';
 import Navbar from '@/components/Navbar';
 import { useEffect } from 'react';

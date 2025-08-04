@@ -13,12 +13,12 @@ import { db } from "@/services/config";
 import { useAuth } from "@/context/authContext";
 import { useProfile } from "@/context/profileContext";
 
-interface MatchPreposalNotificationProps {
+type DisplayMatchProps =  {
     match: MatchPreposalType;
     onRespond: (status: string, matchId: string) => void;
 }
 
-export const DisplayMatchePreposal = ({ match, onRespond }: MatchPreposalNotificationProps) => {
+export const DisplayMatch = ({ match, onRespond }: DisplayMatchProps) => {
     const { matchId } = match;
     const { user } = useAuth();
     const { selectedProfile } = useProfile();
@@ -27,7 +27,7 @@ export const DisplayMatchePreposal = ({ match, onRespond }: MatchPreposalNotific
     const [court, setCourt] = useState<string>("");
     const [responseStatus, setResponseStatus] = useState<string>(match.status);
 
-    // Fetch match data
+
     if (!matchId) return;
     useEffect(() => {
         if (!matchId) return;
@@ -38,7 +38,7 @@ export const DisplayMatchePreposal = ({ match, onRespond }: MatchPreposalNotific
         fetchMatchData();
     }, [matchId]);
 
-    // Fetch player names
+ 
     useEffect(() => {
         const fetchPlayers = async () => {
             if (!matchData?.players) return;
@@ -83,12 +83,21 @@ export const DisplayMatchePreposal = ({ match, onRespond }: MatchPreposalNotific
     },[match.status]);
 
     if (!matchData) return;
-
-    const { date, startTime, MatchType, endTime } = matchData;
+    const { date, startTime, MatchType, } = matchData;
     const formattedDate = typeof date === "string" ? new Date(date).toDateString() : date?.toDate()?.toDateString();
-    if (!date || !startTime || !MatchType || !endTime || !court || !playerNames) return (
+    if (!date  || !MatchType || !court || !playerNames) return (
         <Loading />
     );
+
+    let timeDisplay = matchData.endTime;
+    let title = "Match Preposal";
+    console.log(match.type);
+
+    if(match.type == "created match"){
+        timeDisplay = matchData.duration;
+        title = "Match Creation";
+    }
+    const isHost = selectedProfile?.name == playerNames[0];
 
     return (
         <motion.div
@@ -100,8 +109,12 @@ export const DisplayMatchePreposal = ({ match, onRespond }: MatchPreposalNotific
         >
             <div className="flex items-center justify-between mb-4">
                 <h2 className="text-2xl font-extrabold text-green-700 flex items-center gap-2">
-                    <span className="text-2xl">🎾</span> Match Proposal
+                    <span className="text-2xl">🎾</span>{title}
                 </h2>
+                <div>
+                {isHost ?(<button className="">
+                        
+                </button>):null} 
                 <span
                     className={clsx(
                         "text-xs px-4 py-1 rounded-full font-bold tracking-wide shadow",
@@ -116,6 +129,7 @@ export const DisplayMatchePreposal = ({ match, onRespond }: MatchPreposalNotific
                         ? "New"
                         : responseStatus.charAt(0).toUpperCase() + responseStatus.slice(1)}
                 </span>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-[15px] text-gray-800 dark:text-gray-200">
@@ -133,18 +147,23 @@ export const DisplayMatchePreposal = ({ match, onRespond }: MatchPreposalNotific
                     <div className="flex items-center gap-2">
                         <Clock className="w-5 h-5 text-green-600" />
                         <span className="font-semibold">Start:</span>
-                        <span>{startTime}</span>
+                        <span>{startTime ? startTime : "No Time provided"}</span>
                     </div>
                     <div className="flex items-center gap-2">
                         <Clock className="w-5 h-5 text-green-600" />
                         <span className="font-semibold">End:</span>
-                        <span>{endTime}</span>
+                        <span>{timeDisplay ? timeDisplay : "No TimeProvided"}</span>
                     </div>
                     <div className="flex items-center gap-2">
                         <UsersRound className="w-5 h-5 text-green-600" />
                         <span className="font-semibold">Type:</span>
                         <span>{MatchType}</span>
                     </div>
+                    {match.type == "created match" ?(<div className="flex items-center gap-2">
+                        <UsersRound className="w-5 h-5 text-green-600" />
+                        <span className="font-semibold">Host:</span>
+                        <span>{playerNames ? playerNames[0]: "threre is no host"}</span>
+                    </div>):null}
                 </div>
                 <div className="flex flex-col gap-2">
                     <div className="flex items-center gap-2">

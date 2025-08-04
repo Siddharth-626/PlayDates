@@ -23,14 +23,14 @@ import { DisplayCourts } from "../courts/displayCourts/court";
 import { useFetchMatches } from "@/hooks/useFetchMatchs";
 import { DisplayMatches } from "../MyMatches/match";
 import { useFetchNotifications } from "@/hooks/useFetchNotifications";
-import HomeTab from "../common/homeTab";
+import HomeTab from "../HomeComponents/homeTab";
+import { useMatchs } from "@/context/matchContext";
 
 const NAV_ITEMS = [
     { label: "Home", icon: <HomeIcon/>},
     { label: "My Playmates", icon: <FiUsers /> },
     { label: "My Matches", icon: <FiGlobe /> },
     { label: "Find Courts", icon: <FiMapPin /> },
-    { label: "Find Programs", icon: <FiMap /> },
     { label: "Find Players", icon: <FiSearch /> },
     { label: "Notifications", icon: <FiBell /> },
     { label: "My Calendar", icon: <FiCalendar /> },
@@ -42,7 +42,7 @@ const Dashboard = () => {
     const { user } = useAuth();
     const { selectedProfile } = useProfile();
     const [activeTab, setActiveTab] = useState("Home");
-    const { matches } = useFetchMatches({ userUid: user?.uid, profileId: selectedProfile?.id });
+    const { matches } = useMatchs();
     const { notifications, setNotifications } = useFetchNotifications({ userUid: user?.uid, profileId: selectedProfile?.id });
 
     const renderContent = () => {
@@ -55,8 +55,6 @@ const Dashboard = () => {
                 return <DisplayMatches matches={matches} />;
             case "Find Courts":
                 return <DisplayCourts />;
-            case "Find Programs":
-                return <div>📍 Find Programs Component</div>;
             case "Find Players":
                 return <FindPlayers />;
             case "My Calendar":

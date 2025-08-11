@@ -2,7 +2,7 @@ import { fetchCourt } from "@/utils/courts/fetchCourt";
 import { FetchPlayerProfile } from "@/utils/PlayerProfile/FetchPlayerProfile";
 import { MatchPreposalType } from "@/utils/TYPE";
 import { useEffect, useState } from "react";
-import { CalendarDays, Clock, UsersRound, MapPin, CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import { CalendarDays, Clock, UsersRound, MapPin, CheckCircle2, XCircle, Loader2, Edit2, Plus, Timer, Check } from "lucide-react";
 import { fetchMatch } from "@/utils/Match/fetchMatch";
 
 import clsx from "clsx";
@@ -12,21 +12,26 @@ import { Loading } from "../ui/Loading";
 import { db } from "@/services/config";
 import { useAuth } from "@/context/authContext";
 import { useProfile } from "@/context/profileContext";
+import { TimeSelctorPopUp } from "../commonComponents/Matches/timeSelctorPopUp";
+import { getTimeLeft } from "@/utils/Time/getTimeLeft";
+import { GetTimeLeft } from "../commonComponents/Matches/getTimeLeft";
 
-type DisplayMatchProps =  {
+type DisplayMatchProps = {
     match: MatchPreposalType;
     onRespond: (status: string, matchId: string) => void;
 }
 
-export const DisplayMatch = ({ match, onRespond }: DisplayMatchProps) => {
+export const DisplayMatch = ({ match, onRespond, }: DisplayMatchProps) => {
     const { matchId } = match;
     const { user } = useAuth();
     const { selectedProfile } = useProfile();
     const [matchData, setMatchData] = useState<any>(null);
     const [playerNames, setPlayerNames] = useState<string[]>([]);
     const [court, setCourt] = useState<string>("");
+    const [isTimeDropdowmOpen, setIsTimeDropDownOpen] = useState(false);
     const [responseStatus, setResponseStatus] = useState<string>(match.status);
-
+    const [isTimePreposed, setIsTimePreposed] = useState(false);
+    const [timeLeft, setTimeLeft] = useState('');
 
     if (!matchId) return;
     useEffect(() => {
@@ -38,7 +43,7 @@ export const DisplayMatch = ({ match, onRespond }: DisplayMatchProps) => {
         fetchMatchData();
     }, [matchId]);
 
- 
+
     useEffect(() => {
         const fetchPlayers = async () => {
             if (!matchData?.players) return;
@@ -54,7 +59,7 @@ export const DisplayMatch = ({ match, onRespond }: DisplayMatchProps) => {
             setPlayerNames(names);
         };
         fetchPlayers();
-    }, [matchData?.players]);
+    }, [matchData]);
 
     // Fetch court title
     useEffect(() => {
@@ -67,37 +72,57 @@ export const DisplayMatch = ({ match, onRespond }: DisplayMatchProps) => {
     }, [matchData?.courtId]);
 
     const handleMatchResponse = async (status: string) => {
-        if (!match.id) return;
-        const matchRef = doc(db, `users/${user?.uid}/profile/${selectedProfile?.id}/matches/${match.id}`);
-        await updateDoc(matchRef, {
-            status: status,
-            isRead: true
-        })
+        try {
+            if (!match.id) return;
+            const matchRef = doc(db, `users/${user?.uid}/profile/${selectedProfile?.id}/matches/${match.id}`);
+            await updateDoc(matchRef, {
+                status: status,
+                isRead: true
+            });
 
-        setResponseStatus(status);
-        onRespond(status, matchId);
+            setResponseStatus(status);
+            onRespond(status, matchId);
+            setIsTimePreposed(false);
+        } catch (error) {
+            console.error("Failed to update match response:", error);
+        }
     };
+    useEffect(() => {
+        if (matchData?.status == "Time-Preposed" && match.status == "Time-Preposed") {
+            setIsTimePreposed(true);
+            setResponseStatus("pending");
+        }
+    }, [matchData])
 
-    useEffect(()=>{
+    useEffect(() => {
         setResponseStatus(match.status);
-    },[match.status]);
+    }, [match.status]);
+
+    const isHost = selectedProfile?.name == playerNames[0];
 
     if (!matchData) return;
-    const { date, startTime, MatchType, } = matchData;
+    const { date, startTime, MatchType, endTime } = matchData;
     const formattedDate = typeof date === "string" ? new Date(date).toDateString() : date?.toDate()?.toDateString();
-    if (!date  || !MatchType || !court || !playerNames) return (
+    if (!date || !MatchType || !court || !playerNames) return (
         <Loading />
     );
 
-    let timeDisplay = matchData.endTime;
+    // Match Creation Conditions
     let title = "Match Preposal";
-    console.log(match.type);
+    const isMatchCreation = match.type == "created match";
+    let isTimeGiven = true;
 
-    if(match.type == "created match"){
-        timeDisplay = matchData.duration;
+    if (isMatchCreation) {
+
         title = "Match Creation";
+        if (startTime == "" && endTime == "") {
+            isTimeGiven = false;
+        }
+
     }
-    const isHost = selectedProfile?.name == playerNames[0];
+    if (!isHost) {
+        title = "Match Invite"
+    }
 
     return (
         <motion.div
@@ -111,24 +136,34 @@ export const DisplayMatch = ({ match, onRespond }: DisplayMatchProps) => {
                 <h2 className="text-2xl font-extrabold text-green-700 flex items-center gap-2">
                     <span className="text-2xl">🎾</span>{title}
                 </h2>
-                <div>
-                {isHost ?(<button className="">
-                        
-                </button>):null} 
-                <span
-                    className={clsx(
-                        "text-xs px-4 py-1 rounded-full font-bold tracking-wide shadow",
-                        {
-                            "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-200 border border-yellow-300": responseStatus === "pending",
-                            "bg-green-600 text-white border border-green-700": responseStatus === "accepted",
-                            "bg-red-600 text-white border border-red-700": responseStatus === "rejected"
-                        }
+                {isTimePreposed ? (<div className=" flex gap-1 text-md font-sans text-green-600 bg-white dark:bg-gray-900 px-3 py-2 shadow-xl rounded-xl">
+                    <CheckCircle2 className="w-7 h-7" />The Time Has Been Alocated!
+                </div>) : null}
+                <div className="flex gap-2">
+                    {!isTimeGiven && isHost ? (<button onClick={() => setIsTimeDropDownOpen(!isTimeDropdowmOpen)} className="flex text-xs text-yellow-500  px-4 py-1 rounded-full font-bold bg-transparent tracking-wide shadow hover:text-white hover:bg-yellow-700 text-white border border-yellow-700">
+                        <Plus size={15} /> Add time
+                    </button>) : null}
+                    {isTimeDropdowmOpen ? (
+
+                        <TimeSelctorPopUp onSubmit={setIsTimeDropDownOpen} matchId={matchId} />
+                    ) : null}
+                    {startTime && (
+                        <GetTimeLeft endTime={endTime} date={date} startTime={startTime} />
                     )}
-                >
-                    {responseStatus === "pending"
-                        ? "New"
-                        : responseStatus.charAt(0).toUpperCase() + responseStatus.slice(1)}
-                </span>
+                    <span
+                        className={clsx(
+                            "text-xs px-4 py-1 rounded-full font-bold tracking-wide shadow",
+                            {
+                                "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-200 border border-yellow-300": responseStatus === "pending",
+                                "bg-green-600 text-white border border-green-700": responseStatus === "accepted",
+                                "bg-red-600 text-white border border-red-700": responseStatus === "rejected"
+                            }
+                        )}
+                    >
+                        {responseStatus === "pending"
+                            ? "New"
+                            : responseStatus.charAt(0).toUpperCase() + responseStatus.slice(1)}
+                    </span>
                 </div>
             </div>
 
@@ -152,18 +187,18 @@ export const DisplayMatch = ({ match, onRespond }: DisplayMatchProps) => {
                     <div className="flex items-center gap-2">
                         <Clock className="w-5 h-5 text-green-600" />
                         <span className="font-semibold">End:</span>
-                        <span>{timeDisplay ? timeDisplay : "No TimeProvided"}</span>
+                        <span>{endTime ? endTime : "No Time Provided"}</span>
                     </div>
                     <div className="flex items-center gap-2">
                         <UsersRound className="w-5 h-5 text-green-600" />
                         <span className="font-semibold">Type:</span>
                         <span>{MatchType}</span>
                     </div>
-                    {match.type == "created match" ?(<div className="flex items-center gap-2">
+                    {isMatchCreation ? (<div className="flex items-center gap-2">
                         <UsersRound className="w-5 h-5 text-green-600" />
                         <span className="font-semibold">Host:</span>
-                        <span>{playerNames ? playerNames[0]: "threre is no host"}</span>
-                    </div>):null}
+                        <span>{playerNames ? playerNames[0] : "threre is no host"}</span>
+                    </div>) : null}
                 </div>
                 <div className="flex flex-col gap-2">
                     <div className="flex items-center gap-2">

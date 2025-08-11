@@ -1,5 +1,5 @@
 import { LocationStorageType } from "@/utils/TYPE"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import CustomDatePicker from "../commonComponents/Availability/DateSelector";
 import LocationSelector from "@/components/commonComponents/Profile/LocationSelector";
 import PreferencesSelector from "@/components/commonComponents/Profile/PreferencesSelector";
@@ -14,6 +14,7 @@ import { db } from "@/services/config";
 import { motion } from "framer-motion";
 import { useAuth } from "@/context/authContext";
 import { useProfile } from "@/context/profileContext";
+import { getEndTime } from "@/utils/Time/GetEndTime";
 
 
 export const CreateMatch = () => {
@@ -24,7 +25,7 @@ export const CreateMatch = () => {
     const [duration, setDuration] = useState('');
     const [preference, setPreference] = useState<string[]>([]);
     const [locations, setLocations] = useState<LocationStorageType[]>([]);
-    const [players, setPlayers] = useState<any[]>([{ userUid: user?.uid, profileId: selectedProfile?.id }]);
+    const [players, setPlayers] = useState<any[]>([{ userUid: user?.uid, profileId: selectedProfile?.id,status:"accepted" }]);
     const [loading, setLoading] = useState(false);
     const SelectLocation = (val: LocationStorageType[]) => {
         setLocations(val)
@@ -38,6 +39,8 @@ export const CreateMatch = () => {
     const pref = typeof preference[0] === "string" ? preference[0].toLowerCase() : "";
     const numberOfPlayers = pref.includes("singles") ? 2 : 4;
 
+    const endTime = getEndTime(duration,startTime);
+
     const handleSubmit = async () => {
         try {
             setLoading(true)
@@ -47,8 +50,8 @@ export const CreateMatch = () => {
                 players: players,
                 courtId: locations[0].courtId,
                 date: Timestamp.fromDate(date),
-                startTime: startTime || "The time will be alocated later",
-                duration: duration ||  "The Duration will be alocated later",
+                startTime: startTime || "",
+                endTime: endTime ||  "",
                 status: "created",
                 MatchType: preference[0],
             }
@@ -133,7 +136,8 @@ export const CreateMatch = () => {
                     style={{ zIndex: 50 }}
                     whileHover={{ scale: 1.03, boxShadow: "0 2px 12px #22c55e33" }}
                     whileTap={{ scale: 0.98 }}
-                    onClick={handleSubmit}
+                    onClick={()=> handleSubmit()
+                    }
                     className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-2.5 px-4 rounded-full font-semibold text-base shadow-md transition-all duration-200 flex items-center justify-center gap-2 mt-4"
                     disabled={loading}
                 >
@@ -143,7 +147,7 @@ export const CreateMatch = () => {
                         </>
                     ) : (
                         <>
-                            <Plus size={20} />create
+                            <Plus size={20} />Create
                         </>
                     )}
                 </motion.button>

@@ -1,8 +1,8 @@
 import { onDocumentCreated } from "firebase-functions/v2/firestore";
-import { admin } from "../utils/admin";
-import { LocationStorageType, PlayersType } from "../utils/Type";
-import { PlayersBasedOnPrefernce } from "../utils/PlayersBasedOnPrefernce";
-import { getCommonTime, isTimeOverlap } from "../utils/ChekIfTimeOverlap";
+import { admin } from "../../utils/admin";
+import { LocationStorageType, PlayersType } from "../../utils/Type";
+import { PlayersBasedOnPrefernce } from "../../utils/PlayersBasedOnPrefernce";
+import { getCommonTime, isTimeOverlap } from "../../utils/ChekIfTimeOverlap";
 
 const db = admin.firestore();
 

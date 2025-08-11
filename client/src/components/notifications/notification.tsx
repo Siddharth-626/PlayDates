@@ -4,6 +4,7 @@ import { useAuth } from "@/context/authContext";
 import { useProfile } from "@/context/profileContext";
 import { useState } from "react";
 import { MatchResultNotification } from "./matchNotifications/matchResultNotification";
+import { Bell } from "lucide-react";
 
 type NotificationTabProps = {
     notifications: any[] | undefined;
@@ -42,7 +43,7 @@ export const NotificationTab = ({ notifications, setNotifications }: Notificatio
         <div className="space-y-6 animate-fade-in max-w-2xl mx-auto">
             <div className="flex justify-between items-center pb-2 border-b border-gray-200 dark:border-gray-700">
                 <h2 className="text-2xl font-bold text-gray-800 dark:text-white tracking-tight flex items-center gap-2">
-                    <span role="img" aria-label="bell">🔔</span> Notifications
+                    <Bell className="text-green-600"/> Notifications
                 </h2>
                 <button
                     className="text-green-700 dark:text-green-400 hover:underline text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-green-400 rounded px-2 py-1 transition"

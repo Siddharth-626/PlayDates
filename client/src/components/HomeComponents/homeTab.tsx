@@ -113,10 +113,6 @@ export default function HomeTab({ setTab }: { setTab: (tab: string) => void }) {
                     <h3 className="text-lg font-bold text-green-700 dark:text-green-200 mb-2">Availability</h3>
                     <DisplayAvailability />
                 </div>
-                <div className="w-full flex flex-col items-center justify-center p-2">
-                    <h3 className="text-lg font-bold text-green-700 dark:text-green-200 mb-2">Create Match</h3>
-                   <CreateMatch />
-                </div>
             </motion.div>
         </motion.div>
     );

@@ -41,7 +41,7 @@ export const isTimeOverlap = (availabilityA: any, availabilityB: any): boolean =
     return startA < endB && startB < endA;
 };
 
- export const getCommonTime = (availabilityA: any, availabilityB: any) => {
+export const getCommonTime = (availabilityA: any, availabilityB: any) => {
     const [startA, endA] = parseDateTime(availabilityA);
     const [startB, endB] = parseDateTime(availabilityB);
 
@@ -50,9 +50,9 @@ export const isTimeOverlap = (availabilityA: any, availabilityB: any): boolean =
 
     if (overLapStart < overLapEnd) {
         return {
-            startTime: new Date(overLapStart).toTimeString(),
-            endTime: new Date(overLapEnd).toTimeString(),
-        }
+            startTime: new Date(overLapStart).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+            endTime: new Date(overLapEnd).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        };
     }
     return null;
-}
+};

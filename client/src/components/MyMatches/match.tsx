@@ -10,10 +10,10 @@ import { motion } from "framer-motion";
 import { Clock, X } from "lucide-react";
 import { FiGlobe } from "react-icons/fi";
 
-export const DisplayMatches =({matches}:{matches:any[] | undefined})=>{
-    const {user} = useAuth();
-    const {selectedProfile} = useProfile();
-    const [isTabOpen,setTabOpen] = useState(false);
+export const DisplayMatches = ({ matches }: { matches: any[] | undefined }) => {
+    const { user } = useAuth();
+    const { selectedProfile } = useProfile();
+    const [isTabOpen, setTabOpen] = useState(false);
     const handleMatchPreposalResponse = async (status: string, matchId: string) => {
         if (!user?.uid || !selectedProfile?.id || !matchId) return;
 
@@ -24,13 +24,15 @@ export const DisplayMatches =({matches}:{matches:any[] | undefined})=>{
             status,
         });
 
-        toast.success("You accepted the Match Proposal");
+        toast.success("You accepted the Match");
+        setTabOpen(false);
     };
-    if(!matches) return;
-    return(
-            <div className="space-y-4 animate-fade-in">
-                <div>
-                   <motion.button
+
+    if (!matches) return;
+    return (
+        <div className="space-y-4 animate-fade-in">
+            <div>
+                <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.97 }}
                     onClick={() => setTabOpen(prev => !prev)}
@@ -46,10 +48,10 @@ export const DisplayMatches =({matches}:{matches:any[] | undefined})=>{
                         </>
                     )}
                 </motion.button>
-                </div>
-                {isTabOpen ?(<div>
-                    <CreateMatch />
-                </div>):null}
+            </div>
+            {isTabOpen ? (<div>
+                <CreateMatch />
+            </div>) : null}
             <h1 className="text-bold text-black dark:text-white font-bold text-2xl">Matches</h1>
             <div className="space-y-2">
                 {matches.length === 0 ? (
@@ -60,7 +62,7 @@ export const DisplayMatches =({matches}:{matches:any[] | undefined})=>{
                             key={match.id}
                             className={`p-4 rounded-lg transition-all duration-300`}
                         >
-                        <DisplayMatch match={match} onRespond={handleMatchPreposalResponse} />
+                            <DisplayMatch match={match} onRespond={handleMatchPreposalResponse} />
                         </div>
                     ))
                 )}

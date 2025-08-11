@@ -1,14 +1,13 @@
 import { onDocumentUpdated } from "firebase-functions/v2/firestore";
-import { admin } from "../utils/admin";
+import { admin } from "../../utils/admin";
 
 const db = admin.firestore();
 
-const SendStatus = async (status: string, matchId: string, players: any[]) => {
-
+const SendStatus = async (status: string, matchId: string, players: any[],MatchData:any) => {
     for (const player of players) {
         const notification = {
             type: "match preposal result",
-            message: `The Match is ${status} `,
+            message: `The Match at ${MatchData.startTime} is ${status} `,
             idRead: false
         }
         await db.collection(`users/${player.userUid}/profile/${player.profileId}/notifications`).add(notification);
@@ -41,10 +40,10 @@ export const changeStatusOfMatch = onDocumentUpdated({
         )
 
         if (isValid && MatchData.status != "accepted" ) {
-            await SendStatus("accepted", matchId, players);
+            await SendStatus("accepted", matchId, players,MatchData);
         }
         if (isRejection) {
-            await SendStatus("proposed", matchId, players);
+            await SendStatus("proposed", matchId, players,MatchData);
         }
     } catch (error) {
         console.log("Error while handling match status change", error);

@@ -1,5 +1,5 @@
 import { onSchedule } from "firebase-functions/v2/scheduler";
-import { admin } from "../utils/admin";
+import { admin } from "../../utils/admin";
 
 
 export const clearOldMatchPreposal = onSchedule(

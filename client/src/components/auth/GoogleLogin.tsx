@@ -12,7 +12,6 @@ export const GoogleLogin = () => {
         try {
             const result = await signInWithPopup(auth, googleProvider);
             const user = result.user;
-            console.log(user);
 
             const userData = {
                 uid: user.uid,

@@ -11,6 +11,7 @@ import toast from "react-hot-toast";
 type Playmate = {
     profileId: string;
     userUid: string;
+    status:string
 };
 
 type PlaymatePickerPropsType = {
@@ -48,6 +49,7 @@ export const PlaymatePicker = ({
                 {
                     profileId: playmate.id,
                     userUid: playmate.userUid,
+                    status:"pending"
                 },
             ]);
         }

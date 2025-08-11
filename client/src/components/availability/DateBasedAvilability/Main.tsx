@@ -14,7 +14,7 @@ import LocationSelector from "@/components/commonComponents/Profile/LocationSele
 import PreferencesSelector from "@/components/commonComponents/Profile/PreferencesSelector";
 import { Calendar, Clock, Timer, MapPin, List } from "lucide-react";
 
-export const Availability = () => {
+export const Availability = ({onCreate}:{onCreate:()=>void}) => {
     const [loading, setloading] = useState(false);
     const [date, setDate] = useState<Date | null>(new Date());
     const [time, setTime] = useState("");
@@ -55,6 +55,7 @@ export const Availability = () => {
         });
         toast.success("Availability added!")
         setloading(false);
+        onCreate();
     }
 
     return (

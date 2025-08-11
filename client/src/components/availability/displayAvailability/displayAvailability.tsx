@@ -27,6 +27,10 @@ export const DisplayAvailability = () => {
         };
         fetchAvailability();
     }, [user, selectedProfile]);
+
+    const onCreate=()=>{
+        setShowForm(false)
+    }
     return (
         <div className="max-w-3xl mx-auto mt-10 p-4">
             <div className="flex justify-between items-center mb-6">
@@ -60,7 +64,7 @@ export const DisplayAvailability = () => {
                         transition={{ duration: 0.3 }}
                         className="mb-6"
                     >
-                        <Availability />
+                        <Availability onCreate={onCreate} />
                     </motion.div>
                 )}
             </AnimatePresence>

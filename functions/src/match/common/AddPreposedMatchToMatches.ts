@@ -1,5 +1,5 @@
 import { onDocumentCreated } from "firebase-functions/v2/firestore";
-import { admin } from "../utils/admin";
+import { admin } from "../../utils/admin";
 
 const db = admin.firestore();
 
@@ -29,8 +29,8 @@ export const AddProposedMatchToProfile = onDocumentCreated(
                 };
 
                 await db
-                    .collection(`users/${userUid}/profile/${profileId}/matches`)
-                    .add(matchProposal);
+                    .doc(`users/${userUid}/profile/${profileId}/matches/${matchId}`)
+                    .set(matchProposal);
 
                 console.log(`Added proposed match for Profile: ${profileId}`);
             }

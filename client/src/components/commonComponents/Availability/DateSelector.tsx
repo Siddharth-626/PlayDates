@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import {motion} from"framer-motion";
@@ -8,6 +8,7 @@ type DateProps = {
 }
 
 const CustomDatePicker = ({ selectedDate, onChange }: DateProps) => {
+    
     return (
         <div className="w-full">
             <motion.div
@@ -20,7 +21,7 @@ const CustomDatePicker = ({ selectedDate, onChange }: DateProps) => {
                     Select a Date 📅
                 </h2>
 
-                <DatePicker
+               { <DatePicker
                     selected={selectedDate}
                     onChange={onChange}
                     inline
@@ -29,7 +30,7 @@ const CustomDatePicker = ({ selectedDate, onChange }: DateProps) => {
                     dayClassName={(date) =>
                         "!text-sm hover:bg-green-100 dark:hover:bg-green-900 rounded-md transition-all"
                     }
-                />
+                />}
             </motion.div>
         </div>
     );

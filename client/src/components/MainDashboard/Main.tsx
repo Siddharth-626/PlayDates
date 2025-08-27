@@ -34,7 +34,6 @@ const NAV_ITEMS = [
     { label: "Find Players", icon: <FiSearch /> },
     { label: "Notifications", icon: <FiBell /> },
     { label: "My Calendar", icon: <FiCalendar /> },
-    { label: "Add Availability", icon: <FiEdit /> },
     { label: "Player Profile", icon: <FiUser /> },
 ];
 
@@ -58,8 +57,6 @@ const Dashboard = () => {
             case "Find Players":
                 return <FindPlayers />;
             case "My Calendar":
-                return <div>📅 My Calendar Component</div>;
-            case "Add Availability":
                 return <DisplayAvailability />;
             case "Player Profile":
                 return <PlayerProfileDropdown />;

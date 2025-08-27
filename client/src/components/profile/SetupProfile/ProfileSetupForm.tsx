@@ -192,10 +192,12 @@ export default function ProfileSetupForm({
           onChange={(val) => updateField("skill", val)}
         />
         <PreferencesSelector
+        type="Profile"
           selected={profileData.preferences}
           onChange={(val) => updateField("preferences", val)}
         />
         <LocationSelector
+        type="Profile"
           selected={profileData.locations}
           onChange={(val) => updateField("locations", val)}
         />

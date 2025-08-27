@@ -103,7 +103,7 @@ export const Availability = ({onCreate}:{onCreate:()=>void}) => {
                     </span>
                     <div className="flex flex-col flex-1">
                         <label className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Preferences</label>
-                        <PreferencesSelector selected={preference} onChange={SelectPreference} />
+                        <PreferencesSelector type="Avalability" selected={preference} onChange={SelectPreference} />
                     </div>
                 </div>
                 <div className="flex items-center gap-3 py-2">
@@ -112,7 +112,7 @@ export const Availability = ({onCreate}:{onCreate:()=>void}) => {
                     </span>
                     <div className="flex flex-col flex-1">
                         <label className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Location</label>
-                        <LocationSelector selected={locations} onChange={SelectLocation} />
+                        <LocationSelector type="Avalability" selected={locations} onChange={SelectLocation} />
                     </div>
                 </div>
             </div>

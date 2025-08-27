@@ -1,16 +1,18 @@
 
 
-export const hasMatchEnded = (date:Date | null,endTime:string)=>{
+export const hasMatchEnded = (date: any, endTime: string) => {
 
-    if(!endTime || !date) return;
-    const now = new Date();
+  if (!endTime || !date) return;
+  const now = new Date();
+  const formattedEndTime = endTime.replace(/\s?(am|pm)\s?/i, "").trim();
+  const [hours, minutes] = formattedEndTime.split(":").map(Number);
 
-    const [hours,minutes] = endTime.split(":").map(Number);
+  const target =  date.toDate ? date.toDate() :new Date(date);
 
-    const target = new Date(date);
+  target.setHours(hours, minutes, 0, 0)
 
-    target.setHours(hours,minutes,0,0)
+  const result = target.getTime() < now.getTime();
 
-  return target.getTime() < now.getTime();
+  return result;
 
 }

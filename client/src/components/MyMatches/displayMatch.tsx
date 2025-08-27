@@ -108,7 +108,7 @@ export const DisplayMatch = ({ match, onRespond, }: DisplayMatchProps) => {
     );
 
     // Match Creation Conditions
-    let title = "Match Preposal";
+    let title = "Match Proposal";
     const isMatchCreation = match.type == "created match";
     let isTimeGiven = true;
 
@@ -207,7 +207,27 @@ export const DisplayMatch = ({ match, onRespond, }: DisplayMatchProps) => {
                     </div>
                     <ul className="list-disc list-inside ml-7 space-y-1">
                         {playerNames.map((name, i) => (
-                            <li key={i} className="ml-2">{name}</li>
+                            <li
+                                key={i}
+                                className="ml-2 flex items-center gap-2 py-1 px-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200"
+                            >
+                                {/* Player Name */}
+                                <span className="text-gray-800 dark:text-gray-200 font-medium">
+                                    {name}
+                                </span>
+
+                                {/* Status Badge */}
+                                <span
+                                    className={`
+                                        text-xs font-semibold px-2 py-0.5 rounded-full
+                                        ${matchData.players[i].status === "accepted" ? "bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300" :
+                                            matchData.players[i].status === "pending" ? "bg-yellow-100 text-yellow-600 dark:bg-yellow-900 dark:text-yellow-300" :
+                                                "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300"}
+    `}
+                                >
+                                    {matchData.players[i].status}
+                                </span>
+                            </li>
                         ))}
                     </ul>
                 </div>

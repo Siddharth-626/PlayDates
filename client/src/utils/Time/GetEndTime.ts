@@ -19,7 +19,8 @@ export const getEndTime = (duration:string,startTime:string)=>{
     if(!startTime || !duration) return;
     const now = new Date();
 
-    const [hours,minutes] = startTime.split(":").map(Number);
+    const formattedStartTime = startTime.replace(/\s?(am|pm)\s?/i, "").trim();
+    const [hours,minutes] = formattedStartTime.split(":").map(Number);
 
     const StartTime = new Date();
 

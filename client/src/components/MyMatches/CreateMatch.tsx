@@ -1,9 +1,9 @@
 import { LocationStorageType } from "@/utils/TYPE"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import CustomDatePicker from "../commonComponents/Availability/DateSelector";
 import LocationSelector from "@/components/commonComponents/Profile/LocationSelector";
 import PreferencesSelector from "@/components/commonComponents/Profile/PreferencesSelector";
-import { Calendar, Clock, Timer, MapPin, List, Plus } from "lucide-react";
+import { Calendar, Clock, Timer, MapPin, List, Plus, X } from "lucide-react";
 import TimePicker from "../commonComponents/Availability/TimeSelector";
 import DurationSelector from "../commonComponents/Availability/DurationSelector";
 import { PlaymatePicker } from "../commonComponents/Playmates/PlaymateSelector";
@@ -17,7 +17,8 @@ import { useProfile } from "@/context/profileContext";
 import { getEndTime } from "@/utils/Time/GetEndTime";
 
 
-export const CreateMatch = () => {
+
+export const CreateMatch = ({ CloseTab }: { CloseTab: () => void }) => {
     const { user } = useAuth();
     const { selectedProfile } = useProfile();
     const [date, setDate] = useState<Date | null>(new Date());
@@ -25,8 +26,12 @@ export const CreateMatch = () => {
     const [duration, setDuration] = useState('');
     const [preference, setPreference] = useState<string[]>([]);
     const [locations, setLocations] = useState<LocationStorageType[]>([]);
-    const [players, setPlayers] = useState<any[]>([{ userUid: user?.uid, profileId: selectedProfile?.id,status:"accepted" }]);
+    const [players, setPlayers] = useState<any[]>([{ userUid: user?.uid, profileId: selectedProfile?.id, status: "pending" }]);
     const [loading, setLoading] = useState(false);
+    const [showDate, setShowDate] = useState(false);
+    const [isAutoPlayerPickerSelected, setIsAutoPlayerPickerSelected] = useState(false);
+    const [showSchedule, setShowSchedule] = useState(false);
+
     const SelectLocation = (val: LocationStorageType[]) => {
         setLocations(val)
     }
@@ -39,8 +44,12 @@ export const CreateMatch = () => {
     const pref = typeof preference[0] === "string" ? preference[0].toLowerCase() : "";
     const numberOfPlayers = pref.includes("singles") ? 2 : 4;
 
-    const endTime = getEndTime(duration,startTime);
+    const endTime = getEndTime(duration, startTime);
+    let status = "created"
 
+    const handleAutoPlayerSector = () => {
+        setIsAutoPlayerPickerSelected(!isAutoPlayerPickerSelected);
+    }
     const handleSubmit = async () => {
         try {
             setLoading(true)
@@ -51,8 +60,9 @@ export const CreateMatch = () => {
                 courtId: locations[0].courtId,
                 date: Timestamp.fromDate(date),
                 startTime: startTime || "",
-                endTime: endTime ||  "",
-                status: "created",
+                endTime: endTime || "",
+                duration: duration || "",
+                status: isAutoPlayerPickerSelected && players.length < numberOfPlayers ? "open" : "created",
                 MatchType: preference[0],
             }
 
@@ -65,95 +75,126 @@ export const CreateMatch = () => {
             console.log("error while creating match ", error);
         } finally {
             setLoading(false)
+            CloseTab();
         }
     }
     return (
-        <div>
-            <span className="text-2xl font-bold text-green-600 dark:text-green-800">Create A New Match</span>
-            <div className="px-2 py-2 shadow-2xl rounded-xl border border-green-300 ">
-                <div className="flex ">
-                    <div className=" mx-5 space-y-1 divide-y divide-green-100 dark:divide-green-900">
-                        <div className="flex items-center gap-3 py-2">
-                            <span className="bg-green-50 dark:bg-green-950 p-1.5 rounded-lg flex items-center justify-center">
+        <div className="flex flex-col gap-6 p-4 md:p-6 max-w-5xl mx-auto shadow-lg border border-green-300 rounded-xl">
+            {/* Title */}
+            <h2 className="text-2xl md:text-3xl font-bold text-green-600 dark:text-green-400 text-center">
+                🎾 Create a New Match
+            </h2>
+
+            {/* Responsive Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Left: Match Schedule */}
+                <motion.div
+                    className="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-green-200 dark:border-green-700"
+                >
+                    {/* Header (Collapsible in mobile) */}
+                    <button
+                        onClick={() => setShowSchedule(!showSchedule)}
+                        className="flex w-full justify-between items-center px-4 py-3 md:cursor-default md:pointer-events-none"
+                    >
+                        <span className="flex items-center gap-2 font-semibold text-gray-700 dark:text-gray-200">
+                            <Calendar className="text-green-500" size={20} />
+                            Match Schedule
+                        </span>
+                        <span className="md:hidden">
+                            {showSchedule ? <X size={18} /> : <Plus size={18} />}
+                        </span>
+                    </button>
+
+                    {/* Content */}
+                    {(showSchedule || window.innerWidth >= 768) && (
+                        <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            className="flex flex-col gap-4 px-4 pb-4"
+                        >
+                            {/* Date */}
+                            <div className="flex items-center gap-3">
                                 <Calendar className="text-green-500" size={18} />
-                            </span>
-                            <div className="flex flex-col flex-1">
-                                <label className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Date</label>
                                 <CustomDatePicker selectedDate={date} onChange={setDate} />
                             </div>
-                        </div>
-                        <div className="flex items-center gap-3 py-2">
-                            <span className="bg-green-50 dark:bg-green-950 p-1.5 rounded-lg flex items-center justify-center">
-                                <Clock className="text-green-500" size={18} />
-                            </span>
-                            <div className="flex flex-col flex-1">
-                                <label className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">{"Time (optional)"}</label>
+
+                            {/* Time */}
+                            <div className="flex items-center gap-3">
+                                <Clock className="text-blue-500" size={18} />
                                 <TimePicker time={startTime} onChange={setStartTime} />
                             </div>
-                        </div>
-                        <div className="flex items-center gap-3 py-2">
-                            <span className="bg-blue-50 dark:bg-blue-950 p-1.5 rounded-lg flex items-center justify-center">
-                                <Timer className="text-blue-500" size={18} />
-                            </span>
-                            <div className="flex flex-col flex-1">
-                                <label className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">{"Duration (optional)"}</label>
+
+                            {/* Duration */}
+                            <div className="flex items-center gap-3">
+                                <Timer className="text-purple-500" size={18} />
                                 <DurationSelector duration={duration} onChange={setDuration} />
                             </div>
-                        </div>
+                        </motion.div>
+                    )}
+                </motion.div>
 
+                {/* Right: Other Settings */}
+                <div className="flex flex-col gap-6">
+                    {/* Preferences */}
+                    <div className="bg-white dark:bg-gray-900 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-4">
+                        <label className="flex items-center gap-2 text-gray-700 dark:text-gray-200 mb-2 font-semibold">
+                            <List size={18} className="text-yellow-500" /> Preferences
+                        </label>
+                        <PreferencesSelector
+                            type="Match-Creation"
+                            selected={preference}
+                            onChange={SelectPreference}
+                        />
                     </div>
-                    <div className="space-y-1 divide-y divide-green-100 dark:divide-green-900">
-                        <div className="flex items-center gap-3 py-2">
-                            <span className="bg-yellow-50 dark:bg-yellow-950 p-1.5 rounded-lg flex items-center justify-center">
-                                <List className="text-yellow-500" size={18} />
-                            </span>
-                            <div className="flex flex-col flex-1">
-                                <label className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Preferences</label>
-                                <PreferencesSelector selected={preference} onChange={SelectPreference} />
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-3 py-2">
-                            <span className="bg-pink-50 dark:bg-pink-950 p-1.5 rounded-lg flex items-center justify-center">
-                                <MapPin className="text-pink-500" size={18} />
-                            </span>
-                            <div className="flex flex-col flex-1">
-                                <label className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Location</label>
-                                <LocationSelector selected={locations} onChange={SelectLocation} />
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-3 py-2">
-                            <span className="bg-pink-50 dark:bg-pink-950 p-1.5 rounded-lg flex items-center justify-center">
-                                <FiUserPlus className="text-pink-500" size={18} />
-                            </span>
-                            <div className="flex flex-col flex-1">
-                                <label className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Location</label>
-                                <PlaymatePicker numberOfPlayers={numberOfPlayers} selected={players} onChange={SelectPlayers} />
-                            </div>
-                        </div>
+
+                    {/* Location */}
+                    <div className="bg-white dark:bg-gray-900 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-4">
+                        <label className="flex items-center gap-2 text-gray-700 dark:text-gray-200 mb-2 font-semibold">
+                            <MapPin size={18} className="text-pink-500" /> Location
+                        </label>
+                        <LocationSelector
+                            type="Match-Creation"
+                            selected={locations}
+                            onChange={SelectLocation}
+                        />
+                    </div>
+
+                    {/* Players */}
+                    <div className="bg-white dark:bg-gray-900 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-4">
+                        <label className="flex items-center gap-2 text-gray-700 dark:text-gray-200 mb-2 font-semibold">
+                            <FiUserPlus size={18} className="text-green-500" /> Players
+                        </label>
+                        <PlaymatePicker
+                            OnAutoPlayerSelect={handleAutoPlayerSector}
+                            isAutoPlayerPickerSelected={isAutoPlayerPickerSelected}
+                            numberOfPlayers={numberOfPlayers}
+                            selected={players}
+                            onChange={SelectPlayers}
+                        />
                     </div>
                 </div>
+            </div>
+
+            {/* Create Button */}
+            <div className="md:static fixed bottom-4 left-0 right-0 flex justify-center">
                 <motion.button
-                    style={{ zIndex: 50 }}
-                    whileHover={{ scale: 1.03, boxShadow: "0 2px 12px #22c55e33" }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={()=> handleSubmit()
-                    }
-                    className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-2.5 px-4 rounded-full font-semibold text-base shadow-md transition-all duration-200 flex items-center justify-center gap-2 mt-4"
+                    whileTap={{ scale: 0.97 }}
+                    onClick={handleSubmit}
                     disabled={loading}
+                    className="w-[90%] md:w-1/3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-3 rounded-full font-semibold shadow-lg"
                 >
                     {loading ? (
-                        <>
-                            <Clock className="animate-spin" size={18} />Createing...
-                        </>
+                        <span className="flex items-center gap-2">
+                            <Clock className="animate-spin" size={18} /> Creating...
+                        </span>
                     ) : (
-                        <>
-                            <Plus size={20} />Create
-                        </>
+                        <span className="flex items-center gap-2">
+                            <Plus size={20} /> Create Match
+                        </span>
                     )}
                 </motion.button>
             </div>
-
         </div>
-
-    )
+    );
 }

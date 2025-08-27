@@ -35,7 +35,7 @@ export const DisplayAvailability = () => {
         <div className="max-w-3xl mx-auto mt-10 p-4">
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-green-600 flex items-center gap-2">
-                    <Calendar className="text-green-500" size={28} /> Your Availability
+                    <Calendar className="text-green-500" size={28} /> Your Calender
                 </h2>
                 <motion.button
                     whileHover={{ scale: 1.05 }}

@@ -2,13 +2,16 @@ import { useCourt } from "@/context/courtContext";
 import { courtType, LocationStorageType } from "@/utils/TYPE";
 import { Search } from "lucide-react";
 import { useState } from "react";
+import toast from "react-hot-toast";
 
 export default function LocationSelector({
   selected,
   onChange,
+    type
 }: {
-  selected: LocationStorageType[];                     // List of selected locations as objects
-  onChange: (val: LocationStorageType[]) => void;      // Same format in handler
+  selected: LocationStorageType[];
+  onChange: (val: LocationStorageType[]) => void;
+  type:string;
 }) {
   const { courts } = useCourt();
 
@@ -25,6 +28,10 @@ export default function LocationSelector({
     if (alreadySelected) {
       onChange(selected.filter((loc) => loc.courtId !== court.id));
     } else {
+      if(type == "Match-Creation" && selected.length == 1){
+          toast.error("You can Only Select one");
+          return
+      }
       onChange([
         ...selected,
         { name: court.title, courtId: court.id },
@@ -68,7 +75,7 @@ export default function LocationSelector({
                 type="button"
                 className={`px-4 py-2 rounded-full text-sm font-medium shadow-sm transition ${selectedNow
                     ? "bg-green-600 text-white hover:bg-green-700"
-                    : "bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-800 dark:text-white dark:hover:bg-green-400"
+                    : "bg-green-100 text-green-800 hover:bg-green-200 hover:text-white dark:hover:bg-green-400"
                   } focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 dark:focus:ring-offset-gray-900`}
               >
                 {court.title} {selectedNow && <span className="ml-1">✕</span>}

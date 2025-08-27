@@ -8,12 +8,12 @@ export const createCourt = async () => {
         const courtRef = doc(db, "courts", courtId);
 
         await setDoc(courtRef, {
-            title: "Anna Nagar Court",
-            description: "Nice court with lighting and good surface",
+            title: "Wallace Park Public Court",
+            description: "private park",
             location: {
                 lat: 12.9716,
                 lng: 77.5946,
-                address: "Anna Nagar, Chennai"
+                address: "245 Reynolds St, Oakville, ON"
             },
             images: ["/images/Home/pexels-ozanyavuz-31054362.jpg","images/Home/pexels-tima-miroshnichenko-6010279.jpg","images/Home/pexels-zetong-li-880728-13425628.jpg"],
             amenities: ["floodlight", "shower"],

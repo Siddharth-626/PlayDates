@@ -13,13 +13,13 @@ export default function HomeTab({ setTab }: { setTab: (tab: string) => void }) {
     const { selectedProfile } = useProfile();
     const { matches } = useFetchMatches({ userUid: user?.uid, profileId: selectedProfile?.id });
     const { notifications } = useFetchNotifications({ userUid: user?.uid, profileId: selectedProfile?.id });
-    const {playmates} = usePlaymates()
+    const { playmates } = usePlaymates()
 
     // Summary stats
     const unreadNotifications = notifications?.filter(n => !n.isRead).length || 0;
     const upcomingMatches = matches?.filter(m => m.status === "accepted").length || 0;
     const pendingMatches = matches?.filter(m => m.status === "pending").length || 0;
-    const playmatesLength = playmates ? playmates.length:0;
+    const playmatesLength = playmates ? playmates.length : 0;
 
     return (
         <motion.div
@@ -77,13 +77,12 @@ export default function HomeTab({ setTab }: { setTab: (tab: string) => void }) {
                 >
                     <div className="flex flex-col items-center cursor-pointer" onClick={() => setTab("My Playmates")}>
                         <Users className="w-8 h-8 text-green-500 mb-2" />
-                    {playmatesLength != 0 ?(<div className="text-lg font-bold text-green-700 dark:text-green-200">{playmatesLength}</div>):<p className="text-xl font-bold text-teal-700">Loading...</p>}
-                    <div className="text-sm text-gray-500 dark:text-gray-400">Playmates</div>
+                        {playmatesLength != 0 ? (<div className="text-lg font-bold text-green-700 dark:text-green-200">{playmatesLength}</div>) : <p className="text-xl font-bold text-teal-700">Loading...</p>}
+                        <div className="text-sm text-gray-500 dark:text-gray-400">Playmates</div>
                     </div>
-                    <button className="w-full px-2 py-1 bg-transperent border border-green-400 rounded-full text-sm text-green-700 hover:translate-y-1 hover:bg-green-600 hover:text-white" onClick={()=>setTab("Find Players")}>Find Playmates</button>
+                    <button className="w-full px-2 py-1 bg-transperent border border-green-400 rounded-full text-sm text-green-700 hover:translate-y-1 hover:bg-green-600 hover:text-white" onClick={() => setTab("Find Players")}>Find Playmates</button>
                 </motion.div>
                 <motion.div
-                    onClick={() => setTab("My Matches")}
                     whileHover={{ scale: 1.04 }}
                     className="flex flex-col items-center justify-center bg-white dark:bg-gray-800 rounded-xl shadow p-4 transition"
                 >
@@ -92,7 +91,6 @@ export default function HomeTab({ setTab }: { setTab: (tab: string) => void }) {
                     <div className="text-sm text-gray-500 dark:text-gray-400">Upcoming Matches</div>
                 </motion.div>
                 <motion.div
-                    onClick={() => setTab("My Matches")}
                     whileHover={{ scale: 1.04 }}
                     className="flex flex-col items-center justify-center bg-white dark:bg-gray-800 rounded-xl shadow p-4 transition"
                 >

@@ -11,12 +11,16 @@ import { changeStatusOfMatch } from "./match/common/ChangeStatusOffMatch";
 import { clearOldNotification } from "./notifications/clearOldNotification";
 import { clearOldProfileMatches } from "./match/common/clearOldProfileMatches";
 import { ChangeStatusOffProfileMatches } from "./match/MatchCreation/ChangeStatusOffProfileMatches";
+import { AddPlayersToMatch } from "./match/MatchCreation/AutomaticPlayerFinder";
+import { AddNewPlayersToProfileMatch } from "./match/MatchCreation/AddNewPlayersToProfileMatch";
 
+export {AddNewPlayersToProfileMatch}
+export {AddPlayersToMatch}
 export {ChangeStatusOffProfileMatches};
 export {clearOldProfileMatches}
 export {clearOldNotification}
 export {changeStatusOfMatch};
-export { preposeMatch }
-export { clearOldAvailability }
+export { preposeMatch };
+export { clearOldAvailability };
 export {AddProposedMatchToProfile};
 

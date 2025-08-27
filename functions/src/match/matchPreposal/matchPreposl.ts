@@ -15,6 +15,8 @@ export const preposeMatch = onDocumentCreated(
         try {
 
             const { userUid, profileId } = event.params;
+            console.log(userUid, profileId);
+
 
             const currentUserAvailability = event.data?.data();
 
@@ -67,7 +69,6 @@ export const preposeMatch = onDocumentCreated(
                     const preference = currentUserPreferences.find((pref: string) =>
                         playmatePreferences.includes(pref)
                     );
-                    console.log("locationMatch", locationMatch, "dateMatch", dateMatch, "prefence", preference);
                     if (locationMatch && dateMatch && preference) {
 
                         if (isTimeOverlap(currentUserAvailability, playmateAvailability)) {

@@ -4,7 +4,7 @@ import { SkillBasedTennisBallsUi } from "../ui/SkillTennisBalls";
 export default function PlayerCard(player: PlayerProfile) {
 
     const { name, photoUrl, skill, locations } = player;
-    const LocationsNames = locations.map(loc => loc.name);
+    const LocationsNames = locations.slice(0,4).map(loc => loc.name);
     return (
         <div className="flex items-center justify-between bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md hover:shadow-lg transition hover:scale-[1.01]">
             {/* Left: Image */}

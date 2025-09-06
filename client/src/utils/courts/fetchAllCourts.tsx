@@ -25,6 +25,7 @@ export const fetchAllCourts = async () => {
                     lat: data.location?.lat || 0,
                     lng: data.location?.lng || 0,
                 },
+                reviews:data.reviews || []
             }
         })
         return courts;

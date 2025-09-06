@@ -28,7 +28,7 @@ export const DisplayMatches = ({ matches }: { matches: any[] | undefined }) => {
         toast.success("You accepted the Match");
         setTabOpen(false);
     };
-    const CloseTab = ()=>{
+    const CloseTab = () => {
         setTabOpen(false);
     }
     if (!matches) return;
@@ -54,22 +54,25 @@ export const DisplayMatches = ({ matches }: { matches: any[] | undefined }) => {
             </div>
             {isTabOpen ? (<div>
                 <CreateMatch CloseTab={CloseTab} />
-            </div>) : null}
-            <h1 className="text-bold text-black dark:text-white font-bold text-2xl">Matches</h1>
-            <div className="space-y-2">
-                {matches.length === 0 ? (
-                    <p className="text-gray-500">No matches.</p>
-                ) : (
-                    matches.map((match: any) => (
-                        <div
-                            key={match.id}
-                            className={`p-4 rounded-lg transition-all duration-300`}
-                        >
-                            <DisplayMatch match={match} onRespond={handleMatchPreposalResponse} />
-                        </div>
-                    ))
-                )}
+            </div>) : (<div>
+                <h1 className="text-bold text-black dark:text-white font-bold text-2xl">Matches</h1>
+                <div className="space-y-2">
+                    {matches.length === 0 ? (
+                        <p className="text-gray-500">No matches.</p>
+                    ) : (
+                        matches.map((match: any) => (
+                            <div
+                                key={match.id}
+                                className={`p-4 rounded-lg transition-all duration-300`}
+                            >
+                                <DisplayMatch match={match} onRespond={handleMatchPreposalResponse} />
+                            </div>
+                        ))
+                    )}
+                </div>
             </div>
+            )}
+
         </div>
     );
 }

@@ -19,7 +19,8 @@ export const TimeSelctorPopUp = ({ matchId, onSubmit }: { matchId: any, onSubmit
         if (!startTime || !duration) toast.error("Please Enter All the Fields")
         setLoading(true);
         const endTime = getEndTime(duration, startTime);
-        const matchRef = doc(db, "matches", matchId)
+        const matchRef = doc(db, "matches", matchId);
+    
         await updateDoc(matchRef, {
             status: "Time-Preposed",
             startTime: startTime,
@@ -29,6 +30,7 @@ export const TimeSelctorPopUp = ({ matchId, onSubmit }: { matchId: any, onSubmit
         setLoading(false)
         onSubmit(false);
     }
+
     return (
         <div className="absolute right-0 z-50 mt-10 px-5 py-2 w-full max-w-xl border border-green-200 dark:border-green-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 rounded-2xl shadow-2xl animate-fade-in-down overflow-hidden">
             <div className="flex items-center gap-3 py-2">

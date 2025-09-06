@@ -1,21 +1,17 @@
 import { Loading } from "@/components/ui/Loading";
 import { usePlaymates } from "@/context/playmatesContext";
 import { useProfile } from "@/context/profileContext";
-import { PlayerProfile } from "@/utils/TYPE";
+import { Player, PlayerProfile } from "@/utils/TYPE";
 import { Check, Search, User, Users, X, ChevronDown } from "lucide-react";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 
-type Playmate = {
-    profileId: string;
-    userUid: string;
-    status: string;
-};
+
 
 type PlaymatePickerPropsType = {
-    selected: Playmate[];
-    onChange: (selected: Playmate[]) => void;
+    selected: any[];
+    onChange: (selected: any[]) => void;
     numberOfPlayers: number;
     isAutoPlayerPickerSelected: boolean;
     OnAutoPlayerSelect: () => void;
@@ -33,7 +29,6 @@ export const PlaymatePicker = ({
     const [search, setSearch] = useState("");
     const [isOpen, setIsOpen] = useState(false);
 
-    // ✅ Ensure current profile is selected at first
     useEffect(() => {
         if (
             selectedProfile &&
@@ -45,6 +40,7 @@ export const PlaymatePicker = ({
                     profileId: selectedProfile.id,
                     userUid: selectedProfile.userUid,
                     status: "pending",
+                    name:selectedProfile.name
                 },
             ]);
         }
@@ -70,6 +66,7 @@ export const PlaymatePicker = ({
                     userUid: playmate.userUid,
                     status:
                         playmate.id === selectedProfile?.id ? "owner" : "pending",
+                    name:playmate.name
                 },
             ]);
         }
@@ -84,7 +81,6 @@ export const PlaymatePicker = ({
         setIsOpen(false);
     };
 
-    // ✅ Add yourself into the dropdown list too
     const allPlaymates: PlayerProfile[] = selectedProfile
         ? [selectedProfile, ...(playmates || [])]
         : playmates || [];
@@ -102,10 +98,6 @@ export const PlaymatePicker = ({
             {/* Inline selected chips */}
             <div className="flex flex-wrap gap-2">
                 {selected.map((sel) => {
-                    const profile =
-                        sel.profileId === selectedProfile?.id
-                            ? selectedProfile
-                            : playmates?.find((p) => p.id === sel.profileId);
 
                     return (
                         <motion.div
@@ -119,7 +111,7 @@ export const PlaymatePicker = ({
                         >
                             <User className="w-4 h-4" />
                             <span className="truncate max-w-[100px]">
-                                {profile?.name ?? "Unknown"}
+                                {`${sel?.name}`}
                             </span>
                             <X
                                 onClick={() =>
@@ -196,7 +188,7 @@ export const PlaymatePicker = ({
                                                 onClick={() => handleOnChange(playmate)}
                                                 className={`flex items-center justify-between px-3 py-2 cursor-pointer 
                           hover:bg-green-100 dark:hover:bg-green-700 transition
-                          ${selectedNow
+                        ${selectedNow
                                                         ? "bg-green-200 dark:bg-green-600"
                                                         : ""
                                                     }`}

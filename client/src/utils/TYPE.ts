@@ -1,6 +1,10 @@
 import { Timestamp } from "firebase/firestore";
 
-
+export type reviewType = {
+    name:string,
+    comment:string,
+    rating:number;
+}
 export type Playmate = {
     userUid: string;
     profileId: string;
@@ -59,9 +63,17 @@ export type courtType = {
         lng: number;
     };
     title: string;
+    reviews:reviewType[];
 }
 
 export type LocationStorageType = {
     name: string;
     courtId: string;
 }
+ export type Player = {
+    profileId: string;
+    userUid: string;
+    status: string;
+    name:string;
+    team:string;
+};

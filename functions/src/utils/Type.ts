@@ -19,4 +19,5 @@ export type PlayersType = {
     userUid:string;
     profileId:string;
     status:string;
+    name:string;
 }

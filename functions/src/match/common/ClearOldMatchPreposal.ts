@@ -27,7 +27,7 @@ export const clearOldMatchPreposal = onSchedule(
                     matchDate.getDate()
                 );
 
-                if (availabilityDate < currentDate) {
+                if (availabilityDate < currentDate && matchData.status != "accepted") {
                     await db.doc(`matches/${matchId}`).delete();
                     console.log(`Match with ID ${matchId} has been cleared.`);
                 }

@@ -108,7 +108,10 @@ export const FindPlayers = () => {
                             key="player-grid"
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
+                            exit=   
+                            
+                            
+                            {{ opacity: 0, scale: 0.95 }}
                             transition={{ duration: 0.3 }}
                             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
                             aria-label="Players Grid"

@@ -9,6 +9,7 @@ type MatchContextType = {
     matches: any[] | undefined,
     setMatches: React.Dispatch<React.SetStateAction<any[] | undefined>>;
     loading:boolean;
+    refreshMatches:()=>void;
 }
 
 const MatchContext = createContext<MatchContextType | undefined>(undefined);
@@ -50,8 +51,11 @@ export const MatchProvider = ({ children }: { children: React.ReactNode }) => {
         }
     }, [user?.uid, selectedProfile?.id])
 
+    const refreshMatches = ()=>{
+        fetchData();
+    }
     return(
-        <MatchContext.Provider value={{matches,setMatches,loading}}>
+        <MatchContext.Provider value={{matches,setMatches,loading,refreshMatches}}>
             {children}
         </MatchContext.Provider>
     )

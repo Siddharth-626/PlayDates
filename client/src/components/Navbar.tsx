@@ -1,10 +1,9 @@
 import { useAuth } from '@/context/authContext';
 import Link from 'next/link';
 import { useTheme } from '@/context/ThemeContext';
-import { MoonIcon, SunIcon, HomeIcon, LogInIcon, UserCircle2, MenuIcon } from 'lucide-react';
+import { MoonIcon, SunIcon, HomeIcon, LogInIcon, MenuIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { ProfileInfo } from './auth/ProfileInfo';
-import { createCourt } from '@/utils/testFunctions/createCourt';
 
 export default function Navbar() {
   const { user } = useAuth();
@@ -69,7 +68,6 @@ export default function Navbar() {
               </>
             )}
           </button>
-          <button onClick={createCourt}>Create</button>
         </div>
       </div>
     </nav>

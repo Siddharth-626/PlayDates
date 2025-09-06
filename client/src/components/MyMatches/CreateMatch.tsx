@@ -1,12 +1,12 @@
 import { LocationStorageType } from "@/utils/TYPE"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import CustomDatePicker from "../commonComponents/Availability/DateSelector";
 import LocationSelector from "@/components/commonComponents/Profile/LocationSelector";
 import PreferencesSelector from "@/components/commonComponents/Profile/PreferencesSelector";
 import { Calendar, Clock, Timer, MapPin, List, Plus, X } from "lucide-react";
 import TimePicker from "../commonComponents/Availability/TimeSelector";
 import DurationSelector from "../commonComponents/Availability/DurationSelector";
-import { PlaymatePicker } from "../commonComponents/Playmates/PlaymateSelector";
+import { PlaymatePicker } from "../commonComponents/Players/PlayerSelector";
 import { FiUserPlus } from "react-icons/fi";
 import { addDoc, collection, Timestamp } from "firebase/firestore";
 import toast from "react-hot-toast";
@@ -15,6 +15,7 @@ import { motion } from "framer-motion";
 import { useAuth } from "@/context/authContext";
 import { useProfile } from "@/context/profileContext";
 import { getEndTime } from "@/utils/Time/GetEndTime";
+import { TeamsSelector } from "../commonComponents/Players/SelectTeams";
 
 
 
@@ -26,11 +27,12 @@ export const CreateMatch = ({ CloseTab }: { CloseTab: () => void }) => {
     const [duration, setDuration] = useState('');
     const [preference, setPreference] = useState<string[]>([]);
     const [locations, setLocations] = useState<LocationStorageType[]>([]);
-    const [players, setPlayers] = useState<any[]>([{ userUid: user?.uid, profileId: selectedProfile?.id, status: "pending" }]);
+    const [players, setPlayers] = useState<any[]>([{ userUid: user?.uid, profileId: selectedProfile?.id, status: "pending", name: selectedProfile?.name }]);
     const [loading, setLoading] = useState(false);
-    const [showDate, setShowDate] = useState(false);
     const [isAutoPlayerPickerSelected, setIsAutoPlayerPickerSelected] = useState(false);
     const [showSchedule, setShowSchedule] = useState(false);
+    const [isTeamSelector, setIsTeamSelector] = useState(true);
+
 
     const SelectLocation = (val: LocationStorageType[]) => {
         setLocations(val)
@@ -45,15 +47,21 @@ export const CreateMatch = ({ CloseTab }: { CloseTab: () => void }) => {
     const numberOfPlayers = pref.includes("singles") ? 2 : 4;
 
     const endTime = getEndTime(duration, startTime);
-    let status = "created"
+    let status = "created";
 
     const handleAutoPlayerSector = () => {
         setIsAutoPlayerPickerSelected(!isAutoPlayerPickerSelected);
     }
+
+    const host = {
+        userUid: user?.uid,
+        profileId: selectedProfile?.id,
+        name: selectedProfile?.name
+    }
     const handleSubmit = async () => {
         try {
             setLoading(true)
-            if (!date || !locations || !preference) { toast.error("please enter all the fields"); setLoading(false); return };
+            if (!date || !locations[0] || !preference[0]) { toast.error("please enter all the fields"); setLoading(false); return };
 
             const MatchData = {
                 players: players,
@@ -64,49 +72,58 @@ export const CreateMatch = ({ CloseTab }: { CloseTab: () => void }) => {
                 duration: duration || "",
                 status: isAutoPlayerPickerSelected && players.length < numberOfPlayers ? "open" : "created",
                 MatchType: preference[0],
+                host: host
             }
 
             const MatchesColectionRef = collection(db, 'matches');
             await addDoc(MatchesColectionRef, MatchData);
 
             toast.success("match created");
-
+            CloseTab();
         } catch (error) {
             console.log("error while creating match ", error);
         } finally {
             setLoading(false)
-            CloseTab();
         }
     }
+
+    useEffect(() => {
+        if (players.length == 4) {
+            setPreference(["Doubles"]);
+        }
+        if (players.length == 2) {
+            setPreference(["Singles"]);
+        }
+    }, players)
     return (
         <div className="flex flex-col gap-6 p-4 md:p-6 max-w-5xl mx-auto shadow-lg border border-green-300 rounded-xl">
             {/* Title */}
             <h2 className="text-2xl md:text-3xl font-bold text-green-600 dark:text-green-400 text-center">
-                🎾 Create a New Match
+                Create a New Match
             </h2>
 
             {/* Responsive Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="flex flex-col gap-6">
                 {/* Left: Match Schedule */}
                 <motion.div
-                    className="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-green-200 dark:border-green-700"
+                    className="bg-gradient-to-br from-green-50 via-white to-green-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 text-gray-900 dark:text-white rounded-xl shadow-lg border border-green-200 dark:border-green-700"
                 >
                     {/* Header (Collapsible in mobile) */}
                     <button
                         onClick={() => setShowSchedule(!showSchedule)}
-                        className="flex w-full justify-between items-center px-4 py-3 md:cursor-default md:pointer-events-none"
+                        className="flex w-full justify-between items-center px-4 py-3"
                     >
                         <span className="flex items-center gap-2 font-semibold text-gray-700 dark:text-gray-200">
                             <Calendar className="text-green-500" size={20} />
                             Match Schedule
                         </span>
-                        <span className="md:hidden">
+                        <span className=""  onClick={() => setShowSchedule(!showSchedule)}>
                             {showSchedule ? <X size={18} /> : <Plus size={18} />}
                         </span>
                     </button>
 
                     {/* Content */}
-                    {(showSchedule || window.innerWidth >= 768) && (
+                    {(showSchedule) && (
                         <motion.div
                             initial={{ height: 0, opacity: 0 }}
                             animate={{ height: "auto", opacity: 1 }}
@@ -136,6 +153,20 @@ export const CreateMatch = ({ CloseTab }: { CloseTab: () => void }) => {
 
                 {/* Right: Other Settings */}
                 <div className="flex flex-col gap-6">
+
+                    {/* Players */}
+                    <div className="bg-white dark:bg-gray-900 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-4">
+                        <label className="flex items-center gap-2 text-gray-700 dark:text-gray-200 mb-2 font-semibold">
+                            <FiUserPlus size={18} className="text-green-500" /> Players
+                        </label>
+                        <PlaymatePicker
+                            OnAutoPlayerSelect={handleAutoPlayerSector}
+                            isAutoPlayerPickerSelected={isAutoPlayerPickerSelected}
+                            numberOfPlayers={numberOfPlayers}
+                            selected={players}
+                            onChange={SelectPlayers}
+                        />
+                    </div>
                     {/* Preferences */}
                     <div className="bg-white dark:bg-gray-900 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-4">
                         <label className="flex items-center gap-2 text-gray-700 dark:text-gray-200 mb-2 font-semibold">
@@ -159,42 +190,35 @@ export const CreateMatch = ({ CloseTab }: { CloseTab: () => void }) => {
                             onChange={SelectLocation}
                         />
                     </div>
+                    {players.length == 4 &&
+                        <div className="bg-white dark:bg-gray-900 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-4">
+                            <label className="flex items-center gap-2 text-gray-700 dark:text-gray-200 mb-2 font-semibold">
+                                <FiUserPlus size={18} className="text-green-500" /> Select Teems
+                            </label>
+                            <TeamsSelector OnClose={() => console.log()
 
-                    {/* Players */}
-                    <div className="bg-white dark:bg-gray-900 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-4">
-                        <label className="flex items-center gap-2 text-gray-700 dark:text-gray-200 mb-2 font-semibold">
-                            <FiUserPlus size={18} className="text-green-500" /> Players
-                        </label>
-                        <PlaymatePicker
-                            OnAutoPlayerSelect={handleAutoPlayerSector}
-                            isAutoPlayerPickerSelected={isAutoPlayerPickerSelected}
-                            numberOfPlayers={numberOfPlayers}
-                            selected={players}
-                            onChange={SelectPlayers}
-                        />
-                    </div>
+                            } players={players} OnSubmit={(players) => setPlayers(players)} />;
+                        </div>}
                 </div>
             </div>
 
             {/* Create Button */}
-            <div className="md:static fixed bottom-4 left-0 right-0 flex justify-center">
                 <motion.button
                     whileTap={{ scale: 0.97 }}
                     onClick={handleSubmit}
                     disabled={loading}
-                    className="w-[90%] md:w-1/3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-3 rounded-full font-semibold shadow-lg"
+                    className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-3 rounded-2xl font-semibold shadow-md transition-all"
                 >
                     {loading ? (
-                        <span className="flex items-center gap-2">
+                        <>
                             <Clock className="animate-spin" size={18} /> Creating...
-                        </span>
+                        </>
                     ) : (
-                        <span className="flex items-center gap-2">
+                        <>
                             <Plus size={20} /> Create Match
-                        </span>
+                        </>
                     )}
                 </motion.button>
-            </div>
         </div>
     );
 }

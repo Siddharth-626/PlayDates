@@ -15,9 +15,9 @@ import { useProfile } from "@/context/profileContext";
 import { TimeSelctorPopUp } from "../commonComponents/Matches/timeSelctorPopUp";
 import { GetTimeLeft } from "../commonComponents/Matches/getTimeLeft";
 import { hasMatchEnded } from "@/utils/Time/hasMatchEnded";
-import ScoreSelectorPopup from "../commonComponents/ScoreReporting/ScoreSelectorPoppup";
+import ScoreSelectorPopup from "../ScoreReporting/ScoreSelectorPoppup";
 import { handleScoreSubmit } from "@/utils/Score/handleScoreSubmit";
-import ScoreDisplay from "../commonComponents/ScoreReporting/displayScore";
+import ScoreDisplay from "../ScoreReporting/displayScore";
 import { TeamsSelector } from "../commonComponents/Players/SelectTeams";
 import { FiUserPlus } from "react-icons/fi";
 import { ChangeFieldInDb } from "@/utils/common/ChangeFieldInDb";
@@ -120,11 +120,11 @@ export const DisplayMatch = ({ match, onRespond }: DisplayMatchProps) => {
     }
     const isMatchEnded = isTimeGiven ? hasMatchEnded(date, endTime) : false;
     const isScore = isMatchEnded && !matchData.score;
-    let team1 = MatchType == "Singles" ? `${players[0].name}` : `Team1`;
-    let team2 = MatchType == "Singles" ? `${players[1].name}` : "Team2";
+    let team1 = MatchType == "Singles" ? `${players[0]?.name}` : `Team1`;
+    let team2 = MatchType == "Singles" ? `${players[1]?.name}` : "Team2";
 
     if (MatchType == "Doubles") {
-        for (let i = 0; i < 4; i++) {
+        for (let i = 0; i < players.length; i++) {
             players[i].team == "team1"
                 ? (team1 += `(${players[i].name})`)
                 : (team2 += `(${players[i].name})`);

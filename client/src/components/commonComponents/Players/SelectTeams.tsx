@@ -5,6 +5,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Users, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import toast from "react-hot-toast";
 
 type TeamSelectorType = {
     players: Player[];
@@ -26,6 +27,7 @@ export const TeamsSelector = ({ players, OnClose, OnSubmit }: TeamSelectorType) 
     const handleSubmit = () => {
         OnSubmit(assignedPlayers);
         OnClose();
+        toast.success("Teams Selected")
     };
 
     return (

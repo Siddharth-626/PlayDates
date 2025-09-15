@@ -14,6 +14,7 @@ import PlayerPage from "../profile/ProfilePage/Main";
 import { Button } from "@/components/ui/button";
 import { Loading } from "../ui/Loading";
 import { Users, ArrowLeft } from "lucide-react";
+import { FetchAllPlayers } from "@/utils/FindPlayers/FetchAllPlayers";
 
 export const FindPlayers = () => {
     const [players, setPlayers] = useState<PlayerProfile[]>([]);
@@ -26,18 +27,11 @@ export const FindPlayers = () => {
 
     useEffect(() => {
         const fetchPlayers = async () => {
-            if (!user || loading) return;
+            const allplayers = await FetchAllPlayers();
+            if (!allplayers) return;
 
-            try {
-                const snapshot = await getDocs(collectionGroup(db, 'profile'));
-                const allPlayers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as PlayerProfile[];
-                const Players = allPlayers.filter((player) => player.userUid != user.uid)
-                setPlayers(Players);
-                setFiltered(Players);
-            } catch (error) {
-                console.error("Error while fetching players:", error);
-                toast.error("Error fetching players");
-            }
+            setPlayers(allplayers);
+            setFiltered(allplayers);
         };
 
         fetchPlayers();
@@ -108,9 +102,9 @@ export const FindPlayers = () => {
                             key="player-grid"
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
-                            exit=   
-                            
-                            
+                            exit=
+
+
                             {{ opacity: 0, scale: 0.95 }}
                             transition={{ duration: 0.3 }}
                             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
@@ -133,7 +127,7 @@ export const FindPlayers = () => {
                                             if (e.key === "Enter" || e.key === " ") setSelectedProfile(player);
                                         }}
                                     >
-                                        <PlayerCard {...player} />
+                                        <PlayerCard player={player} />
                                     </div>
                                 </motion.div>
                             ))}

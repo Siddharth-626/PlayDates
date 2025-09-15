@@ -1,12 +1,12 @@
 import { motion } from "framer-motion";
-import { Bell, User, Users, Calendar, MapPin, Trophy, ChevronRight } from "lucide-react";
+import { Bell, User, Users, Calendar, MapPin, Trophy, ChevronRight, Send, } from "lucide-react";
 import { useAuth } from "@/context/authContext";
 import { useProfile } from "@/context/profileContext";
 import { useFetchMatches } from "@/hooks/useFetchMatchs";
 import { useFetchNotifications } from "@/hooks/useFetchNotifications";
 import { DisplayAvailability } from "../availability/displayAvailability/displayAvailability";
-import { CreateMatch } from "../MyMatches/CreateMatch";
 import { usePlaymates } from "@/context/playmatesContext";
+import Link from "next/link";
 
 export default function HomeTab({ setTab }: { setTab: (tab: string) => void }) {
     const { user } = useAuth();
@@ -19,8 +19,7 @@ export default function HomeTab({ setTab }: { setTab: (tab: string) => void }) {
     const unreadNotifications = notifications?.filter(n => !n.isRead).length || 0;
     const upcomingMatches = matches?.filter(m => m.status === "accepted").length || 0;
     const pendingMatches = matches?.filter(m => m.status === "pending").length || 0;
-    const playmatesLength = playmates ? playmates.length : 0;
-
+    const playmatesLength = playmates ? playmates.length : 0
     return (
         <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -55,6 +54,18 @@ export default function HomeTab({ setTab }: { setTab: (tab: string) => void }) {
                                 {unreadNotifications}
                             </span>
                         )}
+                    </motion.div>
+                    <motion.div
+                        whileHover={{ scale: 1.1 }}
+                        className="relative"
+                        tabIndex={0}
+                        aria-label="Notifications"
+                    >
+                        <Link href="/chat">
+                            <Send className="w-8 h-8 text-green-500 dark:text-green-300" />
+                        </Link>
+
+
                     </motion.div>
                     <motion.div
                         whileHover={{ scale: 1.1 }}

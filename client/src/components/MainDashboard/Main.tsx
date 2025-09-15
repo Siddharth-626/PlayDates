@@ -10,7 +10,7 @@ import {
     FiUser,
     FiBell,
 } from "react-icons/fi";
-import { HomeIcon, X } from "lucide-react";
+import { HomeIcon, icons, Send, X } from "lucide-react";
 import { Bars3Icon } from "@heroicons/react/16/solid";
 import PlayerProfileDropdown from "../profile/ViewProfile/PlayerProfile";
 import { FindPlayers } from "../FindPlayers/Main";
@@ -25,11 +25,13 @@ import { DisplayMatches } from "../MyMatches/match";
 import { useFetchNotifications } from "@/hooks/useFetchNotifications";
 import HomeTab from "../HomeComponents/homeTab";
 import { useMatchs } from "@/context/matchContext";
+import { ChatDashBoard } from "../chat/chatDashBoard";
 
 const NAV_ITEMS = [
     { label: "Home", icon: <HomeIcon/>},
     { label: "My Playmates", icon: <FiUsers /> },
     { label: "My Matches", icon: <FiGlobe /> },
+    {label:"Messages",icon:<Send />},
     { label: "Find Courts", icon: <FiMapPin /> },
     { label: "Find Players", icon: <FiSearch /> },
     { label: "Notifications", icon: <FiBell /> },
@@ -46,6 +48,8 @@ const Dashboard = () => {
 
     const renderContent = () => {
         switch (activeTab) {
+            case "Messages":
+                return <ChatDashBoard />
             case  "Home":
                 return <HomeTab setTab={setActiveTab} />;
             case "My Playmates":

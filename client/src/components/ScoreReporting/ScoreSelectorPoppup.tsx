@@ -131,7 +131,7 @@ function CardToggle({
                     <div className={`font-semibold ${active ? "text-green-700 dark:text-green-300" : ""}`}>{label}</div>
                     {subtitle && <div className="text-xs text-zinc-500">{subtitle}</div>}
                 </div>
-                {active && (
+                {active && window.innerWidth >= 768 && (
                     <span className="ml-auto rounded-full bg-green-600 px-2 py-0.5 text-xs font-semibold text-white">WINNER</span>
                 )}
             </div>

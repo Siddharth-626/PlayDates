@@ -1,7 +1,7 @@
 import { PlayerProfile } from "@/utils/TYPE";
 import { SkillBasedTennisBallsUi } from "../ui/SkillTennisBalls";
 
-export default function PlayerCard(player: PlayerProfile) {
+export default function PlayerCard({player}: {player:PlayerProfile}) {
 
     const { name, photoUrl, skill, locations } = player;
     const LocationsNames = locations.slice(0,4).map(loc => loc.name);

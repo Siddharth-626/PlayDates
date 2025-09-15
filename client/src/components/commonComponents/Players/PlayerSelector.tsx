@@ -15,6 +15,7 @@ type PlaymatePickerPropsType = {
     numberOfPlayers: number;
     isAutoPlayerPickerSelected: boolean;
     OnAutoPlayerSelect: () => void;
+    type:string;
 };
 
 export const PlaymatePicker = ({
@@ -22,7 +23,7 @@ export const PlaymatePicker = ({
     onChange,
     numberOfPlayers,
     isAutoPlayerPickerSelected,
-    OnAutoPlayerSelect,
+    OnAutoPlayerSelect,type
 }: PlaymatePickerPropsType) => {
     const { selectedProfile } = useProfile();
     const { playmates, loading } = usePlaymates();
@@ -32,6 +33,7 @@ export const PlaymatePicker = ({
     useEffect(() => {
         if (
             selectedProfile &&
+            type == "match" &&
             !selected.some((s) => s.profileId === selectedProfile.id)
         ) {
             onChange([
@@ -81,7 +83,7 @@ export const PlaymatePicker = ({
         setIsOpen(false);
     };
 
-    const allPlaymates: PlayerProfile[] = selectedProfile
+    const allPlaymates: PlayerProfile[] = selectedProfile && type == "match"
         ? [selectedProfile, ...(playmates || [])]
         : playmates || [];
 
@@ -209,7 +211,7 @@ export const PlaymatePicker = ({
                                         );
                                     })}
                                     {/* Anybody option */}
-                                    <li
+                                   {type == "match"? <li
                                         onClick={handelAutomaticPlaymateSubmit}
                                         className={`flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-green-100 dark:hover:bg-green-700 transition 
                       ${isAutoPlayerPickerSelected
@@ -222,7 +224,7 @@ export const PlaymatePicker = ({
                                             Anybody
                                         </span>
                                         {isAutoPlayerPickerSelected && <Check className="w-4 h-4" />}
-                                    </li>
+                                    </li>:null}
                                 </ul>
                             )}
                         </motion.div>

@@ -63,6 +63,10 @@ export const CreateMatch = ({ CloseTab }: { CloseTab: () => void }) => {
             setLoading(true)
             if (!date || !locations[0] || !preference[0]) { toast.error("please enter all the fields"); setLoading(false); return };
 
+            if (preference[0] == "Doubles" && players.length < 4 && !isAutoPlayerPickerSelected) {
+                toast.error("You Need to select 4 Players To Play Doubles");
+                return
+            }
             const MatchData = {
                 players: players,
                 courtId: locations[0].courtId,
@@ -117,7 +121,7 @@ export const CreateMatch = ({ CloseTab }: { CloseTab: () => void }) => {
                             <Calendar className="text-green-500" size={20} />
                             Match Schedule
                         </span>
-                        <span className=""  onClick={() => setShowSchedule(!showSchedule)}>
+                        <span className="" onClick={() => setShowSchedule(!showSchedule)}>
                             {showSchedule ? <X size={18} /> : <Plus size={18} />}
                         </span>
                     </button>
@@ -160,6 +164,7 @@ export const CreateMatch = ({ CloseTab }: { CloseTab: () => void }) => {
                             <FiUserPlus size={18} className="text-green-500" /> Players
                         </label>
                         <PlaymatePicker
+                            type="match"
                             OnAutoPlayerSelect={handleAutoPlayerSector}
                             isAutoPlayerPickerSelected={isAutoPlayerPickerSelected}
                             numberOfPlayers={numberOfPlayers}
@@ -203,22 +208,22 @@ export const CreateMatch = ({ CloseTab }: { CloseTab: () => void }) => {
             </div>
 
             {/* Create Button */}
-                <motion.button
-                    whileTap={{ scale: 0.97 }}
-                    onClick={handleSubmit}
-                    disabled={loading}
-                    className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-3 rounded-2xl font-semibold shadow-md transition-all"
-                >
-                    {loading ? (
-                        <>
-                            <Clock className="animate-spin" size={18} /> Creating...
-                        </>
-                    ) : (
-                        <>
-                            <Plus size={20} /> Create Match
-                        </>
-                    )}
-                </motion.button>
+            <motion.button
+                whileTap={{ scale: 0.97 }}
+                onClick={handleSubmit}
+                disabled={loading}
+                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-3 rounded-2xl font-semibold shadow-md transition-all"
+            >
+                {loading ? (
+                    <>
+                        <Clock className="animate-spin" size={18} /> Creating...
+                    </>
+                ) : (
+                    <>
+                        <Plus size={20} /> Create Match
+                    </>
+                )}
+            </motion.button>
         </div>
     );
 }

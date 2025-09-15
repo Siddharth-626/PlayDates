@@ -45,7 +45,7 @@ export const DisplayPlaymates = () => {
                 if (e.key === "Enter" || e.key === " ") setSelectedProfile(player);
               }}
             >
-              <PlayerCard {...player} />
+              <PlayerCard player={player} />
             </div>
           </motion.div>
         ))}

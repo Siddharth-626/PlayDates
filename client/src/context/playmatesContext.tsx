@@ -6,13 +6,13 @@ import { useProfile } from "./profileContext";
 
 type playmateConstextType = {
     playmates:PlayerProfile[] | null;
-    setPlaymates:React.Dispatch<React.SetStateAction<PlayerProfile[] | null>>;
+    setPlaymates:React.Dispatch<React.SetStateAction<PlayerProfile[]>>;
     loading:boolean
 }
 const playmatesContext = createContext<playmateConstextType | undefined>(undefined);
 
 export const PlaymateProvider = ({children}:{children:React.ReactNode})=>{
-    const [playmates, setPlaymates] = useState<PlayerProfile[] | null>(null);
+    const [playmates, setPlaymates] = useState<PlayerProfile[]>([]);
     const [loading,setLoading] =  useState(false);
     const {user} = useAuth();
     const {selectedProfile} = useProfile()

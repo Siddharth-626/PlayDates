@@ -28,14 +28,15 @@ import { useMatchs } from "@/context/matchContext";
 import { ChatDashBoard } from "../chat/chatDashBoard";
 
 const NAV_ITEMS = [
-    { label: "Home", icon: <HomeIcon/>},
+    { label: "Home", icon: <HomeIcon /> },
     { label: "My Playmates", icon: <FiUsers /> },
     { label: "My Matches", icon: <FiGlobe /> },
-    {label:"Messages",icon:<Send />},
+    { label: "My Calendar", icon: <FiCalendar /> },
+    { label: "Messages", icon: <Send /> },
     { label: "Find Courts", icon: <FiMapPin /> },
     { label: "Find Players", icon: <FiSearch /> },
     { label: "Notifications", icon: <FiBell /> },
-    { label: "My Calendar", icon: <FiCalendar /> },
+
     { label: "Player Profile", icon: <FiUser /> },
 ];
 
@@ -50,7 +51,7 @@ const Dashboard = () => {
         switch (activeTab) {
             case "Messages":
                 return <ChatDashBoard />
-            case  "Home":
+            case "Home":
                 return <HomeTab setTab={setActiveTab} />;
             case "My Playmates":
                 return <DisplayPlaymates />;
@@ -69,7 +70,7 @@ const Dashboard = () => {
             default:
                 return <div>Select an option</div>;
         }
-    };
+    }; ``
 
     // Helper for notification/match badge
     const getBadge = (label: string) => {
@@ -122,7 +123,7 @@ const Dashboard = () => {
 
 
             {/* Main content */}
-            <main className="flex-1 flex flex-col min-h-screen px-0 md:px-8 py-4 transition-all duration-500">
+            <main className="flex-1 flex flex-col min-h-screen px-0  transition-all duration-500">
                 {/* Content */}
                 <div className="flex-1 w-full  mx-auto mt-2 md:mt-6">
                     {renderContent()}
@@ -132,7 +133,7 @@ const Dashboard = () => {
 
             {/* Bottom nav for mobile */}
             <nav className="fixed md:hidden bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-gray-900/95 border-t border-green-200 dark:border-gray-700 flex justify-around items-center py-2 shadow-2xl rounded-t-2xl transition-all duration-500">
-                {NAV_ITEMS.map(({ label, icon }) => (
+                {NAV_ITEMS.slice(0, 5).map(({ label, icon }) => (
                     <button
                         key={label}
                         onClick={() => setActiveTab(label)}

@@ -1,9 +1,9 @@
 import { Timestamp } from "firebase/firestore";
 
 export type reviewType = {
-    name:string,
-    comment:string,
-    rating:number;
+    name: string,
+    comment: string,
+    rating: number;
 }
 export type Playmate = {
     userUid: string;
@@ -34,7 +34,7 @@ export type NotificationsType = {
 }
 
 export type MatchPreposalType = {
-    id:string | undefined;
+    id: string | undefined;
     type: string;
     matchId: string;
     status: string;
@@ -63,17 +63,17 @@ export type courtType = {
         lng: number;
     };
     title: string;
-    reviews:reviewType[];
+    reviews: reviewType[];
 }
 
 export type LocationStorageType = {
     name: string;
     courtId: string;
 }
- export type Player = {
+export type Player = {
     profileId: string;
     userUid: string;
     status: string;
-    name:string;
-    team:string;
+    name: string;
+    team: string;
 };

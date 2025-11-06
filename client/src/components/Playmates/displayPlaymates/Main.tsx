@@ -2,20 +2,15 @@ import { useEffect, useState, useMemo } from "react";
 import { PlayerProfile } from "@/utils/TYPE";
 import { Button } from "@/components/ui/button";
 import { AnimatePresence, motion } from "framer-motion";
-import { useAuth } from "@/context/authContext";
-import PlayerPage from "@/components/profile/ProfilePage/Main";
-import PlayerCard from "@/components/FindPlayers/PlayerCard";
-import { FetchPlaymates } from "@/utils/Playmates/FetchPlaymates";
-import { useProfile } from "@/context/profileContext";
 import { Users, ArrowLeft } from "lucide-react";
 import { Loading } from "@/components/ui/Loading";
-import { useFetchPlaymates } from "@/hooks/useFetchPlaymates";
+import PlayerPage from "@/components/profile/ProfilePage/Main";
+import PlayerCard from "@/components/FindPlayers/PlayerCard";
 import { usePlaymates } from "@/context/playmatesContext";
 
 export const DisplayPlaymates = () => {
   const [SelectedProfile, setSelectedProfile] = useState<PlayerProfile | null>(null);
-  const { playmates, loading } = usePlaymates()
-
+  const { playmates, loading } = usePlaymates();
 
   const playmatesGrid = useMemo(
     () => (
@@ -54,7 +49,8 @@ export const DisplayPlaymates = () => {
     [playmates]
   );
 
-  if (loading) return <Loading />
+  if (loading) return <Loading />;
+
   return (
     <div className="p-4 md:p-6 min-h-[70vh]">
       <h1 className="font-mono text-3xl font-bold mb-6 text-center text-green-700 dark:text-green-200 flex items-center justify-center gap-2">
@@ -62,7 +58,7 @@ export const DisplayPlaymates = () => {
       </h1>
 
       <AnimatePresence mode="wait">
-        {
+        {!SelectedProfile ? (
           playmates!.length === 0 ? (
             <motion.div
               key="empty"
@@ -72,13 +68,14 @@ export const DisplayPlaymates = () => {
               className="flex flex-col items-center justify-center py-16"
             >
               <Users className="text-green-200 dark:text-green-700 mb-2" size={60} />
-              <span className="text-gray-500 dark:text-gray-400 text-lg">No playmates found yet.</span>
+              <span className="text-gray-500 dark:text-gray-400 text-lg">
+                No playmates found yet.
+              </span>
             </motion.div>
           ) : (
             playmatesGrid
           )
-        }
-        {SelectedProfile ? (
+        ) : (
           <motion.div
             key="player-detail"
             initial={{ opacity: 0, y: 20 }}
@@ -99,7 +96,7 @@ export const DisplayPlaymates = () => {
             </div>
             <PlayerPage profileId={SelectedProfile.id} userId={SelectedProfile.userUid} />
           </motion.div>
-        ) : null}
+        )}
       </AnimatePresence>
     </div>
   );

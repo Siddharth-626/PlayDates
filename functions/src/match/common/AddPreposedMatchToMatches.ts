@@ -1,5 +1,7 @@
 import { onDocumentCreated } from "firebase-functions/v2/firestore";
 import { admin } from "../../utils/admin";
+import { createChat } from "../../utils/CreateChat";
+
 
 const db = admin.firestore();
 
@@ -12,7 +14,6 @@ export const AddProposedMatchToProfile = onDocumentCreated(
         try {
             const {matchId} = event.params;
             const matchData = event.data?.data();
-            
             if (!matchData) return;
             const type = matchData.status == "proposed" ? "match proposal" : "created match"
 
@@ -31,7 +32,7 @@ export const AddProposedMatchToProfile = onDocumentCreated(
                 await db
                     .doc(`users/${userUid}/profile/${profileId}/matches/${matchId}`)
                     .set(matchProposal);
-
+                await createChat(players,matchId)
                 console.log(`Added proposed match for Profile: ${profileId}`);
             }
         } catch (error) {

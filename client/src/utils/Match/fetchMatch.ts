@@ -1,20 +1,14 @@
 import { db } from "@/services/config";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, onSnapshot } from "firebase/firestore";
 
 
-export const fetchMatch = async (matchId: string) => {
-    try {
+export const fetchMatch = (matchId: string,callback:(match:any)=>void) => {
         const matchRef = doc(db, "matches", matchId);
-        const matchSnap = await getDoc(matchRef);
-
-        const MatchData = matchSnap?.data();
-
-        if (!MatchData) return;
-
-        return {
-            ...MatchData
-        }
-    } catch (error) {
-        console.log("err while fetching match", error);
-    }
+        return onSnapshot(matchRef,(doc)=>{
+            const match= {
+                id:doc.id,
+                ...doc.data()
+            }
+            callback(match)
+        })
 }

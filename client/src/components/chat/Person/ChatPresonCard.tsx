@@ -4,6 +4,7 @@ import { FetchPlayerProfile } from "@/utils/PlayerProfile/FetchPlayerProfile";
 import { PlayerProfile } from "@/utils/TYPE";
 import { Loading } from "@/components/ui/Loading";
 import { listenToMessages } from "@/utils/chat/listenToMessages";
+import { CheckCheck } from "lucide-react";
 
 type Props = {
     onClick: (player: PlayerProfile) => void;
@@ -39,7 +40,7 @@ export const ChatPersonCard = ({ chat, setChatId, onClick }: Props) => {
 
     useEffect(() => {
         const unsubscribe = listenToMessages(chat.id, (messages) => {
-            const newMessages = messages.filter((msg: any) => msg.seen == false);
+            const newMessages = messages.filter((msg: any) => msg.seen == false && msg.senderUid != selectedProfile?.userUid);
             setUnSeenMessages(newMessages.length);
         })
 
@@ -54,6 +55,7 @@ export const ChatPersonCard = ({ chat, setChatId, onClick }: Props) => {
 
     const { photoUrl, name } = player;
     const isMe = chat.lastMessage?.senderUid == selectedProfile?.userUid;
+    
     return (
         <div
             className="flex items-center px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer transition"
@@ -88,8 +90,8 @@ export const ChatPersonCard = ({ chat, setChatId, onClick }: Props) => {
                     </span>
                 </div>
                 <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600 dark:text-gray-400 truncate">
-                        {isMe ? "You:" : ""} {chat?.lastMessage?.text}
+                    <span className="flex gap-3 text-sm text-gray-600 dark:text-gray-400 truncate">
+                       {isMe ? "You:" : ""} {chat?.lastMessage?.text}
                     </span>
                     {unSeenMeesages > 0 && (
                         <span className="ml-2 min-w-[20px] h-5 px-2 flex items-center justify-center text-xs font-bold text-white bg-blue-500 rounded-full">

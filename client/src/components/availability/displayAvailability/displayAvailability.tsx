@@ -4,28 +4,28 @@ import { fetchAllProfileAvailability } from "@/utils/Availability/fetchAllProfil
 import { AvailabilityType } from "@/utils/TYPE";
 import { Availability } from "../DateBasedAvilability/Main";
 import { motion, AnimatePresence } from "framer-motion";
-import { format } from "date-fns";
+import { format} from "date-fns";
 import { useEffect, useState } from "react";
 import { Timestamp } from "firebase/firestore";
 import { Calendar, Clock, MapPin, List, Timer } from "lucide-react";
+import { getTime } from "@/utils/Time/getTime";
 
 const safeToDate = (input: Date | Timestamp): Date =>
     input instanceof Timestamp ? input.toDate() : input;
 
 export const DisplayAvailability = () => {
-    const [availabilities, setAvailability] = useState<AvailabilityType[]>([]);
+    const [availabilities, setAvailability] = useState<any[]>([]);
     const [showForm, setShowForm] = useState(false);
     const { user } = useAuth();
     const { selectedProfile } = useProfile();
 
     useEffect(() => {
-        const fetchAvailability = async () => {
-            const data = await fetchAllProfileAvailability(user?.uid, selectedProfile?.id);
-            if (data) {
-                setAvailability(data);
+            const unsubscribe =  fetchAllProfileAvailability(user?.uid, selectedProfile?.id,(Availability)=> setAvailability(Availability));
+            return () => {
+            if (unsubscribe) {
+                 unsubscribe();
             }
-        };
-        fetchAvailability();
+  };
     }, [user, selectedProfile]);
 
     const onCreate=()=>{
@@ -99,7 +99,7 @@ export const DisplayAvailability = () => {
                                     </span>
                                     <Clock className="ml-4 text-green-400" size={18} />
                                     <span className="text-md font-medium text-gray-700 dark:text-gray-200">
-                                        {item.time}
+                                        {getTime(item?.startDate)}
                                     </span>
                                 </div>
                                 <div className="flex items-center gap-3 mb-1">
@@ -113,7 +113,7 @@ export const DisplayAvailability = () => {
                                     <span className="text-sm text-gray-600 dark:text-gray-300">
                                         Location: <span className="font-semibold">
                                             {item.locations && item.locations.length > 0
-                                                ? item.locations.map(loc => loc.name).join(", ")
+                                                ? item.locations.map((loc:any) => loc.name).join(", ")
                                                 : "Not specified"}
                                         </span>
                                     </span>

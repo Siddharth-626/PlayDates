@@ -158,20 +158,6 @@ export const CreateMatch = ({ CloseTab }: { CloseTab: () => void }) => {
                 {/* Right: Other Settings */}
                 <div className="flex flex-col gap-6">
 
-                    {/* Players */}
-                    <div className="bg-white dark:bg-gray-900 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-4">
-                        <label className="flex items-center gap-2 text-gray-700 dark:text-gray-200 mb-2 font-semibold">
-                            <FiUserPlus size={18} className="text-green-500" /> Players
-                        </label>
-                        <PlaymatePicker
-                            type="match"
-                            OnAutoPlayerSelect={handleAutoPlayerSector}
-                            isAutoPlayerPickerSelected={isAutoPlayerPickerSelected}
-                            numberOfPlayers={numberOfPlayers}
-                            selected={players}
-                            onChange={SelectPlayers}
-                        />
-                    </div>
                     {/* Preferences */}
                     <div className="bg-white dark:bg-gray-900 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-4">
                         <label className="flex items-center gap-2 text-gray-700 dark:text-gray-200 mb-2 font-semibold">
@@ -193,6 +179,19 @@ export const CreateMatch = ({ CloseTab }: { CloseTab: () => void }) => {
                             type="Match-Creation"
                             selected={locations}
                             onChange={SelectLocation}
+                        />
+                    </div>
+                    <div className="bg-white dark:bg-gray-900 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-4">
+                        <label className="flex items-center gap-2 text-gray-700 dark:text-gray-200 mb-2 font-semibold">
+                            <FiUserPlus size={18} className="text-green-500" /> Players
+                        </label>
+                        <PlaymatePicker
+                            type="match"
+                            OnAutoPlayerSelect={handleAutoPlayerSector}
+                            isAutoPlayerPickerSelected={isAutoPlayerPickerSelected}
+                            numberOfPlayers={numberOfPlayers}
+                            selected={players}
+                            onChange={SelectPlayers}
                         />
                     </div>
                     {players.length == 4 &&

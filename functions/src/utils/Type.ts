@@ -2,9 +2,8 @@ import { Timestamp } from "firebase-admin/firestore";
 
 export type AvailabilityType = {
     id: string;
-    date: Date | Timestamp;
-    time: string;
-    duration: string;
+    startDate:Date | Timestamp;
+    endDate:Date | Timestamp;
     locations:LocationStorageType[];
     preference:string[];
 }
@@ -20,4 +19,5 @@ export type PlayersType = {
     profileId:string;
     status:string;
     name:string;
+    photoUrl:string
 }

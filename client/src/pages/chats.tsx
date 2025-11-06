@@ -1,8 +1,7 @@
 import { ChatDashBoard } from "@/components/chat/chatDashBoard"
-import Navbar from "@/components/Navbar";
+import Navbar from "@/components/Navbar"
 
-
-const Chat = () => {
+const Chats = () => {
     return (
         <div className=" bg-white dark:bg-gray-700">
             <Navbar />
@@ -10,4 +9,4 @@ const Chat = () => {
         </div>
     )
 }
-export default Chat;
+export default Chats;

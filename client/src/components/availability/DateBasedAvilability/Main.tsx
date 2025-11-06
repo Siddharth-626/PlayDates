@@ -13,6 +13,9 @@ import { AvailabilityType, courtType, LocationStorageType } from "@/utils/TYPE";
 import LocationSelector from "@/components/commonComponents/Profile/LocationSelector";
 import PreferencesSelector from "@/components/commonComponents/Profile/PreferencesSelector";
 import { Calendar, Clock, Timer, MapPin, List } from "lucide-react";
+import { insertTimeInDate } from "@/utils/Availability/insertTimeInDate";
+import { getEndTime } from "@/utils/Time/GetEndTime";
+import { Startup } from "@/components/HomeComponents/StartUp";
 
 export const Availability = ({onCreate}:{onCreate:()=>void}) => {
     const [loading, setloading] = useState(false);
@@ -38,10 +41,16 @@ export const Availability = ({onCreate}:{onCreate:()=>void}) => {
         setloading(true)
         if (!date || !time || !duration || !locations || !preference) { toast.error("please enter all the fields"); setloading(false); return };
 
-        const AvailibilityId = uuidv4()
+        const endTime = getEndTime(duration,time);
+        if(!endTime) return
+
+        const startDate = insertTimeInDate(date,time);
+        const endDate = insertTimeInDate(date,endTime);
+        
         const data = {
-            id: AvailibilityId,
             date: Timestamp.fromDate(date),
+            endDate:Timestamp.fromDate(endDate),
+            startDate:Timestamp.fromDate(startDate),
             time: time,
             duration: duration,
             locations: locations,
@@ -51,7 +60,6 @@ export const Availability = ({onCreate}:{onCreate:()=>void}) => {
             userUid: user?.uid,
             profileId: selectedProfile?.id,
             data: data,
-            AvailibilityId: AvailibilityId
         });
         toast.success("Availability added!")
         setloading(false);

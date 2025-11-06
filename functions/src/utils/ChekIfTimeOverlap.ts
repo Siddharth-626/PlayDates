@@ -1,36 +1,22 @@
 import { Timestamp } from "firebase-admin/firestore";
 import { AvailabilityType } from "./Type";
 
-const parseDurationToMinutes = (durationStr: string): number => {
-    const lowerStr = durationStr.toLowerCase();
-
-    if (lowerStr.includes("hour")) {
-        // Handles both "1 hour" and "1.5 hour"
-        const hours = parseFloat(lowerStr.split(" ")[0]);
-        return Math.round(hours * 60);
-    } else if (lowerStr.includes("min")) {
-        const minutes = parseInt(lowerStr.split(" ")[0]);
-        return minutes;
-    } else {
-        return 0;
-    }
-};
 
 const parseDateTime = (availability: AvailabilityType): [number, number] => {
-    const dateObj: Date = availability.date instanceof Timestamp
-        ? availability.date.toDate()
-        : availability.date;
+    const startDate =
+        availability.startDate instanceof Timestamp
+            ? availability.startDate.toDate()
+            : availability.startDate;
 
-    const [hours, minutes] = availability.time.split(":").map(Number);
-    const durationMinutes = parseDurationToMinutes(availability.duration);
+    const endDate =
+        availability.endDate instanceof Timestamp
+            ? availability.endDate.toDate()
+            : availability.endDate;
 
-    const startTime = new Date(dateObj);
-    startTime.setHours(hours, minutes, 0, 0);
-
-    const endTime = new Date(startTime.getTime() + durationMinutes * 60 * 1000);
-
-    return [startTime.getTime(), endTime.getTime()];
+    return [startDate.getTime(), endDate.getTime()];
 };
+
+
 
 export const isTimeOverlap = (availabilityA: any, availabilityB: any): boolean => {
 

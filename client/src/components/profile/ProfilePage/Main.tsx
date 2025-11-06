@@ -57,34 +57,45 @@ const PlayerPage = ({ userId, profileId }: { userId: string; profileId: string }
 
   return (
     <motion.div
-      className="max-w-5xl mx-auto space-y-8 p-4 md:p-8 bg-white/80 dark:bg-gray-900/80 rounded-3xl shadow-2xl backdrop-blur-lg border border-green-200 dark:border-green-700 transition-colors duration-300"
+      className="w-full max-w-2xl mx-auto p-4 sm:p-6 md:p-8 
+                 bg-white/90 dark:bg-gray-900/90 
+                 rounded-2xl shadow-lg sm:shadow-xl 
+                 backdrop-blur-md border border-green-200 dark:border-green-700 
+                 transition-colors duration-300"
       initial={{ opacity: 0, y: 40 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, type: "spring" }}
       aria-label="Player Profile Page"
     >
+      {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2, duration: 0.5, type: "spring" }}
-        className="flex items-center gap-2 mb-2"
+        className="flex items-center gap-2 mb-6"
       >
-        <UserPlus className="w-7 h-7 text-green-600 dark:text-green-300" />
-        <h1 className="text-2xl md:text-3xl font-extrabold text-green-800 dark:text-green-200">
+        <UserPlus className="w-6 h-6 text-green-600 dark:text-green-300" />
+        <h1 className="text-lg sm:text-xl md:text-2xl font-extrabold text-green-800 dark:text-green-200">
           Player Profile
         </h1>
       </motion.div>
-      <ProfileHeader profile={player} />
+
+      {/* Profile Header */}
+      <div className="mb-6">
+        <ProfileHeader profile={player} />
+      </div>
+
+      {/* Action Buttons */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3, duration: 0.5, type: "spring" }}
+        className="mb-6"
       >
-        <ActionButtons
-          onAdd={handleAddPlaymate}
-          player={player}
-        />
+        <ActionButtons onAdd={handleAddPlaymate} player={player} />
       </motion.div>
+
+      {/* Locations */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

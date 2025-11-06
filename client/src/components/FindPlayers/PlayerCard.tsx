@@ -3,8 +3,7 @@ import { SkillBasedTennisBallsUi } from "../ui/SkillTennisBalls";
 
 export default function PlayerCard({player}: {player:PlayerProfile}) {
 
-    const { name, photoUrl, skill, locations } = player;
-    const LocationsNames = locations.slice(0,4).map(loc => loc.name);
+    const { name, photoUrl, skill, locations,age,gender } = player;
     return (
         <div className="flex items-center justify-between bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md hover:shadow-lg transition hover:scale-[1.01]">
             {/* Left: Image */}
@@ -26,7 +25,7 @@ export default function PlayerCard({player}: {player:PlayerProfile}) {
                 {/* Middle: Name + Locations */}
                 <div>
                     <h2 className="text-green-700 dark:text-green-400 font-semibold text-base">{name}</h2>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">{LocationsNames.join(", ")}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{age}|{gender}</p>
                 </div>
             </div>
 

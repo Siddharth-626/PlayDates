@@ -8,13 +8,12 @@ import {
 } from "@heroicons/react/24/outline";
 import { useEffect, useState } from "react";
 import { ChatDisplay } from "./chatDisplay";
-import { createChat } from "@/utils/chat/CreateChat";
 import { useProfile } from "@/context/profileContext";
 import { listenToChats } from "@/utils/chat/listenToChats";
-import { EllipsisVerticalIcon, } from "lucide-react";
-import { GiExitDoor } from "react-icons/gi";
 import { CreateChatPopup } from "./chatCreater";
 import Link from "next/link";
+import ChatListItem from "./group/ChatGroupCard";
+import { useChatDisplayData } from "@/context/chatDisplayDataContext";
 
 export const ChatDashBoard = () => {
     const { selectedProfile } = useProfile();
@@ -25,10 +24,11 @@ export const ChatDashBoard = () => {
     const [search, setSearch] = useState("");
     const [isSideBarOpen, setIsSideBarOpen] = useState(true);
     const [isChatCreaterOpen, setIsChatCreaterOpen] = useState(false);
-
     const [selectedPerson, setSelectedPerson] = useState<PlayerProfile | null>(null
     );
     const [isDesktop, setIsDesktop] = useState(false);
+
+    const { chatDisplayData, setChatDisplayData } = useChatDisplayData();
 
     useEffect(() => {
         const unsubscribe = listenToChats(selectedProfile?.userUid, selectedProfile?.id, (chat) => {
@@ -47,12 +47,39 @@ export const ChatDashBoard = () => {
         return () => window.addEventListener("resize", handleResize);;
     }, []);
 
+    const OnChatSelect = async (chat: any) => {
+        if (!isDesktop) {
+            setIsSideBarOpen(false);
+        }
+        setChatDisplayData({
+            chatId: chat.id,
+            name: chat.groupName || "Match Chat",
+            players: chat.participants,
+            photoUrl: "",
+            type: "group"
+        })
+    };
     const OnPersonClick = async (player: PlayerProfile) => {
         if (!isDesktop) {
             setIsSideBarOpen(false);
         }
         setSelectedPerson(player);
+        setChatDisplayData({
+            chatId: chatId,
+            name: player?.name,
+            photoUrl: player.photoUrl,
+            userUid: player.userUid,
+            id: player.id,
+            type:"1-1"
+        })
     };
+
+    const filterdChats = chats?.filter((chat) => (
+        chat.participants?.some((person: any) => (
+            person.name.toLowerCase().includes(search.toLowerCase())
+        )) ||
+        chat?.lastMessage?.text?.toLowerCase().includes(search.toLowerCase())
+    ))
     return (
         <div className="flex h-screen bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 rounded-2xl">
 
@@ -91,15 +118,16 @@ export const ChatDashBoard = () => {
 
 
                 <div className="flex-1 overflow-y-auto">
-                    {chats.slice(0, 15).map((chat, i) => (
-                        <ChatPersonCard
+                    {filterdChats?.slice(0, 15).map((chat, i) => {
+                        return chat.type == "1-1" ? <ChatPersonCard
                             selectedPerson={selectedPerson}
                             onClick={OnPersonClick}
                             key={i}
                             chat={chat}
                             setChatId={(chatID) => setChatId(chatID)}
-                        />
-                    ))}
+                        /> :
+                            <ChatListItem chat={chat} onClick={OnChatSelect} setChatId={(chatId) => setChatId(chatId)} key={i} />
+                    })}
                 </div>
                 {chats.length == 0 && (
                     <div className="flex flex-col items-center justify-center h-full text-center text-gray-500 dark:text-gray-300 space-y-3">
@@ -115,12 +143,11 @@ export const ChatDashBoard = () => {
 
             {(isDesktop || !isSideBarOpen) ? (
                 <div className="flex-1 flex items-center justify-center">
-                    {selectedPerson ? (
+                    {chatDisplayData ? (
                         <ChatDisplay
                             OnClose={() => setIsSideBarOpen(true)}
                             isDesktop={isDesktop}
-                            chatId={chatId}
-                            selectedPerson={selectedPerson}
+                            chatDisplayData={chatDisplayData}
                         />
                     ) : (
                         <div className="text-center text-gray-500 dark:text-gray-300 space-y-3">

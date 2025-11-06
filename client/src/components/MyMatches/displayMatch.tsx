@@ -2,7 +2,7 @@ import { fetchCourt } from "@/utils/courts/fetchCourt";
 import { FetchPlayerProfile } from "@/utils/PlayerProfile/FetchPlayerProfile";
 import { MatchPreposalType } from "@/utils/TYPE";
 import { useEffect, useState } from "react";
-import { CalendarDays, Clock, UsersRound, MapPin, CheckCircle2, XCircle, Loader2, Edit2, Plus, Timer, Check } from "lucide-react";
+import { CalendarDays, Clock, UsersRound, MapPin, CheckCircle2, XCircle, Loader2, Edit2, Plus, Timer, Check, Send, User } from "lucide-react";
 import { fetchMatch } from "@/utils/Match/fetchMatch";
 
 import clsx from "clsx";
@@ -21,6 +21,8 @@ import ScoreDisplay from "../ScoreReporting/displayScore";
 import { TeamsSelector } from "../commonComponents/Players/SelectTeams";
 import { FiUserPlus } from "react-icons/fi";
 import { ChangeFieldInDb } from "@/utils/common/ChangeFieldInDb";
+import { useRouter } from "next/router";
+import { useChatDisplayData } from "@/context/chatDisplayDataContext";
 
 
 type DisplayMatchProps = {
@@ -40,15 +42,17 @@ export const DisplayMatch = ({ match, onRespond }: DisplayMatchProps) => {
     const [isScoreDropdownOpen, setIsScoreDropdownOpen] = useState(false);
     const [isTeamsPopupOpen, setIsTeamsPopupOpen] = useState(false);
     const [isDisplayMatch, setIsDisplayMatch] = useState(true);
-
+    const router = useRouter();
+    const { setChatDisplayData } = useChatDisplayData();
     if (!matchId) return;
+
     useEffect(() => {
-        if (!matchId) return;
-        const fetchMatchData = async () => {
-            const data = await fetchMatch(matchId);
-            if (data) setMatchData(data);
-        };
-        fetchMatchData();
+        const unsubscribe = fetchMatch(matchId, (match) => setMatchData(match));
+        return () => {
+            if (unsubscribe) {
+                unsubscribe();
+            }
+        }
     }, [matchId]);
 
     useEffect(() => {
@@ -134,6 +138,17 @@ export const DisplayMatch = ({ match, onRespond }: DisplayMatchProps) => {
         ChangeFieldInDb("players", players, `matches/${matchId}`);
     };
 
+    const handleChatClick = () => {
+        setChatDisplayData({
+            chatId: matchId,
+            name: "Match Chat",
+            photoUrl: "",
+            players: players,
+            type: "match"
+        })
+        router.push("/chats")
+    }
+
     return (
         <div>
             {isDisplayMatch ? (
@@ -148,26 +163,23 @@ export const DisplayMatch = ({ match, onRespond }: DisplayMatchProps) => {
                     {/* Header */}
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
                         <h2 className="text-lg sm:text-2xl font-bold text-green-700 flex items-center gap-2">
-                            🎾 {title}
+                            {title}
                         </h2>
 
                         <div className="flex flex-wrap items-center gap-2">
+                            <div className=" flex items-center px-2 py-2 rounded-full border border-blue-600" onClick={handleChatClick}>
+                                <Send className="text-blue-600" />
+                            </div>
+
                             {!isTimeGiven && isHost && (
                                 <button
-                                    onClick={() => setIsTimeDropDownOpen(!isTimeDropdowmOpen)}
+                                    onClick={() => { setIsTimeDropDownOpen(!isTimeDropdowmOpen); setIsDisplayMatch(!DisplayMatch); }}
                                     className="flex items-center text-xs sm:text-sm px-3 py-1 rounded-full font-semibold 
                              text-yellow-700 border border-yellow-700 hover:bg-yellow-700 hover:text-white"
                                 >
                                     <Plus size={14} className="mr-1" />
                                     {isTimeDropdowmOpen ? "Close" : "Add Time"}
                                 </button>
-                            )}
-
-                            {isTimeDropdowmOpen && (
-                                <TimeSelctorPopUp
-                                    onSubmit={setIsTimeDropDownOpen}
-                                    matchId={matchId}
-                                />
                             )}
 
                             {startTime && (
@@ -267,6 +279,17 @@ export const DisplayMatch = ({ match, onRespond }: DisplayMatchProps) => {
                                         className="flex sm:flex-row sm:items-center gap-2 py-1 px-2 rounded-lg 
                                     hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                                     >
+                                        {player.photoUrl ? (
+                                            <img
+                                                src={player.photoUrl}
+                                                alt={player.name}
+                                                className="w-6 h-6 rounded-full object-cover"
+                                            />
+                                        ) : (
+                                            <div className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-300 dark:bg-gray-600">
+                                                <User className="w-4 h-4 text-white" />
+                                            </div>
+                                        )}
                                         <span className="font-medium">{player.name}</span>
                                         {MatchType == "Doubles" && (
                                             <span
@@ -318,7 +341,7 @@ export const DisplayMatch = ({ match, onRespond }: DisplayMatchProps) => {
                                 whileTap={{ scale: 0.97 }}
                                 onClick={() => handleMatchResponse("rejected")}
                                 className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 rounded-lg 
-                           text-red-600 border border-red-500 hover:bg-red-100 dark:hover:bg-red-900 font-semibold"
+                                 text-red-600 border border-red-500 hover:bg-red-100 dark:hover:bg-red-900 font-semibold"
                             >
                                 <XCircle className="w-5 h-5" /> Reject
                             </motion.button>
@@ -367,6 +390,20 @@ export const DisplayMatch = ({ match, onRespond }: DisplayMatchProps) => {
                         }}
                         players={players}
                         OnSubmit={handleChangeTeams}
+                    />
+                </div>
+            )}
+            {isTimeDropdowmOpen && (
+                <div className="bg-white dark:bg-gray-900 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-4">
+                    <label className="flex items-center gap-2 text-gray-700 dark:text-gray-200 mb-2 font-semibold">
+                        <Clock size={18} className="text-green-500" /> Add Time
+                    </label>
+                    <TimeSelctorPopUp
+                        matchId={matchId}
+                        OnClose={() => {
+                            setIsDisplayMatch(true);
+                            setIsTimeDropDownOpen(false);
+                        }}
                     />
                 </div>
             )}

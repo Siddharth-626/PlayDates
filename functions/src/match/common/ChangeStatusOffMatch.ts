@@ -7,7 +7,7 @@ const SendStatus = async (status: string, matchId: string, players: any[],MatchD
     for (const player of players) {
         const notification = {
             type: "match preposal result",
-            message: `The Match at ${MatchData.startTime} is ${status} `,
+            message: `The Match at ${MatchData.startTime} is ${status == "preposed" ? "rejected":status} `,
             idRead: false
         }
         await db.collection(`users/${player.userUid}/profile/${player.profileId}/notifications`).add(notification);

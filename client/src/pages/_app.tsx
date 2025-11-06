@@ -7,10 +7,11 @@ import type { AppProps } from "next/app";
 import { Toaster } from "react-hot-toast";
 import { PlaymateProvider } from "@/context/playmatesContext";
 import { MatchProvider } from "@/context/matchContext";
+import { ChatDisplayDataProvider } from "@/context/chatDisplayDataContext";
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
-
+    <ChatDisplayDataProvider>
     <ThemeProvider>
       <AuthProvider>
         <ProfileProvider>
@@ -25,6 +26,7 @@ export default function App({ Component, pageProps }: AppProps) {
         </ProfileProvider>
       </AuthProvider>
     </ThemeProvider>
+    </ChatDisplayDataProvider>
 
   );
 }

@@ -7,7 +7,7 @@ export const SkillBasedTennisBallsUi = ({skill}:{skill:string})=>{
     const balls = Array.from({length:5},(_, i)=>(
             <GiTennisBall
             key={i}
-            className={`lg:text-2xl sm:text-sm ${i < numericalSkill ? "text-green-400" : "text-gray-400 dark:text-gray-600"
+            className={`lg:text-xl sm:text-sm ${i < numericalSkill ? "text-green-400" : "text-gray-400 dark:text-gray-600"
                 }`}
         />
     ))

@@ -30,8 +30,7 @@ export const preposeMatch = onDocumentCreated(
             const profileData = profileSnap.data();
             if (!profileData?.playmates?.length) return;
 
-            const players: PlayersType[] = [{ userUid, profileId, status: "pending",name:profileData.name }];
-
+            const players: PlayersType[] = [{ userUid, profileId, status: "pending", name: profileData.name,photoUrl:profileData.photoUrl }];
             for (const playmate of profileData.playmates) {
                 const { userUid: playmateUid, profileId: playmateProfileId } = playmate;
 
@@ -76,7 +75,8 @@ export const preposeMatch = onDocumentCreated(
 
                         if (isTimeOverlap(currentUserAvailability, playmateAvailability)) {
                             if (players.length < 4) {
-                                players.push({ userUid: playmateUid, profileId: playmateProfileId, status: "pending",name:playmateProfileData?.name });
+
+                                players.push({ userUid: playmateUid, profileId: playmateProfileId, status: "pending", name: playmateProfileData?.name,photoUrl:playmateProfileData?.photoUrl});
                             }
 
                         }
@@ -103,7 +103,7 @@ export const preposeMatch = onDocumentCreated(
                                 createdAt: admin.firestore.FieldValue.serverTimestamp(),
                                 status: "proposed",
                                 MatchType: preference,
-                                host:{userUid:"system",profileId:"system",name:"system"}
+                                host: { userUid: "system", profileId: "system", name: "system" }
                             };
 
                             await db.collection("matches").add(matchProposal);

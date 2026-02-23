@@ -1,8 +1,8 @@
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { FiMail } from "react-icons/fi";
 import { AiOutlineEyeInvisible, AiOutlineEye } from "react-icons/ai";
-import { LogInIcon, UserPlus, ShieldCheck, Mail, Lock, } from "lucide-react";
+import { LogInIcon, UserPlus, ShieldCheck, Mail, Lock, Loader2 } from "lucide-react";
 import Navbar from "../components/Navbar";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../services/config";
@@ -11,12 +11,12 @@ import { checkIfProfileExist } from "@/utils/checkUserProfile";
 import { GoogleLogin } from "@/components/auth/GoogleLogin";
 import toast from "react-hot-toast";
 import { FirebaseError } from "firebase/app";
-import { debounce } from "@/utils/debounce";
 import { motion } from "framer-motion";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
@@ -35,6 +35,7 @@ export default function Login() {
       toast.error("Please enter a valid email address.");
       return;
     }
+    setIsLoading(true);
     try {
       const userCredentials = await signInWithEmailAndPassword(auth, email, password);
       const uid = userCredentials.user.uid;
@@ -62,15 +63,10 @@ export default function Login() {
       }
       setError(message);
       toast.error(message);
+    } finally {
+      setIsLoading(false);
     }
   };
-
-  const debounceHandleLogin = useCallback(
-    debounce(() => {
-      handleLogin();
-    }, 1000),
-    [email, password]
-  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-100 via-green-50 to-green-200 dark:from-gray-900 dark:via-green-900 dark:to-gray-800 transition-colors duration-300">
@@ -123,6 +119,7 @@ export default function Login() {
               </motion.p>
             )}
 
+            <form onSubmit={(e) => { e.preventDefault(); handleLogin(); }}>
             {/* Email Input */}
             <label className="text-green-900 dark:text-green-200 text-sm font-semibold mb-1 block" htmlFor="email">
               Email
@@ -187,15 +184,16 @@ export default function Login() {
 
             {/* Login Button */}
             <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.98 }}
-              className="w-full bg-gradient-to-r from-green-600 via-green-700 to-green-800 dark:from-green-700 dark:via-green-800 dark:to-green-900 text-white py-2 rounded-lg hover:bg-green-800 dark:hover:bg-green-700 transition font-semibold cursor-pointer shadow-lg flex items-center justify-center gap-2 text-lg"
-              onClick={debounceHandleLogin}
-              type="button"
+              whileHover={!isLoading ? { scale: 1.05 } : {}}
+              whileTap={!isLoading ? { scale: 0.98 } : {}}
+              className={`w-full bg-gradient-to-r from-green-600 via-green-700 to-green-800 dark:from-green-700 dark:via-green-800 dark:to-green-900 text-white py-2 rounded-lg hover:bg-green-800 dark:hover:bg-green-700 transition font-semibold shadow-lg flex items-center justify-center gap-2 text-lg ${isLoading ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}`}
+              disabled={isLoading}
+              type="submit"
             >
-              <LogInIcon className="w-5 h-5" />
-              Login
+              {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <LogInIcon className="w-5 h-5" />}
+              {isLoading ? "Logging in..." : "Login"}
             </motion.button>
+            </form>
 
             <div className="flex items-center my-6">
               <div className="flex-grow h-px bg-green-200 dark:bg-green-700" />

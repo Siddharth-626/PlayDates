@@ -11,12 +11,23 @@ service cloud.firestore {
 
     match /courts/{courtId} {
       allow read: if true;
-      allow write: if request.auth != null || isAdmin();
+      // 🛡️ Sentinel: Only admins can manage court information to prevent unauthorized tampering
+      allow write: if isAdmin();
     }
 
     match /matches/{matchId} {
       allow read: if true;
-      allow write: if request.auth != null || isAdmin();
+      // 🛡️ Sentinel: Secure match creation, update, and deletion
+      // Only the host can create a match
+      allow create: if request.auth != null && request.resource.data.host.userUid == request.auth.uid;
+      // Only the host, participating players, or users joining an open match can update
+      allow update: if request.auth != null && (
+        request.auth.uid == resource.data.host.userUid ||
+        resource.data.players.exists(p, p.userUid == request.auth.uid) ||
+        (resource.data.status == "open" && request.resource.data.players.exists(p, p.userUid == request.auth.uid))
+      );
+      // Only the host or an admin can delete a match
+      allow delete: if request.auth != null && (request.auth.uid == resource.data.host.userUid || isAdmin());
     }
 
     match /profiles/{profileId} {
@@ -80,9 +91,11 @@ service cloud.firestore {
     }
 
     // Collection group access to 'profile'
+    // 🛡️ Sentinel: Restrict collection group write access to admins.
+    // Users can still manage their own profiles via specific user paths.
     match /{documentPath=**}/profile/{profileId} {
       allow read: if true;
-      allow write: if request.auth != null || isAdmin();
+      allow write: if isAdmin();
     }
 
     match /users/{userUid}/profile/{profileId}/selectedCourts/{docId} {

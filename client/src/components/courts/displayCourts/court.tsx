@@ -23,14 +23,7 @@ export const DisplayCourts = () => {
     const [search, setSearch] = useState("");
     const [ProfilePreferedLocations, setProfilePreferedLocations] = useState<string[]>([]);
     const [sectedCourt, setSelectedCourt] = useState<courtType | undefined>(undefined);
-    if (!courts) {
-        return <Loading />;
-    }
 
-    const filteredCourts = courts.filter((court) =>
-        court.title.toLowerCase().includes(search.toLowerCase()) ||
-        court.location.address.toLowerCase().includes(search.toLowerCase())
-    );
     const debouncedToggleSelect = useCallback(
         debounce((court: courtType) => {
             toggleSelect(court);
@@ -59,6 +52,15 @@ export const DisplayCourts = () => {
             setProfilePreferedLocations(initialLocations);
         }
     }, [selectedProfile]);
+
+    if (!courts) {
+        return <Loading />;
+    }
+
+    const filteredCourts = courts.filter((court) =>
+        court.title.toLowerCase().includes(search.toLowerCase()) ||
+        court.location.address.toLowerCase().includes(search.toLowerCase())
+    );
 
     const handleCourtSelect = (court: courtType | undefined) => {
         setSelectedCourt(court);
@@ -146,7 +148,7 @@ export const DisplayCourts = () => {
                                 variant="outline"
                                 className="text-sm flex items-center gap-2 hover:bg-green-50 dark:hover:bg-green-800 transition"
                                 onClick={() => setSelectedCourt(undefined)}
-                                aria-label="Back to players"
+                                aria-label="Back to courts"
                             >
                                 <ArrowLeft size={18} /> Back to Courts
                             </Button>

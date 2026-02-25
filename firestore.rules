@@ -11,17 +11,14 @@ service cloud.firestore {
 
     match /courts/{courtId} {
       allow read: if true;
-      allow write: if request.auth != null || isAdmin();
+      allow write: if isAdmin();
     }
 
     match /matches/{matchId} {
       allow read: if true;
-      allow write: if request.auth != null || isAdmin();
-    }
-
-    match /profiles/{profileId} {
-      allow read: if true;
-      allow write: if (request.auth != null && request.auth.uid == profileId) || isAdmin();
+      allow create: if request.auth != null;
+      allow update: if request.auth != null;
+      allow delete: if isAdmin() || (request.auth != null && resource.data.host.userUid == request.auth.uid);
     }
 
     // ======= User Collections =======
@@ -39,13 +36,14 @@ service cloud.firestore {
         match /notifications/{notifId} {
           allow read, write: if (request.auth != null && request.auth.uid == userId) || isAdmin();
         }
-      }
 
-      match /profiles/{profileId} {
-        allow read, write: if (request.auth != null && request.auth.uid == userId) || isAdmin();
-
-        match /notifications/{notifId} {
+        match /selectedCourts/{docId} {
           allow read, write: if (request.auth != null && request.auth.uid == userId) || isAdmin();
+        }
+
+        match /matches/{matchId} {
+          allow read: if request.auth != null && request.auth.uid == userId;
+          allow write: if (request.auth != null && request.auth.uid == userId) || isAdmin();
         }
       }
 
@@ -53,14 +51,6 @@ service cloud.firestore {
         allow read, write: if (request.auth != null && 
           (request.auth.uid == userId || request.auth.uid == playmateId)) || isAdmin();
       }
-    }
-
-    // Extra profile rule
-    match /users/{userId}/profiles/{profileId} {
-      allow read: if request.auth != null || isAdmin();
-    }
-     match /users/{userUid}/profile/{profileId}/matches/{matchId} {
-      allow read: if request.auth != null && request.auth.uid == userUid;
     }
 
     match /users/{toUserUid}/profile/{toProfileId}/notifications/{notificationId} {
@@ -79,15 +69,12 @@ service cloud.firestore {
                     request.resource.data.isRead == false) || isAdmin();
     }
 
-    // Collection group access to 'profile'
+    // Collection group access to 'profile' for player discovery
     match /{documentPath=**}/profile/{profileId} {
       allow read: if true;
-      allow write: if request.auth != null || isAdmin();
+      allow write: if isAdmin();
     }
 
-    match /users/{userUid}/profile/{profileId}/selectedCourts/{docId} {
-      allow read, write: if (request.auth != null && request.auth.uid == userUid) || isAdmin();
-    }
 
     // Catch-All Deny
     match /{document=**} {

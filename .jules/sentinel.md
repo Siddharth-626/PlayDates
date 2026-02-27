@@ -1,0 +1,4 @@
+## 2025-05-14 - Authorization Bypass in Match Updates
+**Vulnerability:** Overly permissive update rules for the 'matches' collection allowed any authenticated user to modify match details (e.g., date, court, status) as long as they didn't change the host UID, due to a missing check that the requester is the host.
+**Learning:** Checking for field immutability (e.g., `request.resource.data.host == resource.data.host`) is not a substitute for checking requester identity (`request.auth.uid == resource.data.host.userUid`). Both are necessary for secure updates where only a specific owner should have full write access.
+**Prevention:** Always verify that the `request.auth.uid` matches the owner/host field of the document being updated before granting full update permissions. For shared updates (like joining a match), use `affectedKeys()` to restrict updates to specific, non-sensitive fields.

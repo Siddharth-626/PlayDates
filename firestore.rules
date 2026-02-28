@@ -11,11 +11,17 @@ service cloud.firestore {
 
     match /courts/{courtId} {
       allow read: if true;
-      allow write: if request.auth != null || isAdmin();
+      // Users can only add reviews, admins have full access
+      allow write: if (request.auth != null &&
+                      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reviews'])) ||
+                      isAdmin();
     }
 
     match /matches/{matchId} {
       allow read: if true;
+      // Currently allowing authenticated users to write to matches.
+      // Ideally, only players in the match or the host should be able to update it.
+      // However, because players are objects in a list, complex validation is limited in this environment.
       allow write: if request.auth != null || isAdmin();
     }
 
@@ -82,7 +88,8 @@ service cloud.firestore {
     // Collection group access to 'profile'
     match /{documentPath=**}/profile/{profileId} {
       allow read: if true;
-      allow write: if request.auth != null || isAdmin();
+      // Removed allow write here as specific paths already handle secure writes for profiles
+      allow write: if isAdmin();
     }
 
     match /users/{userUid}/profile/{profileId}/selectedCourts/{docId} {

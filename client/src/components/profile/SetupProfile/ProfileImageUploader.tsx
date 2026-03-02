@@ -18,8 +18,10 @@ export default function ProfileImageUploader({
 
   return (
     <div className="flex flex-col items-center mb-4">
-      <div
-        className="w-24 h-24 rounded-xl bg-gray-100 border flex items-center justify-center relative overflow-hidden cursor-pointer"
+      <button
+        type="button"
+        aria-label="Upload profile image"
+        className="w-24 h-24 rounded-xl bg-gray-100 border flex items-center justify-center relative overflow-hidden cursor-pointer focus-visible:ring-2 focus-visible:ring-green-600 outline-none transition"
         onClick={() => fileInputRef.current?.click()}
       >
         {value ? (
@@ -31,7 +33,7 @@ export default function ProfileImageUploader({
         ) : (
           <span className="text-sm text-gray-500">Upload</span>
         )}
-        <div className="absolute bottom-1 right-1 bg-green-600 p-1 rounded-full text-white cursor-pointer">
+        <div className="absolute bottom-1 right-1 bg-green-600 p-1 rounded-full text-white">
           <Camera size={14} />
         </div>
         <input
@@ -41,7 +43,7 @@ export default function ProfileImageUploader({
           ref={fileInputRef}
           onChange={handleFileChange}
         />
-      </div>
+      </button>
     </div>
   );
 }

@@ -36,7 +36,7 @@ export const DisplayMatch = ({ match, onRespond }: DisplayMatchProps) => {
     const { selectedProfile } = useProfile();
     const [matchData, setMatchData] = useState<any>(null);
     const [court, setCourt] = useState<string>("");
-    const [isTimeDropdowmOpen, setIsTimeDropDownOpen] = useState(false);
+    const [isTimeDropdownOpen, setIsTimeDropdownOpen] = useState(false);
     const [responseStatus, setResponseStatus] = useState<string>(match.status);
     const [isTimePreposed, setIsTimePreposed] = useState(false);
     const [isScoreDropdownOpen, setIsScoreDropdownOpen] = useState(false);
@@ -167,18 +167,25 @@ export const DisplayMatch = ({ match, onRespond }: DisplayMatchProps) => {
                         </h2>
 
                         <div className="flex flex-wrap items-center gap-2">
-                            <div className=" flex items-center px-2 py-2 rounded-full border border-blue-600" onClick={handleChatClick}>
+                            <button
+                                aria-label="Open match chat"
+                                className="flex items-center px-2 py-2 rounded-full border border-blue-600 hover:bg-blue-50 focus-visible:ring-2 focus-visible:ring-blue-500 outline-none transition"
+                                onClick={handleChatClick}
+                            >
                                 <Send className="text-blue-600" />
-                            </div>
+                            </button>
 
                             {!isTimeGiven && isHost && (
                                 <button
-                                    onClick={() => { setIsTimeDropDownOpen(!isTimeDropdowmOpen); setIsDisplayMatch(!DisplayMatch); }}
+                                    onClick={() => {
+                                        setIsTimeDropdownOpen(!isTimeDropdownOpen);
+                                        setIsDisplayMatch(!isDisplayMatch);
+                                    }}
                                     className="flex items-center text-xs sm:text-sm px-3 py-1 rounded-full font-semibold 
                              text-yellow-700 border border-yellow-700 hover:bg-yellow-700 hover:text-white"
                                 >
                                     <Plus size={14} className="mr-1" />
-                                    {isTimeDropdowmOpen ? "Close" : "Add Time"}
+                                    {isTimeDropdownOpen ? "Close" : "Add Time"}
                                 </button>
                             )}
 
@@ -393,7 +400,7 @@ export const DisplayMatch = ({ match, onRespond }: DisplayMatchProps) => {
                     />
                 </div>
             )}
-            {isTimeDropdowmOpen && (
+            {isTimeDropdownOpen && (
                 <div className="bg-white dark:bg-gray-900 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-4">
                     <label className="flex items-center gap-2 text-gray-700 dark:text-gray-200 mb-2 font-semibold">
                         <Clock size={18} className="text-green-500" /> Add Time
@@ -402,7 +409,7 @@ export const DisplayMatch = ({ match, onRespond }: DisplayMatchProps) => {
                         matchId={matchId}
                         OnClose={() => {
                             setIsDisplayMatch(true);
-                            setIsTimeDropDownOpen(false);
+                            setIsTimeDropdownOpen(false);
                         }}
                     />
                 </div>

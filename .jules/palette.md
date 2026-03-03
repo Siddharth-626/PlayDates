@@ -1,0 +1,3 @@
+## 2025-05-14 - Loading states for authentication flows
+**Learning:** In authentication flows, using a debounce on the login button is less intuitive than a proper loading state (spinner + disabled inputs). The debounce can lead to multiple clicks if the user is fast, whereas disabling the button and showing a spinner provides immediate feedback and prevents duplicate requests. Additionally, wrapping authentication inputs in a `<form>` element allows for standard "Enter" key submission, improving keyboard accessibility.
+**Action:** Always prefer `isLoading` states with spinners and `<form>` wrappers over debounced click handlers for submission actions.

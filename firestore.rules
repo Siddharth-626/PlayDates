@@ -11,12 +11,18 @@ service cloud.firestore {
 
     match /courts/{courtId} {
       allow read: if true;
-      allow write: if request.auth != null || isAdmin();
+      allow create, delete: if isAdmin();
+      // Allow users to add reviews, but only the 'reviews' field
+      allow update: if (request.auth != null && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reviews'])) || isAdmin();
     }
 
     match /matches/{matchId} {
       allow read: if true;
-      allow write: if request.auth != null || isAdmin();
+      allow create: if request.auth != null;
+      // Allow host to update everything, participants (or others) can ONLY update players or score
+      allow update: if (request.auth != null && (request.auth.uid == resource.data.host.userUid ||
+                    request.resource.data.diff(resource.data).affectedKeys().hasOnly(['players', 'score']))) || isAdmin();
+      allow delete: if (request.auth != null && request.auth.uid == resource.data.host.userUid) || isAdmin();
     }
 
     match /profiles/{profileId} {
@@ -61,6 +67,7 @@ service cloud.firestore {
     }
      match /users/{userUid}/profile/{profileId}/matches/{matchId} {
       allow read: if request.auth != null && request.auth.uid == userUid;
+      allow update: if request.auth != null && request.auth.uid == userUid && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'isRead']);
     }
 
     match /users/{toUserUid}/profile/{toProfileId}/notifications/{notificationId} {
@@ -82,7 +89,7 @@ service cloud.firestore {
     // Collection group access to 'profile'
     match /{documentPath=**}/profile/{profileId} {
       allow read: if true;
-      allow write: if request.auth != null || isAdmin();
+      allow write: if isAdmin();
     }
 
     match /users/{userUid}/profile/{profileId}/selectedCourts/{docId} {

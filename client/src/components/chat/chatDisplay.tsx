@@ -6,7 +6,7 @@ import { sendMessage } from "@/utils/chat/sendMessage";
 import { useProfile } from "@/context/profileContext";
 import { motion } from "framer-motion";
 import { handleMessageSeen } from "@/utils/chat/handleMessageSeen";
-import { ChevronLeft, Send, CheckCheck, Edit } from "lucide-react";
+import { ChevronLeft, Send, CheckCheck, Edit, Loader2 } from "lucide-react";
 import { EditGroupPopup } from "./group/EditGroup";
 import { updateChat } from "@/utils/chat/upadteChat";
 
@@ -24,6 +24,7 @@ export const ChatDisplay = ({
     const { selectedProfile } = useProfile(); // current user profile
     const [messages, setMessages] = useState<any[]>([]);
     const [input, setInput] = useState("");
+    const [isSending, setIsSending] = useState(false);
     const [showEditPopup, setShowEditPopup] = useState(false);
     const { chatId } = chatDisplayData;
 
@@ -36,17 +37,24 @@ export const ChatDisplay = ({
     }, [chatId]);
 
     const handleSendMessage = async () => {
-        if (!input.trim() || !selectedProfile) return;
+        if (!input.trim() || !selectedProfile || isSending) return;
 
-        await sendMessage(
-            chatId,
-            input,
-            selectedProfile.userUid,
-            selectedProfile.id,
-            selectedProfile?.name,
-            selectedProfile.photoUrl
-        );
-        setInput("");
+        setIsSending(true);
+        try {
+            await sendMessage(
+                chatId,
+                input,
+                selectedProfile.userUid,
+                selectedProfile.id,
+                selectedProfile?.name,
+                selectedProfile.photoUrl
+            );
+            setInput("");
+        } catch (error) {
+            console.error("Error sending message:", error);
+        } finally {
+            setIsSending(false);
+        }
     };
 
     useEffect(() => {
@@ -64,9 +72,13 @@ export const ChatDisplay = ({
             <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
                 <div className="flex items-center">
                     {!isDesktop && (
-                        <div onClick={OnClose} className="mr-2 cursor-pointer">
+                        <button
+                            onClick={OnClose}
+                            className="mr-2 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                            aria-label="Go back"
+                        >
                             <ChevronLeft className="w-5 h-5 text-green-600" />
-                        </div>
+                        </button>
                     )}
 
                     {/* Avatar */}
@@ -125,7 +137,8 @@ export const ChatDisplay = ({
                 {chatDisplayData.type === "group" && (
                     <button
                         onClick={() => setShowEditPopup(true)}
-                        className="ml-auto text-green-500 hover:text-green-600"
+                        className="ml-auto text-green-500 hover:text-green-600 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        aria-label="Edit group"
                     >
                         <Edit className="w-5 h-5" />
                     </button>
@@ -246,13 +259,21 @@ export const ChatDisplay = ({
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
-                    className="flex-1 bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-2 text-sm outline-none text-gray-800 dark:text-gray-200"
+                    aria-label="Message input"
+                    disabled={isSending}
+                    className="flex-1 bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-2 text-sm outline-none text-gray-800 dark:text-gray-200 disabled:opacity-50"
                 />
                 <button
                     onClick={handleSendMessage}
-                    className="ml-3 bg-green-500 hover:bg-green-600 text-white rounded-full p-2"
+                    disabled={!input.trim() || isSending}
+                    aria-label="Send message"
+                    className="ml-3 bg-green-500 hover:bg-green-600 text-white rounded-full p-2 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
                 >
-                    <Send className="w-5 h-5" />
+                    {isSending ? (
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                        <Send className="w-5 h-5" />
+                    )}
                 </button>
             </div>
             <EditGroupPopup

@@ -1,0 +1,4 @@
+## 2025-06-26 - Broken Access Control in Firestore Rules
+**Vulnerability:** Extremely permissive Firestore security rules allowed any authenticated user to create, update, or delete documents in 'matches' and 'courts' collections, regardless of ownership. The 'profile' collection group also had global write access for any authenticated user.
+**Learning:** Overly broad 'allow write: if request.auth != null' rules are a common source of IDOR vulnerabilities in Firebase projects. Using 'request.resource.data.diff(resource.data).affectedKeys()' is an effective pattern for allowing non-owners to update specific fields (like 'players' or 'score') without granting full write access.
+**Prevention:** Always implement owner-based checks (e.g., 'resource.data.host.userUid == request.auth.uid') and use field-level validation for updates by non-owners. Restrict collection group 'write' access to 'isAdmin()' by default.

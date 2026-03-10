@@ -16,7 +16,7 @@ export const GoogleLogin = () => {
             const userData = {
                 uid: user.uid,
                 name: user.displayName || '',
-                emai: user.email || '',
+                email: user.email || '',
                 phoneNumber: user.phoneNumber || '',
                 photoUrl: user.photoURL || '',
                 timestamp: serverTimestamp()

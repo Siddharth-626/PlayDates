@@ -1,8 +1,7 @@
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { FiMail } from "react-icons/fi";
 import { AiOutlineEyeInvisible, AiOutlineEye } from "react-icons/ai";
-import { LogInIcon, UserPlus, ShieldCheck, Mail, Lock, } from "lucide-react";
+import { LogInIcon, UserPlus, ShieldCheck, Mail, Lock, Loader2 } from "lucide-react";
 import Navbar from "../components/Navbar";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../services/config";
@@ -11,7 +10,6 @@ import { checkIfProfileExist } from "@/utils/checkUserProfile";
 import { GoogleLogin } from "@/components/auth/GoogleLogin";
 import toast from "react-hot-toast";
 import { FirebaseError } from "firebase/app";
-import { debounce } from "@/utils/debounce";
 import { motion } from "framer-motion";
 
 export default function Login() {
@@ -19,11 +17,13 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-  const handleLogin = async () => {
+  const handleLogin = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     setError("");
     if (!email || !password) {
       setError("Please enter both email and password.");
@@ -36,11 +36,12 @@ export default function Login() {
       return;
     }
     try {
+      setIsLoading(true);
       const userCredentials = await signInWithEmailAndPassword(auth, email, password);
       const uid = userCredentials.user.uid;
       const profileExist = await checkIfProfileExist(uid);
-      router.push(profileExist ? "/" : "/setup");
-    } catch (err: any) {
+      await router.push(profileExist ? "/" : "/setup");
+    } catch (err: unknown) {
       let message = "Login failed. Please try again.";
       if (err instanceof FirebaseError) {
         switch (err.code) {
@@ -62,15 +63,10 @@ export default function Login() {
       }
       setError(message);
       toast.error(message);
+    } finally {
+      setIsLoading(false);
     }
   };
-
-  const debounceHandleLogin = useCallback(
-    debounce(() => {
-      handleLogin();
-    }, 1000),
-    [email, password]
-  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-100 via-green-50 to-green-200 dark:from-gray-900 dark:via-green-900 dark:to-gray-800 transition-colors duration-300">
@@ -113,6 +109,7 @@ export default function Login() {
               Sign in to join the fun and track your matches!
             </p>
 
+            <form onSubmit={handleLogin}>
             {error && (
               <motion.p
                 initial={{ opacity: 0, y: -10 }}
@@ -189,13 +186,18 @@ export default function Login() {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.98 }}
-              className="w-full bg-gradient-to-r from-green-600 via-green-700 to-green-800 dark:from-green-700 dark:via-green-800 dark:to-green-900 text-white py-2 rounded-lg hover:bg-green-800 dark:hover:bg-green-700 transition font-semibold cursor-pointer shadow-lg flex items-center justify-center gap-2 text-lg"
-              onClick={debounceHandleLogin}
-              type="button"
+              className="w-full bg-gradient-to-r from-green-600 via-green-700 to-green-800 dark:from-green-700 dark:via-green-800 dark:to-green-900 text-white py-2 rounded-lg hover:bg-green-800 dark:hover:bg-green-700 transition font-semibold cursor-pointer shadow-lg flex items-center justify-center gap-2 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={isLoading}
+              type="submit"
             >
-              <LogInIcon className="w-5 h-5" />
-              Login
+              {isLoading ? (
+                <Loader2 className="animate-spin w-5 h-5" />
+              ) : (
+                <LogInIcon className="w-5 h-5" />
+              )}
+              {isLoading ? "Logging in..." : "Login"}
             </motion.button>
+            </form>
 
             <div className="flex items-center my-6">
               <div className="flex-grow h-px bg-green-200 dark:bg-green-700" />

@@ -1,0 +1,4 @@
+## 2025-05-14 - Permissive Collection Group Write Access
+**Vulnerability:** The Firestore security rules contained a collection group rule `match /{documentPath=**}/profile/{profileId}` that allowed `write` access to any authenticated user.
+**Learning:** Collection group rules match documents across the entire database regardless of their depth or parent path. A permissive `write` rule here can inadvertently grant global write access to any document with that collection name, bypassing more restrictive path-specific rules.
+**Prevention:** Always restrict `write` access in collection group rules to `isAdmin()` or specific conditions that don't rely on the user being simply authenticated, especially when the same collection name is used in sensitive user-owned paths. Prefer specific path rules for user-owned data.

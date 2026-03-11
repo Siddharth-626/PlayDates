@@ -1,8 +1,7 @@
-import { useCallback, useState } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
-import { FiMail } from "react-icons/fi";
 import { AiOutlineEyeInvisible, AiOutlineEye } from "react-icons/ai";
-import { LogInIcon, UserPlus, ShieldCheck, Mail, Lock, } from "lucide-react";
+import { LogInIcon, UserPlus, ShieldCheck, Mail, Lock, Loader2 } from "lucide-react";
 import Navbar from "../components/Navbar";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../services/config";
@@ -11,7 +10,6 @@ import { checkIfProfileExist } from "@/utils/checkUserProfile";
 import { GoogleLogin } from "@/components/auth/GoogleLogin";
 import toast from "react-hot-toast";
 import { FirebaseError } from "firebase/app";
-import { debounce } from "@/utils/debounce";
 import { motion } from "framer-motion";
 
 export default function Login() {
@@ -19,11 +17,14 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-  const handleLogin = async () => {
+  const handleLogin = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (isLoading) return;
     setError("");
     if (!email || !password) {
       setError("Please enter both email and password.");
@@ -35,42 +36,30 @@ export default function Login() {
       toast.error("Please enter a valid email address.");
       return;
     }
+    setIsLoading(true);
     try {
       const userCredentials = await signInWithEmailAndPassword(auth, email, password);
       const uid = userCredentials.user.uid;
       const profileExist = await checkIfProfileExist(uid);
-      router.push(profileExist ? "/" : "/setup");
-    } catch (err: any) {
+      await router.push(profileExist ? "/" : "/setup");
+    } catch (err: unknown) {
       let message = "Login failed. Please try again.";
       if (err instanceof FirebaseError) {
         switch (err.code) {
-          case "auth/invalid-credential":
-            message = "Invalid Email or Password";
-            break;
-          case "auth/wrong-password":
-            message = "Incorrect password.";
-            break;
-          case "auth/too-many-requests":
-            message = "Too many attempts. Please try again later.";
-            break;
-          case "auth/network-request-failed":
-            message = "Network error. Please check your connection.";
-            break;
-          default:
-            message = err.message;
+          case "auth/invalid-credential": message = "Invalid Email or Password"; break;
+          case "auth/wrong-password": message = "Incorrect password."; break;
+          case "auth/too-many-requests": message = "Too many attempts. Please try again later."; break;
+          case "auth/network-request-failed": message = "Network error. Please check your connection."; break;
+          default: message = err.message;
         }
       }
       setError(message);
       toast.error(message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const debounceHandleLogin = useCallback(
-    debounce(() => {
-      handleLogin();
-    }, 1000),
-    [email, password]
-  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-100 via-green-50 to-green-200 dark:from-gray-900 dark:via-green-900 dark:to-gray-800 transition-colors duration-300">
@@ -123,79 +112,89 @@ export default function Login() {
               </motion.p>
             )}
 
-            {/* Email Input */}
-            <label className="text-green-900 dark:text-green-200 text-sm font-semibold mb-1 block" htmlFor="email">
-              Email
-            </label>
-            <div className="flex items-center border border-green-200 dark:border-green-600 rounded-lg px-3 py-2 mb-4 bg-green-50 dark:bg-gray-700 focus-within:ring-2 focus-within:ring-green-400 transition">
-              <Mail className="text-green-500 mr-2 w-5 h-5" />
-              <input
-                id="email"
-                type="email"
-                placeholder="Enter your email"
-                className="flex-grow bg-transparent outline-none text-green-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                autoComplete="email"
-                aria-label="Email"
-              />
-            </div>
+            <form onSubmit={handleLogin}>
+              <label className="text-green-900 dark:text-green-200 text-sm font-semibold mb-1 block" htmlFor="email">
+                Email
+              </label>
+              <div className="flex items-center border border-green-200 dark:border-green-600 rounded-lg px-3 py-2 mb-4 bg-green-50 dark:bg-gray-700 focus-within:ring-2 focus-within:ring-green-400 transition">
+                <Mail className="text-green-500 mr-2 w-5 h-5" />
+                <input
+                  id="email"
+                  type="email"
+                  placeholder="Enter your email"
+                  className="flex-grow bg-transparent outline-none text-green-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  autoComplete="email"
+                  aria-label="Email"
+                  disabled={isLoading}
+                />
+              </div>
 
-            {/* Password Input */}
-            <label className="text-green-900 dark:text-green-200 text-sm font-semibold mb-1 block" htmlFor="password">
-              Password
-            </label>
-            <div className="flex items-center border border-green-200 dark:border-green-600 rounded-lg px-3 py-2 mb-2 bg-green-50 dark:bg-gray-700 focus-within:ring-2 focus-within:ring-green-400 transition">
-              <Lock className="text-green-500 mr-2 w-5 h-5" />
-              <input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                placeholder="Enter your password"
-                className="flex-grow bg-transparent outline-none text-green-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="current-password"
-                aria-label="Password"
-              />
-              <button
-                type="button"
-                aria-label={showPassword ? "Hide password" : "Show password"}
-                className="ml-2 focus:outline-none"
-                onClick={() => setShowPassword((v) => !v)}
+              <label className="text-green-900 dark:text-green-200 text-sm font-semibold mb-1 block" htmlFor="password">
+                Password
+              </label>
+              <div className="flex items-center border border-green-200 dark:border-green-600 rounded-lg px-3 py-2 mb-2 bg-green-50 dark:bg-gray-700 focus-within:ring-2 focus-within:ring-green-400 transition">
+                <Lock className="text-green-500 mr-2 w-5 h-5" />
+                <input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter your password"
+                  className="flex-grow bg-transparent outline-none text-green-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="current-password"
+                  aria-label="Password"
+                  disabled={isLoading}
+                />
+                <button
+                  type="button"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  className="ml-2 focus:outline-none"
+                  onClick={() => setShowPassword((v) => !v)}
+                  disabled={isLoading}
+                >
+                  {showPassword ? (
+                    <AiOutlineEyeInvisible className="text-gray-500 dark:text-gray-300 w-5 h-5" />
+                  ) : (
+                    <AiOutlineEye className="text-gray-500 dark:text-gray-300 w-5 h-5" />
+                  )}
+                </button>
+              </div>
+
+              <div className="flex justify-between mb-4">
+                <Link
+                  href="#"
+                  className="text-sm text-green-700 dark:text-green-300 font-semibold hover:underline transition"
+                >
+                  Forgot Password?
+                </Link>
+                <Link href="/signup" className="flex items-center gap-1 text-sm text-green-700 dark:text-green-300 font-semibold hover:underline transition">
+                  <UserPlus className="w-4 h-4" />
+                  Create Account
+                </Link>
+              </div>
+
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full bg-gradient-to-r from-green-600 via-green-700 to-green-800 dark:from-green-700 dark:via-green-800 dark:to-green-900 text-white py-2 rounded-lg hover:bg-green-800 dark:hover:bg-green-700 transition font-semibold cursor-pointer shadow-lg flex items-center justify-center gap-2 text-lg disabled:opacity-70 disabled:cursor-not-allowed"
+                type="submit"
+                disabled={isLoading}
               >
-                {showPassword ? (
-                  <AiOutlineEyeInvisible className="text-gray-500 dark:text-gray-300 w-5 h-5" />
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Logging in...
+                  </>
                 ) : (
-                  <AiOutlineEye className="text-gray-500 dark:text-gray-300 w-5 h-5" />
+                  <>
+                    <LogInIcon className="w-5 h-5" />
+                    Login
+                  </>
                 )}
-              </button>
-            </div>
-
-            {/* Links */}
-            <div className="flex justify-between mb-4">
-              <Link
-                href="#"
-                className="text-sm text-green-700 dark:text-green-300 font-semibold hover:underline transition"
-              >
-                Forgot Password?
-              </Link>
-              <Link href="/signup" className="flex items-center gap-1 text-sm text-green-700 dark:text-green-300 font-semibold hover:underline transition">
-                <UserPlus className="w-4 h-4" />
-                Create Account
-              </Link>
-            </div>
-
-            {/* Login Button */}
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.98 }}
-              className="w-full bg-gradient-to-r from-green-600 via-green-700 to-green-800 dark:from-green-700 dark:via-green-800 dark:to-green-900 text-white py-2 rounded-lg hover:bg-green-800 dark:hover:bg-green-700 transition font-semibold cursor-pointer shadow-lg flex items-center justify-center gap-2 text-lg"
-              onClick={debounceHandleLogin}
-              type="button"
-            >
-              <LogInIcon className="w-5 h-5" />
-              Login
-            </motion.button>
+              </motion.button>
+            </form>
 
             <div className="flex items-center my-6">
               <div className="flex-grow h-px bg-green-200 dark:bg-green-700" />

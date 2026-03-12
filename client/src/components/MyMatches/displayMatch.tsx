@@ -167,13 +167,18 @@ export const DisplayMatch = ({ match, onRespond }: DisplayMatchProps) => {
                         </h2>
 
                         <div className="flex flex-wrap items-center gap-2">
-                            <div className=" flex items-center px-2 py-2 rounded-full border border-blue-600" onClick={handleChatClick}>
+                            <button
+                                type="button"
+                                aria-label="Open chat"
+                                className="flex items-center px-2 py-2 rounded-full border border-blue-600 focus-visible:ring-2 outline-none hover:bg-blue-50 transition-colors"
+                                onClick={handleChatClick}
+                            >
                                 <Send className="text-blue-600" />
-                            </div>
+                            </button>
 
                             {!isTimeGiven && isHost && (
                                 <button
-                                    onClick={() => { setIsTimeDropDownOpen(!isTimeDropdowmOpen); setIsDisplayMatch(!DisplayMatch); }}
+                                    onClick={() => { setIsTimeDropDownOpen(!isTimeDropdowmOpen); setIsDisplayMatch(!isDisplayMatch); }}
                                     className="flex items-center text-xs sm:text-sm px-3 py-1 rounded-full font-semibold 
                              text-yellow-700 border border-yellow-700 hover:bg-yellow-700 hover:text-white"
                                 >

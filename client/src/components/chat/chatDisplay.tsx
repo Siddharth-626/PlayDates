@@ -64,9 +64,14 @@ export const ChatDisplay = ({
             <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
                 <div className="flex items-center">
                     {!isDesktop && (
-                        <div onClick={OnClose} className="mr-2 cursor-pointer">
+                        <button
+                            type="button"
+                            aria-label="Go back"
+                            onClick={OnClose}
+                            className="mr-2 cursor-pointer focus-visible:ring-2 outline-none rounded-full p-1 hover:bg-gray-100 transition-colors"
+                        >
                             <ChevronLeft className="w-5 h-5 text-green-600" />
-                        </div>
+                        </button>
                     )}
 
                     {/* Avatar */}
@@ -124,8 +129,10 @@ export const ChatDisplay = ({
                 {/* ✅ Edit button at far right */}
                 {chatDisplayData.type === "group" && (
                     <button
+                        type="button"
+                        aria-label="Edit group"
                         onClick={() => setShowEditPopup(true)}
-                        className="ml-auto text-green-500 hover:text-green-600"
+                        className="ml-auto text-green-500 hover:text-green-600 focus-visible:ring-2 outline-none rounded-md"
                     >
                         <Edit className="w-5 h-5" />
                     </button>
@@ -249,8 +256,10 @@ export const ChatDisplay = ({
                     className="flex-1 bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-2 text-sm outline-none text-gray-800 dark:text-gray-200"
                 />
                 <button
+                    type="button"
+                    aria-label="Send message"
                     onClick={handleSendMessage}
-                    className="ml-3 bg-green-500 hover:bg-green-600 text-white rounded-full p-2"
+                    className="ml-3 bg-green-500 hover:bg-green-600 text-white rounded-full p-2 focus-visible:ring-2 outline-none"
                 >
                     <Send className="w-5 h-5" />
                 </button>

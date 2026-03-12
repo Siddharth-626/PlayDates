@@ -1,0 +1,4 @@
+## 2025-02-13 - Hardening Firestore Rules and UI Access Control
+**Vulnerability:** Permissive Firestore security rules allowing any authenticated user to write to global collections like `matches` and `courts`, and a UI that exposed administrative actions (e.g., "Change Teams") to non-host participants.
+**Learning:** Initial development often relies on overly broad rules (e.g., `allow write: if request.auth != null`) for convenience, which can lead to Insecure Direct Object Reference (IDOR) vulnerabilities where any logged-in user can modify or delete data they don't own.
+**Prevention:** Implement resource-based authorization in Firestore rules by checking ownership (e.g., `resource.data.host.userUid == request.auth.uid`). Complement these rules with UI-level checks (e.g., hiding buttons based on roles) to provide defense in depth and a better user experience.

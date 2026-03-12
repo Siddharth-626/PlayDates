@@ -11,12 +11,13 @@ service cloud.firestore {
 
     match /courts/{courtId} {
       allow read: if true;
-      allow write: if request.auth != null || isAdmin();
+      allow write: if isAdmin();
     }
 
     match /matches/{matchId} {
       allow read: if true;
-      allow write: if request.auth != null || isAdmin();
+      allow create: if request.auth != null && request.resource.data.host.userUid == request.auth.uid;
+      allow update, delete: if isAdmin() || (request.auth != null && resource.data.host.userUid == request.auth.uid);
     }
 
     match /profiles/{profileId} {
@@ -82,7 +83,7 @@ service cloud.firestore {
     // Collection group access to 'profile'
     match /{documentPath=**}/profile/{profileId} {
       allow read: if true;
-      allow write: if request.auth != null || isAdmin();
+      allow write: if isAdmin() || (request.auth != null && request.auth.uid == profileId);
     }
 
     match /users/{userUid}/profile/{profileId}/selectedCourts/{docId} {

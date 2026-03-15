@@ -1,0 +1,4 @@
+## 2025-05-14 - Insecure Direct Object Reference (IDOR) in Firestore Rules
+**Vulnerability:** Overly permissive write rules in the `matches`, `courts`, and `profile` collections allowed any authenticated user to modify or delete data belonging to others. Specifically, `allow write: if request.auth != null` was used without ownership checks.
+**Learning:** Defaulting to authenticated-only access without verifying document ownership (`resource.data.owner == request.auth.uid`) is a common source of IDOR vulnerabilities in Firebase applications.
+**Prevention:** Implement granular security rules for `create`, `update`, and `delete`. Always verify that the `request.auth.uid` matches the owner field in the existing document (`resource.data`) for updates/deletes, and ensures it matches the new document (`request.resource.data`) for creations.

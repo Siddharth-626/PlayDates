@@ -258,7 +258,7 @@ export const DisplayMatch = ({ match, onRespond }: DisplayMatchProps) => {
                             <div className="flex items-center gap-2 flex-wrap">
                                 <UsersRound className="w-5 h-5 text-green-600" />
                                 <span className="font-semibold">Players:</span>
-                                {MatchType == "Doubles" && (
+                                {MatchType == "Doubles" && isHost && (
                                     <button
                                         onClick={() => {
                                             setIsDisplayMatch(!isDisplayMatch);

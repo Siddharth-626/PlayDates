@@ -1,0 +1,3 @@
+## 2026-03-15 - [Accessible Authentication Forms]
+**Learning:** Authentication forms using `onClick` on buttons instead of `<form onSubmit>` prevent standard "Enter" key submission, creating an accessibility barrier for keyboard users. Additionally, providing immediate feedback with an `isLoading` state and spinner improves perceived performance and prevents duplicate submissions during async Firebase operations.
+**Action:** Always wrap form inputs in a semantic `<form>` element with an `onSubmit` handler. Ensure submit buttons have a `disabled` state and visual loading indicator when processing.

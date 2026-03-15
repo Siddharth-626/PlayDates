@@ -1,8 +1,7 @@
 import { useCallback, useState } from "react";
 import Link from "next/link";
-import { FiMail } from "react-icons/fi";
 import { AiOutlineEyeInvisible, AiOutlineEye } from "react-icons/ai";
-import { LogInIcon, UserPlus, ShieldCheck, Mail, Lock, } from "lucide-react";
+import { LogInIcon, UserPlus, ShieldCheck, Mail, Lock, Loader2 } from "lucide-react";
 import Navbar from "../components/Navbar";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../services/config";
@@ -18,6 +17,7 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
 
@@ -36,10 +36,11 @@ export default function Login() {
       return;
     }
     try {
+      setIsLoading(true);
       const userCredentials = await signInWithEmailAndPassword(auth, email, password);
       const uid = userCredentials.user.uid;
       const profileExist = await checkIfProfileExist(uid);
-      router.push(profileExist ? "/" : "/setup");
+      await router.push(profileExist ? "/" : "/setup");
     } catch (err: any) {
       let message = "Login failed. Please try again.";
       if (err instanceof FirebaseError) {
@@ -62,6 +63,8 @@ export default function Login() {
       }
       setError(message);
       toast.error(message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -123,6 +126,7 @@ export default function Login() {
               </motion.p>
             )}
 
+            <form onSubmit={(e) => { e.preventDefault(); debounceHandleLogin(); }}>
             {/* Email Input */}
             <label className="text-green-900 dark:text-green-200 text-sm font-semibold mb-1 block" htmlFor="email">
               Email
@@ -189,13 +193,14 @@ export default function Login() {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.98 }}
-              className="w-full bg-gradient-to-r from-green-600 via-green-700 to-green-800 dark:from-green-700 dark:via-green-800 dark:to-green-900 text-white py-2 rounded-lg hover:bg-green-800 dark:hover:bg-green-700 transition font-semibold cursor-pointer shadow-lg flex items-center justify-center gap-2 text-lg"
-              onClick={debounceHandleLogin}
-              type="button"
+              className="w-full bg-gradient-to-r from-green-600 via-green-700 to-green-800 dark:from-green-700 dark:via-green-800 dark:to-green-900 text-white py-2 rounded-lg hover:bg-green-800 dark:hover:bg-green-700 transition font-semibold cursor-pointer shadow-lg flex items-center justify-center gap-2 text-lg disabled:opacity-70 disabled:cursor-not-allowed"
+              type="submit"
+              disabled={isLoading}
             >
-              <LogInIcon className="w-5 h-5" />
-              Login
+              {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <LogInIcon className="w-5 h-5" />}
+              {isLoading ? "Logging in..." : "Login"}
             </motion.button>
+            </form>
 
             <div className="flex items-center my-6">
               <div className="flex-grow h-px bg-green-200 dark:bg-green-700" />

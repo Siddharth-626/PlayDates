@@ -1,0 +1,4 @@
+## 2025-05-22 - Broken Access Control in Firestore Rules
+**Vulnerability:** Overly permissive write access on critical collections (`/matches`, `/courts`) and collection groups (`/profile`). Any authenticated user could modify or delete data belonging to others.
+**Learning:** Defaulting to `allow write: if request.auth != null` is a dangerous pattern that satisfies authentication but fails authorization. Collection group rules are especially hazardous in Firestore as they can unintentionally grant broad write access across the entire database schema if not scoped to a specific owner or ID.
+**Prevention:** Always implement resource-level authorization by comparing `request.auth.uid` against document owner fields. Use `request.resource.data` for validation during `create` and `resource.data` for `update`/`delete`. Ensure collection group rules are as restrictive as path-specific rules.

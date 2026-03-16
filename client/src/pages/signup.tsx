@@ -1,15 +1,15 @@
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 import Navbar from '../components/Navbar';
 import { FiPhone } from 'react-icons/fi';
-import { Mail, Lock, User, ArrowRight } from 'lucide-react';
+import { Mail, Lock, User, ArrowRight, Loader2 } from 'lucide-react';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth, db } from '@/services/config';
 import { doc, setDoc } from 'firebase/firestore';
 import { useRouter } from 'next/router';
 import { checkIfProfileExist } from '@/utils/checkUserProfile';
-import { debounce } from '@/utils/debounce';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
+import { FirebaseError } from 'firebase/app';
 
 export default function Signup() {
   const [name, setName] = useState('');
@@ -18,10 +18,15 @@ export default function Signup() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  const handleSignup = async () => {
+  const handleSignup = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (isLoading) return;
+
     try {
+      setIsLoading(true);
       setError('');
       if (password !== confirmPassword) {
         setError('Passwords do not match');
@@ -43,31 +48,31 @@ export default function Signup() {
       toast.success("User registered successfully");
       const uid = user.uid;
       const profileExist = await checkIfProfileExist(uid);
-      router.push(profileExist ? '/' : '/setup');
-    } catch (err: any) {
-      if (err.code === 'auth/email-already-in-use') {
-        setError('Email already in use. Please login or use a different email.');
-      } else if (err.code === 'auth/invalid-email') {
-        setError('Invalid email. Please enter a valid email address.');
+      await router.push(profileExist ? '/' : '/setup');
+    } catch (err) {
+      if (err instanceof FirebaseError) {
+        if (err.code === 'auth/email-already-in-use') {
+          setError('Email already in use. Please login or use a different email.');
+        } else if (err.code === 'auth/invalid-email') {
+          setError('Invalid email. Please enter a valid email address.');
+        } else {
+          setError(err.message || 'Signup failed');
+        }
       } else {
-        setError(err.message || 'Signup failed');
+        setError('Signup failed');
       }
       console.error('Error while signing up:', err);
+    } finally {
+      setIsLoading(false);
     }
   };
-
-  const debounceHandleSubmit = useCallback(
-    debounce(() => {
-      handleSignup();
-    }, 1000),
-    [name, email, password, confirmPassword, phoneNumber]
-  );
 
   return (
     <>
       <Navbar />
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 via-white to-green-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 text-gray-900 dark:text-white px-4">
-        <motion.div
+        <motion.form
+          onSubmit={handleSignup}
           initial={{ opacity: 0, y: 40, scale: 0.97 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.6, type: "spring" }}
@@ -179,16 +184,25 @@ export default function Signup() {
 
           {/* Submit Button */}
           <motion.button
-            whileHover={{ scale: 1.04 }}
-            whileTap={{ scale: 0.97 }}
-            className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white font-semibold py-2 rounded-lg shadow-lg hover:bg-green-800 dark:hover:bg-green-700 transition flex items-center justify-center gap-2 text-lg"
-            onClick={debounceHandleSubmit}
-            type="button"
-            aria-label="Register"
+            whileHover={{ scale: isLoading ? 1 : 1.04 }}
+            whileTap={{ scale: isLoading ? 1 : 0.97 }}
+            className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white font-semibold py-2 rounded-lg shadow-lg hover:bg-green-800 dark:hover:bg-green-700 transition flex items-center justify-center gap-2 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            type="submit"
+            disabled={isLoading}
+            aria-label={isLoading ? "Registering..." : "Register"}
           >
-            Register <ArrowRight className="w-5 h-5" />
+            {isLoading ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Registering...
+              </>
+            ) : (
+              <>
+                Register <ArrowRight className="w-5 h-5" />
+              </>
+            )}
           </motion.button>
-        </motion.div>
+        </motion.form>
       </div>
     </>
   );

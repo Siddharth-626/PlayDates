@@ -1,0 +1,3 @@
+## 2026-03-17 - Semantic Login Forms and Reactive Loading States
+**Learning:** Replacing debounced submission buttons with a semantic `<form>` and a reactive `isLoading` state significantly improves both accessibility (keyboard support) and perceived performance. Using `Loader2` for visual feedback and disabling interactive elements during async operations prevents double-submissions and provides a polished feel.
+**Action:** Always prefer `<form>` for authentication views to ensure "Enter" key submission works natively, and use explicit loading states instead of debounces for critical actions.

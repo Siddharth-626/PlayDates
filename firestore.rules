@@ -16,7 +16,9 @@ service cloud.firestore {
 
     match /matches/{matchId} {
       allow read: if true;
-      allow write: if request.auth != null || isAdmin();
+      // Restrict match creation to the host and updates to the host or admin to prevent IDOR
+      allow create: if (request.auth != null && request.resource.data.host.userUid == request.auth.uid) || isAdmin();
+      allow update, delete: if (request.auth != null && resource.data.host.userUid == request.auth.uid) || isAdmin();
     }
 
     match /profiles/{profileId} {
@@ -80,9 +82,11 @@ service cloud.firestore {
     }
 
     // Collection group access to 'profile'
+    // Ensure only the profile owner can modify their profile through collection group queries
     match /{documentPath=**}/profile/{profileId} {
       allow read: if true;
-      allow write: if request.auth != null || isAdmin();
+      allow create: if (request.auth != null && request.resource.data.userUid == request.auth.uid) || isAdmin();
+      allow update, delete: if (request.auth != null && resource.data.userUid == request.auth.uid) || isAdmin();
     }
 
     match /users/{userUid}/profile/{profileId}/selectedCourts/{docId} {

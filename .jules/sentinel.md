@@ -1,0 +1,4 @@
+## 2025-05-14 - Permissive Firestore Collection Group Rules
+**Vulnerability:** The `profile` collection group had a permissive `allow write: if request.auth != null` rule, which allowed any authenticated user to modify any profile document in the entire database by using a collection group query, bypassing the more specific path-based rules.
+**Learning:** Firestore collection group rules apply to all collections with the specified ID, regardless of where they are in the hierarchy. If not properly restricted by document data (like a `userUid`), they can create massive security holes.
+**Prevention:** Always use document data (e.g., `resource.data.userUid == request.auth.uid`) to verify ownership in collection group rules, or avoid `allow write` in collection groups entirely if not strictly necessary.

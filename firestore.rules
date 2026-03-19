@@ -14,9 +14,11 @@ service cloud.firestore {
       allow write: if request.auth != null || isAdmin();
     }
 
+    // Matches can be read by anyone, but only the host or an admin can update or delete them.
     match /matches/{matchId} {
       allow read: if true;
-      allow write: if request.auth != null || isAdmin();
+      allow create: if request.auth != null;
+      allow update, delete: if (request.auth != null && request.auth.uid == resource.data.host.userUid) || isAdmin();
     }
 
     match /profiles/{profileId} {
@@ -79,10 +81,10 @@ service cloud.firestore {
                     request.resource.data.isRead == false) || isAdmin();
     }
 
-    // Collection group access to 'profile'
+    // Collection group access to 'profile' - only the profile owner or an admin can write.
     match /{documentPath=**}/profile/{profileId} {
       allow read: if true;
-      allow write: if request.auth != null || isAdmin();
+      allow write: if (request.auth != null && request.auth.uid == profileId) || isAdmin();
     }
 
     match /users/{userUid}/profile/{profileId}/selectedCourts/{docId} {

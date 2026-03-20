@@ -1,8 +1,9 @@
 
 
-export const hasMatchEnded = (date: any, endTime: string) => {
 
-  if (!endTime || !date) return;
+export const hasMatchEnded = (date: any, endTime: any) => {
+
+  if (!endTime || !date || typeof endTime !== 'string') return false;
   const now = new Date();
   const isPM = /pm/i.test(endTime);
   const isAM = /am/i.test(endTime);

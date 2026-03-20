@@ -117,7 +117,7 @@ export const DisplayMatch = ({ match, onRespond }: DisplayMatchProps) => {
 
     if (isMatchCreation) {
         title = "Match Creation";
-        if (startTime == "" && endTime == "") {
+        if (!startTime || !endTime || typeof endTime !== 'string') {
             isTimeGiven = false;
         }
     }

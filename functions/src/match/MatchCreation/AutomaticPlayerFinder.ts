@@ -74,11 +74,17 @@ export const AddPlayersToMatch = onDocumentCreated(
             if (dateMatch && preferenceMatch && locationMatch) {
                 if (isTimeOverlap(matchInfo, availabilityData)) {
                     if (match.players.length < playerCap) {
+                        // Fetch the player's profile to get name and photoUrl
+                        const playerProfileSnap = await db.doc(`users/${userUid}/profile/${profileId}`).get();
+                        const playerProfileData = playerProfileSnap.data();
+
                         await matchRef.update({
                             players: admin.firestore.FieldValue.arrayUnion({
                                 userUid,
                                 profileId,
                                 status: "pending",
+                                name: playerProfileData?.name || "",
+                                photoUrl: playerProfileData?.photoUrl || "",
                             }),
                         });
 

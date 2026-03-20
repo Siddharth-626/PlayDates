@@ -27,7 +27,7 @@ export const CreateMatch = ({ CloseTab }: { CloseTab: () => void }) => {
     const [duration, setDuration] = useState('');
     const [preference, setPreference] = useState<string[]>([]);
     const [locations, setLocations] = useState<LocationStorageType[]>([]);
-    const [players, setPlayers] = useState<any[]>([{ userUid: user?.uid, profileId: selectedProfile?.id, status: "pending", name: selectedProfile?.name }]);
+    const [players, setPlayers] = useState<any[]>([{ userUid: user?.uid, profileId: selectedProfile?.id, status: "pending", name: selectedProfile?.name, photoUrl: selectedProfile?.photoUrl || "" }]);
     const [loading, setLoading] = useState(false);
     const [isAutoPlayerPickerSelected, setIsAutoPlayerPickerSelected] = useState(false);
     const [showSchedule, setShowSchedule] = useState(false);

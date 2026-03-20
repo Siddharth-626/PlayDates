@@ -47,7 +47,34 @@ export const DisplayMatch = ({ match, onRespond }: DisplayMatchProps) => {
 
     useEffect(() => {
         if (!matchId) return;
-        const unsubscribe = fetchMatch(matchId, (match) => setMatchData(match));
+        const unsubscribe = fetchMatch(matchId, async (match) => {
+            if (match?.players && Array.isArray(match.players)) {
+                // Check if any player is missing name — if so, fetch from profile
+                const playersWithNames = await Promise.all(
+                    match.players.map(async (player: any) => {
+                        if (!player.name && player.userUid && player.profileId) {
+                            try {
+                                const fetched = await FetchPlayerProfile({
+                                    userUid: player.userUid,
+                                    profileId: player.profileId,
+                                });
+                                return {
+                                    ...player,
+                                    name: fetched?.name || "Unknown",
+                                    photoUrl: fetched?.photoUrl || player.photoUrl || "",
+                                };
+                            } catch {
+                                return { ...player, name: "Unknown" };
+                            }
+                        }
+                        return player;
+                    })
+                );
+                setMatchData({ ...match, players: playersWithNames });
+            } else {
+                setMatchData(match);
+            }
+        });
         return () => {
             if (unsubscribe) {
                 unsubscribe();

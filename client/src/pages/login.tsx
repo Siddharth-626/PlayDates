@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { AiOutlineEyeInvisible, AiOutlineEye } from "react-icons/ai";
 import { LogInIcon, UserPlus, ShieldCheck, Mail, Lock, } from "lucide-react";
@@ -11,14 +11,22 @@ import { GoogleLogin } from "@/components/auth/GoogleLogin";
 import toast from "react-hot-toast";
 import { FirebaseError } from "firebase/app";
 import { motion } from "framer-motion";
+import { useAuth } from "@/context/authContext";
 
 export default function Login() {
+  const { user, loading: authLoading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.replace("/");
+    }
+  }, [user, authLoading, router]);
 
   const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 

@@ -5,9 +5,14 @@ import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/services/config";
 
 
+type MatchRecord = {
+    id: string;
+    [key: string]: unknown;
+};
+
 type MatchContextType = {
-    matches: any[] | undefined,
-    setMatches: React.Dispatch<React.SetStateAction<any[] | undefined>>;
+    matches: MatchRecord[] | undefined,
+    setMatches: React.Dispatch<React.SetStateAction<MatchRecord[] | undefined>>;
     loading:boolean;
     refreshMatches:()=>void;
 }
@@ -18,7 +23,7 @@ export const MatchProvider = ({ children }: { children: React.ReactNode }) => {
     const { user } = useAuth();
     const { selectedProfile } = useProfile();
 
-    const [matches, setMatches] = useState<any[] | undefined>(undefined);
+    const [matches, setMatches] = useState<MatchRecord[] | undefined>(undefined);
     const [loading,setLoading] = useState(false)
     const fetchData = async () => {
         try {
@@ -38,7 +43,7 @@ export const MatchProvider = ({ children }: { children: React.ReactNode }) => {
             })
             setMatches(MatchData);
         } catch (err) {
-            // silently fail
+            console.error("Failed to fetch matches:", err);
         } finally{
             setLoading(false)
         }

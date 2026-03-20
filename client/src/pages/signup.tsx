@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
 import { FiPhone } from 'react-icons/fi';
 import { AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai';
@@ -10,8 +10,10 @@ import { useRouter } from 'next/router';
 import { checkIfProfileExist } from '@/utils/checkUserProfile';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
+import { useAuth } from '@/context/authContext';
 
 export default function Signup() {
+  const { user, loading: authLoading } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -22,6 +24,12 @@ export default function Signup() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.replace('/');
+    }
+  }, [user, authLoading, router]);
 
   const handleSignup = async () => {
     setError('');

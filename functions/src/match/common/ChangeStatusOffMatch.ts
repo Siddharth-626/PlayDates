@@ -8,7 +8,7 @@ const SendStatus = async (status: string, matchId: string, players: any[],MatchD
         const notification = {
             type: "match preposal result",
             message: `The Match at ${MatchData.startTime} is ${status == "preposed" ? "rejected":status} `,
-            idRead: false
+            isRead: false
         }
         await db.collection(`users/${player.userUid}/profile/${player.profileId}/notifications`).add(notification);
     }
@@ -27,8 +27,12 @@ export const changeStatusOfMatch = onDocumentUpdated({
         const { matchId } = event.params;
 
         const MatchData = event.data?.after.data();
+        const beforeData = event.data?.before.data();
 
-        if (!MatchData) return;
+        if (!MatchData || !beforeData) return;
+
+        // Prevent infinite loop: only act when player statuses changed, not match status
+        if (beforeData.status !== MatchData.status) return;
 
         const players = MatchData.players;
 

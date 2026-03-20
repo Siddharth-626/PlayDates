@@ -35,7 +35,7 @@ export const ProfileProvider = ({ children }: { children: React.ReactNode }) => 
 
             setSelectedProfile(defaultProfile || null);
         } catch (error) {
-            // silently fail
+            console.error("Failed to fetch profiles:", error);
         }
     };
 

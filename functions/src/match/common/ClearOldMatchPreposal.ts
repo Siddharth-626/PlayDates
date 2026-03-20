@@ -1,5 +1,6 @@
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { admin } from "../../utils/admin";
+import { Timestamp } from "firebase-admin/firestore";
 
 
 export const clearOldMatchPreposal = onSchedule(
@@ -7,31 +8,39 @@ export const clearOldMatchPreposal = onSchedule(
     async (event) => {
         try {
             const db = admin.firestore();
-            const matchSnap = await db.collection("matches").get();
 
             const now = new Date();
             const currentDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const cutoff = Timestamp.fromDate(currentDate);
+
+            // Query only old matches instead of scanning entire collection
+            const matchSnap = await db
+                .collection("matches")
+                .where("date", "<", cutoff)
+                .get();
+
+            const batch = db.batch();
+            let count = 0;
 
             for (const matchDoc of matchSnap.docs) {
-                const matchId = matchDoc.id;
                 const matchData = matchDoc.data();
+                if (matchData.status === "accepted") continue;
 
-                if (!matchData.date) continue;
+                batch.delete(matchDoc.ref);
+                count++;
 
-                const matchDate = matchData.date.toDate ? matchData.date.toDate() : null;
-                if (!matchDate) continue;
-
-                const availabilityDate = new Date(
-                    matchDate.getFullYear(),
-                    matchDate.getMonth(),
-                    matchDate.getDate()
-                );
-
-                if (availabilityDate < currentDate && matchData.status != "accepted") {
-                    await db.doc(`matches/${matchId}`).delete();
-                    console.log(`Match with ID ${matchId} has been cleared.`);
+                // Firestore batch limit is 500
+                if (count === 500) {
+                    await batch.commit();
+                    count = 0;
                 }
             }
+
+            if (count > 0) {
+                await batch.commit();
+            }
+
+            console.log("Old match proposals cleared");
         } catch (error) {
             console.error("Error while clearing old matches:", error);
         }

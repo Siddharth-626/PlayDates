@@ -1,6 +1,4 @@
-'use client';
-
-import { useRouter } from 'next/navigation';
+import { useRouter } from 'next/router';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/services/config';
 import { useState } from 'react';
@@ -23,7 +21,7 @@ export default function AnimatedLogoutManButton() {
       await signOut(auth);
       router.push('/login');
     }, 1800);
-    toast.success('User succesfully lodgedout');
+    toast.success('Logged out successfully');
   };
 
   return (

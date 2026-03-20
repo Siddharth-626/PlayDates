@@ -36,8 +36,8 @@ export const getCommonTime = (availabilityA: any, availabilityB: any) => {
 
     if (overLapStart < overLapEnd) {
         return {
-            startTime: new Date(overLapStart).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-            endTime: new Date(overLapEnd).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+            startTime: Timestamp.fromDate(new Date(overLapStart)),
+            endTime: Timestamp.fromDate(new Date(overLapEnd)),
         };
     }
     return null;

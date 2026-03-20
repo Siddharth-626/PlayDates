@@ -17,7 +17,7 @@ export const clearOldProfileMatches = onDocumentDeleted({
             const { userUid, profileId } = player;
 
             const profileMatchSnap = await db.doc(`users/${userUid}/profile/${profileId}/matches/${matchId}`).get();
-           profileMatchSnap.ref.delete()
+           await profileMatchSnap.ref.delete()
         }
     }catch (error) {
         console.error("Error while clearing old profile matches:", error);

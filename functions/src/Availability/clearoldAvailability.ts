@@ -11,40 +11,38 @@ export const clearOldAvailability = onSchedule(
     async () => {
         try {
             const db = admin.firestore();
-            const userSnap = await db.collection("users").get();
 
             const now = new Date();
             const currentDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const cutoff = Timestamp.fromDate(currentDate);
 
-            for (const userDoc of userSnap.docs) {
-                const userUid = userDoc.id;
-                const profileSnap = await db.collection(`users/${userUid}/profile`).get();
+            // Use collection group query instead of scanning all users
+            const expiredSnap = await db
+                .collectionGroup("availability")
+                .where("endDate", "<", cutoff)
+                .get();
 
-                for (const profileDoc of profileSnap.docs) {
-                    const profileId = profileDoc.id;
-                    const availabilitySnap = await db
-                        .collection(`users/${userUid}/profile/${profileId}/availability`)
-                        .get();
+            const batch = db.batch();
+            let count = 0;
 
-                    for (const doc of availabilitySnap.docs) {
-                        const data = doc.data();
-                        const dateValue =
-                            data.endDate instanceof Timestamp ? data.endDate.toDate() : data.endDate;
+            for (const doc of expiredSnap.docs) {
+                batch.delete(doc.ref);
+                count++;
 
-                        if (!dateValue) continue;
-
-                        const availabilityDate = new Date(dateValue);
-
-                        if (availabilityDate < currentDate) {
-                            await doc.ref.delete();
-                        }
-                    }
+                // Firestore batch limit is 500
+                if (count === 500) {
+                    await batch.commit();
+                    count = 0;
                 }
             }
 
-            console.log("✅ Old availability cleared");
+            if (count > 0) {
+                await batch.commit();
+            }
+
+            console.log("Old availability cleared");
         } catch (error) {
-            console.error("❌ Error while clearing old availability:", error);
+            console.error("Error while clearing old availability:", error);
         }
     }
 );

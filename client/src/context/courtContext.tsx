@@ -24,8 +24,12 @@ export const CourtProvider = ({ children }: { children: React.ReactNode }) => {
         if (!user || !selectedProfile) return;
 
         const fetchData = async () => {
-            const allCourts = await fetchAllCourts();
-            setCourts(allCourts);
+            try {
+                const allCourts = await fetchAllCourts();
+                setCourts(allCourts);
+            } catch (error) {
+                console.error("Failed to fetch courts:", error);
+            }
         };
 
         fetchData();

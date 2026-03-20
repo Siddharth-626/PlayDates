@@ -27,15 +27,14 @@ export const ChatDashBoard = () => {
 
     const { chatDisplayData, setChatDisplayData } = useChatDisplayData();
 
-    if (!playmates) return null;
-
     useEffect(() => {
+        if (!playmates) return;
         const unsubscribe = listenToChats(selectedProfile?.userUid, selectedProfile?.id, (chat) => {
             setChats(chat)
         })
 
         return unsubscribe;
-    }, [selectedProfile?.userUid, selectedProfile?.id])
+    }, [selectedProfile?.userUid, selectedProfile?.id, playmates])
 
 
     useEffect(() => {
@@ -45,6 +44,8 @@ export const ChatDashBoard = () => {
 
         return () => window.removeEventListener("resize", handleResize);
     }, []);
+
+    if (!playmates) return null;
 
     const OnChatSelect = async (chat: any) => {
         if (!isDesktop) {
@@ -117,14 +118,14 @@ export const ChatDashBoard = () => {
 
 
                 <div className="flex-1 overflow-y-auto">
-                    {filterdChats?.slice(0, 15).map((chat, i) => {
+                    {filterdChats?.slice(0, 15).map((chat) => {
                         return chat.type == "1-1" ? <ChatPersonCard
                             selectedPerson={selectedPerson}
                             onClick={OnPersonClick}
-                            key={i}
+                            key={chat.id}
                             chat={chat}
                         /> :
-                            <ChatListItem chat={chat} onClick={OnChatSelect} key={i} />
+                            <ChatListItem chat={chat} onClick={OnChatSelect} key={chat.id} />
                     })}
                 </div>
                 {chats.length == 0 && (

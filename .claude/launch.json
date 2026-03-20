@@ -1,0 +1,13 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "playdates-client",
+      "runtimeExecutable": "cmd.exe",
+      "runtimeArgs": ["/c", "npm", "run", "dev"],
+      "port": 3001,
+      "autoPort": true,
+      "cwd": "D:/code/Playdates_prod/client"
+    }
+  ]
+}

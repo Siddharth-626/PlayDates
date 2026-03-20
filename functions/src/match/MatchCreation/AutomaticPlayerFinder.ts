@@ -39,17 +39,10 @@ export const AddPlayersToMatch = onDocumentCreated(
             const match = doc.data();
             console.log("Checking Match:", match);
 
-            // Build object compatible with isTimeOverlap
+            // Build object compatible with isTimeOverlap (needs startDate/endDate)
             const matchInfo = {
-                date: match.date, // Timestamp is fine, parseDateTime handles it
-                time: typeof match.startTime === "string"
-                    ? match.startTime
-                    : match.startTime?.toDate
-                        ? match.startTime.toDate().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })
-                        : "00:00",
-                duration: typeof match.duration === "string"
-                    ? match.duration
-                    : match.duration?.value || "60 min" // fallback if stored differently
+                startDate: match.startTime,
+                endDate: match.endTime,
             };
             console.log(matchInfo, availabilityData);
 

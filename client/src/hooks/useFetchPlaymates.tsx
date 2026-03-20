@@ -16,10 +16,10 @@ export const useFetchPlaymates = ({ userUid, profileId }: { userUid: string | un
         })
         if (data) {
             setPlaymates(data)
-            setHasFetched(false)
+            setHasFetched(true)
         }
         } catch (error) {
-            // silently fail
+            console.error("Failed to fetch playmates:", error);
         }
         finally{
             setLoading(false);

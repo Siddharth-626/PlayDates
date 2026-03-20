@@ -19,6 +19,8 @@ export const AddProposedMatchToProfile = onDocumentCreated(
 
             const players = matchData.players;
 
+            await createChat(players, matchId);
+
             for (const player of players) {
                 const { userUid, profileId } = player;
 
@@ -32,7 +34,6 @@ export const AddProposedMatchToProfile = onDocumentCreated(
                 await db
                     .doc(`users/${userUid}/profile/${profileId}/matches/${matchId}`)
                     .set(matchProposal);
-                await createChat(players,matchId)
                 console.log(`Added proposed match for Profile: ${profileId}`);
             }
         } catch (error) {

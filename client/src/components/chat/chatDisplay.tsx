@@ -75,7 +75,7 @@ export const ChatDisplay = ({
                             <div className="flex -space-x-2">
                                 {players.slice(1, players.length >= 3 ? 3 : players.length).map((p: any, idx: number) => (
                                     <img
-                                        key={idx}
+                                        key={p.userUid || p.name}
                                         src={p.photoUrl}
                                         alt={`${p.name}'s profile`}
                                         className="w-6 h-6 rounded-full object-cover border-2 border-white dark:border-green-700"

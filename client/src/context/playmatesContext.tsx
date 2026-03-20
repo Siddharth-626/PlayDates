@@ -27,7 +27,7 @@ export const PlaymateProvider = ({children}:{children:React.ReactNode})=>{
                 setPlaymates(data)
             }
             } catch (error) {
-                // silently fail
+                console.error("Failed to fetch playmates:", error);
             }
             finally{
                 setLoading(false);

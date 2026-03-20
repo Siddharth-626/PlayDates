@@ -44,9 +44,9 @@ export const DisplayMatch = ({ match, onRespond }: DisplayMatchProps) => {
     const [isDisplayMatch, setIsDisplayMatch] = useState(true);
     const router = useRouter();
     const { setChatDisplayData } = useChatDisplayData();
-    if (!matchId) return;
 
     useEffect(() => {
+        if (!matchId) return;
         const unsubscribe = fetchMatch(matchId, (match) => setMatchData(match));
         return () => {
             if (unsubscribe) {
@@ -95,9 +95,11 @@ export const DisplayMatch = ({ match, onRespond }: DisplayMatchProps) => {
         setResponseStatus(match.status);
     }, [match.status]);
 
+    if (!matchId) return null;
+
     const isHost = selectedProfile?.id == matchData?.host?.profileId;
 
-    if (!matchData) return;
+    if (!matchData) return null;
     const { date, startTime, MatchType, endTime, score, players } = matchData;
 
     const formattedDate =

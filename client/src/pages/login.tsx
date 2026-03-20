@@ -1,16 +1,17 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { AiOutlineEyeInvisible, AiOutlineEye } from "react-icons/ai";
 import { LogInIcon, UserPlus, ShieldCheck, Mail, Lock, } from "lucide-react";
 import Navbar from "../components/Navbar";
-import { sendPasswordResetEmail, signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../services/config";
+import { getRedirectResult, sendPasswordResetEmail, signInWithEmailAndPassword } from "firebase/auth";
+import { auth, db } from "../services/config";
 import { useRouter } from "next/router";
 import { checkIfProfileExist } from "@/utils/checkUserProfile";
 import { GoogleLogin } from "@/components/auth/GoogleLogin";
 import toast from "react-hot-toast";
 import { FirebaseError } from "firebase/app";
 import { motion } from "framer-motion";
+import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -19,6 +20,31 @@ export default function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+
+  // Handle Google redirect result on page load
+  useEffect(() => {
+    const handleRedirect = async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        if (!result) return;
+        const user = result.user;
+        await setDoc(doc(db, 'users', user.uid), {
+          uid: user.uid,
+          name: user.displayName || '',
+          email: user.email || '',
+          phoneNumber: user.phoneNumber || '',
+          photoUrl: user.photoURL || '',
+          timestamp: serverTimestamp(),
+        }, { merge: true });
+        toast.success(`Logged in as ${user.displayName || user.email}`);
+        const profileExist = await checkIfProfileExist(user.uid);
+        router.push(profileExist ? "/" : "/setup");
+      } catch {
+        // not a redirect result — ignore
+      }
+    };
+    handleRedirect();
+  }, []);
 
   const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 

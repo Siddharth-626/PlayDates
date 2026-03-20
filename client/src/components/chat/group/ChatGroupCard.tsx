@@ -3,10 +3,9 @@ import React from "react";
 type ChatProps = {
     chat: any
     onClick: (chat: any) => void;
-    setChatId: (chatId: string) => void
 };
 
-const ChatListItem: React.FC<ChatProps> = ({ chat, onClick, setChatId }) => {
+const ChatListItem: React.FC<ChatProps> = ({ chat, onClick }) => {
     const { type, groupName, participants, lastMessage, unSeenMessages } = chat;
 
     const name =
@@ -24,7 +23,7 @@ const ChatListItem: React.FC<ChatProps> = ({ chat, onClick, setChatId }) => {
     return (
         <div
             className="flex items-center px-4 py-3 hover:bg-green-50 dark:hover:bg-gray-800 cursor-pointer transition rounded-xl"
-            onClick={() => { onClick(chat); setChatId(chat.id) }}
+            onClick={() => onClick(chat)}
         >
             {/* Avatar / Icon */}
             <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-green-500 shadow-md flex items-center justify-center bg-green-100 dark:bg-green-700">

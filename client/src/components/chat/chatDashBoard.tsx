@@ -19,16 +19,15 @@ export const ChatDashBoard = () => {
     const { selectedProfile } = useProfile();
     const { playmates } = usePlaymates();
     const [chats, setChats] = useState<any[]>([]);
-    const [chatId, setChatId] = useState("");
     const [search, setSearch] = useState("");
     const [isSideBarOpen, setIsSideBarOpen] = useState(true);
     const [isChatCreaterOpen, setIsChatCreaterOpen] = useState(false);
     const [selectedPerson, setSelectedPerson] = useState<PlayerProfile | null>(null);
     const [isDesktop, setIsDesktop] = useState(false);
 
-    if (!playmates) return null;
-
     const { chatDisplayData, setChatDisplayData } = useChatDisplayData();
+
+    if (!playmates) return null;
 
     useEffect(() => {
         const unsubscribe = listenToChats(selectedProfile?.userUid, selectedProfile?.id, (chat) => {
@@ -59,13 +58,13 @@ export const ChatDashBoard = () => {
             type: "group"
         })
     };
-    const OnPersonClick = async (player: PlayerProfile) => {
+    const OnPersonClick = async (player: PlayerProfile, id: string) => {
         if (!isDesktop) {
             setIsSideBarOpen(false);
         }
         setSelectedPerson(player);
         setChatDisplayData({
-            chatId: chatId,
+            chatId: id,
             name: player?.name,
             photoUrl: player.photoUrl,
             userUid: player.userUid,
@@ -124,9 +123,8 @@ export const ChatDashBoard = () => {
                             onClick={OnPersonClick}
                             key={i}
                             chat={chat}
-                            setChatId={(chatID) => setChatId(chatID)}
                         /> :
-                            <ChatListItem chat={chat} onClick={OnChatSelect} setChatId={(chatId) => setChatId(chatId)} key={i} />
+                            <ChatListItem chat={chat} onClick={OnChatSelect} key={i} />
                     })}
                 </div>
                 {chats.length == 0 && (

@@ -6,7 +6,7 @@ export const ChangeFieldInDb = async(field:string,value:any,path:string)=>{
     try{
         const docRef = doc(db,path);
         await updateDoc(docRef,{
-            players:value
+            [field]:value
         })
     } catch(err){
         // silently fail — caller handles UI feedback

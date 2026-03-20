@@ -197,7 +197,7 @@ export const CreateMatch = ({ CloseTab }: { CloseTab: () => void }) => {
                     {players.length == 4 &&
                         <div className="bg-white dark:bg-gray-900 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-4">
                             <label className="flex items-center gap-2 text-gray-700 dark:text-gray-200 mb-2 font-semibold">
-                                <FiUserPlus size={18} className="text-green-500" /> Select Teems
+                                <FiUserPlus size={18} className="text-green-500" /> Select Teams
                             </label>
                             <TeamsSelector OnClose={() => {}} players={players} OnSubmit={(players) => setPlayers(players)} />;
                         </div>}

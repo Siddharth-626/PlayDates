@@ -1,13 +1,13 @@
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 import Navbar from '../components/Navbar';
 import { FiPhone } from 'react-icons/fi';
+import { AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai';
 import { Mail, Lock, User, ArrowRight } from 'lucide-react';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth, db } from '@/services/config';
 import { doc, setDoc } from 'firebase/firestore';
 import { useRouter } from 'next/router';
 import { checkIfProfileExist } from '@/utils/checkUserProfile';
-import { debounce } from '@/utils/debounce';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 
@@ -17,21 +17,33 @@ export default function Signup() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const handleSignup = async () => {
+    setError('');
+    if (!name.trim()) {
+      setError('Name is required.');
+      return;
+    }
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters.');
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError('Invalid email format');
+      return;
+    }
     try {
-      setError('');
-      if (password !== confirmPassword) {
-        setError('Passwords do not match');
-        return;
-      }
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
-        setError('Invalid email format');
-        return;
-      }
+      setLoading(true);
       const userCredentials = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredentials.user;
       await setDoc(doc(db, 'users', user.uid), {
@@ -41,8 +53,7 @@ export default function Signup() {
         createdAt: new Date().toISOString(),
       });
       toast.success("User registered successfully");
-      const uid = user.uid;
-      const profileExist = await checkIfProfileExist(uid);
+      const profileExist = await checkIfProfileExist(user.uid);
       router.push(profileExist ? '/' : '/setup');
     } catch (err: any) {
       if (err.code === 'auth/email-already-in-use') {
@@ -52,16 +63,10 @@ export default function Signup() {
       } else {
         setError(err.message || 'Signup failed');
       }
-      console.error('Error while signing up:', err);
+    } finally {
+      setLoading(false);
     }
   };
-
-  const debounceHandleSubmit = useCallback(
-    debounce(() => {
-      handleSignup();
-    }, 1000),
-    [name, email, password, confirmPassword, phoneNumber]
-  );
 
   return (
     <>
@@ -124,14 +129,26 @@ export default function Signup() {
             <Lock className="text-green-500 mr-2 w-5 h-5" />
             <input
               id="password"
-              type="password"
-              placeholder="Enter your password"
+              type={showPassword ? "text" : "password"}
+              placeholder="Enter your password (min. 6 chars)"
               className="flex-grow bg-transparent outline-none text-green-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               autoComplete="new-password"
               aria-label="Password"
             />
+            <button
+              type="button"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              className="ml-2 focus:outline-none"
+              onClick={() => setShowPassword((v) => !v)}
+            >
+              {showPassword ? (
+                <AiOutlineEyeInvisible className="text-gray-500 dark:text-gray-300 w-5 h-5" />
+              ) : (
+                <AiOutlineEye className="text-gray-500 dark:text-gray-300 w-5 h-5" />
+              )}
+            </button>
           </div>
 
           {/* Confirm Password */}
@@ -140,7 +157,7 @@ export default function Signup() {
             <Lock className="text-green-500 mr-2 w-5 h-5" />
             <input
               id="confirmPassword"
-              type="password"
+              type={showConfirmPassword ? "text" : "password"}
               placeholder="Re-enter your password"
               className="flex-grow bg-transparent outline-none text-green-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400"
               value={confirmPassword}
@@ -148,6 +165,18 @@ export default function Signup() {
               autoComplete="new-password"
               aria-label="Confirm Password"
             />
+            <button
+              type="button"
+              aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
+              className="ml-2 focus:outline-none"
+              onClick={() => setShowConfirmPassword((v) => !v)}
+            >
+              {showConfirmPassword ? (
+                <AiOutlineEyeInvisible className="text-gray-500 dark:text-gray-300 w-5 h-5" />
+              ) : (
+                <AiOutlineEye className="text-gray-500 dark:text-gray-300 w-5 h-5" />
+              )}
+            </button>
           </div>
 
           {/* Phone Number */}
@@ -181,12 +210,13 @@ export default function Signup() {
           <motion.button
             whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.97 }}
-            className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white font-semibold py-2 rounded-lg shadow-lg hover:bg-green-800 dark:hover:bg-green-700 transition flex items-center justify-center gap-2 text-lg"
-            onClick={debounceHandleSubmit}
+            className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white font-semibold py-2 rounded-lg shadow-lg hover:bg-green-800 dark:hover:bg-green-700 transition flex items-center justify-center gap-2 text-lg disabled:opacity-60 disabled:cursor-not-allowed"
+            onClick={handleSignup}
+            disabled={loading}
             type="button"
             aria-label="Register"
           >
-            Register <ArrowRight className="w-5 h-5" />
+            {loading ? "Registering..." : <><span>Register</span> <ArrowRight className="w-5 h-5" /></>}
           </motion.button>
         </motion.div>
       </div>

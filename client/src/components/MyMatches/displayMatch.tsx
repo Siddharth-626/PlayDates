@@ -80,7 +80,7 @@ export const DisplayMatch = ({ match, onRespond }: DisplayMatchProps) => {
             onRespond(status, matchId);
             setIsTimePreposed(false);
         } catch (error) {
-            console.error("Failed to update match response:", error);
+            // silently fail
         }
     };
 
@@ -173,7 +173,7 @@ export const DisplayMatch = ({ match, onRespond }: DisplayMatchProps) => {
 
                             {!isTimeGiven && isHost && (
                                 <button
-                                    onClick={() => { setIsTimeDropDownOpen(!isTimeDropdowmOpen); setIsDisplayMatch(!DisplayMatch); }}
+                                    onClick={() => { setIsTimeDropDownOpen(!isTimeDropdowmOpen); setIsDisplayMatch(!isDisplayMatch); }}
                                     className="flex items-center text-xs sm:text-sm px-3 py-1 rounded-full font-semibold 
                              text-yellow-700 border border-yellow-700 hover:bg-yellow-700 hover:text-white"
                                 >

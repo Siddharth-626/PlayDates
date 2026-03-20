@@ -16,21 +16,19 @@ export const GoogleLogin = () => {
             const userData = {
                 uid: user.uid,
                 name: user.displayName || '',
-                emai: user.email || '',
+                email: user.email || '',
                 phoneNumber: user.phoneNumber || '',
                 photoUrl: user.photoURL || '',
                 timestamp: serverTimestamp()
             }
 
             await setDoc(doc(db, 'users', user.uid), userData, { merge: true });
-            console.log('Google user data saved');
-            toast.success(`Lodgin as ${userData.name}`)
+            toast.success(`Logged in as ${userData.name}`)
 
             const profileExist = await checkIfProfileExist(user.uid);
             router.push(profileExist ? "/" : "/setup");
         } catch (error) {
-            console.log("err while google login", error);
-            toast.error('err while loging in with google')
+            toast.error('Error signing in with Google')
         }
     }
     return (

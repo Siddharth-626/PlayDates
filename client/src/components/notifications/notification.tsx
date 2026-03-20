@@ -5,6 +5,8 @@ import { useProfile } from "@/context/profileContext";
 import { useState } from "react";
 import { MatchResultNotification } from "./matchNotifications/matchResultNotification";
 import { Bell } from "lucide-react";
+import { db } from "@/services/config";
+import { doc, writeBatch } from "firebase/firestore";
 
 type NotificationTabProps = {
     notifications: any[] | undefined;
@@ -16,10 +18,16 @@ export const NotificationTab = ({ notifications, setNotifications }: Notificatio
     const { selectedProfile } = useProfile();
     const [NotificationRefresh, setNotificationRefersh] = useState(true);
 
-    const handleMarkAllRead = () => {
-        const updated = notifications?.map((n) => ({ ...n, isRead: true }));
-        if (!updated) return;
-        setNotifications(updated);
+    const handleMarkAllRead = async () => {
+        if (!notifications || !user?.uid || !selectedProfile?.id) return;
+        const unread = notifications.filter((n) => !n.isRead);
+        if (unread.length === 0) return;
+        const batch = writeBatch(db);
+        unread.forEach((n) => {
+            const ref = doc(db, `users/${user.uid}/profile/${selectedProfile.id}/notifications/${n.id}`);
+            batch.update(ref, { isRead: true });
+        });
+        await batch.commit();
     };
 
     const handlePlaymateResponse = (accepted: boolean, note: any) => {
@@ -35,7 +43,7 @@ export const NotificationTab = ({ notifications, setNotifications }: Notificatio
             });
             setNotificationRefersh(!NotificationRefresh);
         } catch (error) {
-            console.log("err while managing the playmates request");
+            // silently fail
         }
     };
 

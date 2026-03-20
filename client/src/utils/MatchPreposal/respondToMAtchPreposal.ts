@@ -1,6 +1,5 @@
 import { db } from "@/services/config";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
-import toast from "react-hot-toast";
 
 type respondToMatchPreposalType = {
     matchId: string;
@@ -28,7 +27,18 @@ export const respondToMatchPreposal = async({
         return player
     })
 
-    await updateDoc(MatchRef,{
-        players:updatedPlayers
-    })
+    const allAccepted = updatedPlayers.every((p: any) => p.status === "accepted");
+    const anyRejected = updatedPlayers.some((p: any) => p.status === "rejected");
+
+    let matchStatus = matchData.status;
+    if (allAccepted) {
+        matchStatus = "accepted";
+    } else if (anyRejected) {
+        matchStatus = "rejected";
+    }
+
+    await updateDoc(MatchRef, {
+        players: updatedPlayers,
+        status: matchStatus,
+    });
 }

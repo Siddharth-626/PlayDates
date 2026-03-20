@@ -25,7 +25,7 @@ export const DisplayMatches = ({ matches }: { matches: any[] | undefined }) => {
             status,
         });
 
-        toast.success("You accepted the Match");
+        toast.success(status === "accepted" ? "Match accepted!" : "Match rejected.");
         setTabOpen(false);
     };
     const CloseTab = () => {

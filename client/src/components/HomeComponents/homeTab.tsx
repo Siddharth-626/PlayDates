@@ -8,37 +8,25 @@ import {
     Trophy,
     ChevronRight,
     Send,
-    Heart,
-    Star,
-    Settings,
-    icons,
     Search,
     Calendar1,
-    Settings2,
 } from "lucide-react";
-import { useAuth } from "@/context/authContext";
 import { useProfile } from "@/context/profileContext";
-import { useFetchMatches } from "@/hooks/useFetchMatchs";
 import { useFetchNotifications } from "@/hooks/useFetchNotifications";
-import { DisplayAvailability } from "../availability/displayAvailability/displayAvailability";
 import { usePlaymates } from "@/context/playmatesContext";
-import Link from "next/link";
-import { label } from "framer-motion/client";
-import { useRouter } from "next/router";
+import { useMatchs } from "@/context/matchContext";
+import { useAuth } from "@/context/authContext";
 
 export default function HomeTab({ setTab }: { setTab: (tab: string) => void }) {
     const { user } = useAuth();
     const { selectedProfile } = useProfile();
-    const { matches } = useFetchMatches({
-        userUid: user?.uid,
-        profileId: selectedProfile?.id,
-    });
+    const { matches } = useMatchs();
     const { notifications } = useFetchNotifications({
         userUid: user?.uid,
         profileId: selectedProfile?.id,
     });
     const { playmates } = usePlaymates();
-    const router = useRouter();
+
     const unreadNotifications =
         notifications?.filter((n) => !n.isRead).length || 0;
     const upcomingMatches = matches?.filter((m) => m.status === "accepted")
@@ -88,7 +76,7 @@ export default function HomeTab({ setTab }: { setTab: (tab: string) => void }) {
             value: "",
             icon: <Send className="w-6 h-6" />,
             color: "from-green-400 to-green-600",
-            onClick: () => (router.push("/chats")),
+            onClick: () => setTab("Messages"),
         },
         {
             label: "Profile",
@@ -102,21 +90,14 @@ export default function HomeTab({ setTab }: { setTab: (tab: string) => void }) {
             value: "",
             icon: <MapPin className="w-6 h-6" />,
             color: "from-indigo-400 to-indigo-600",
-            onClick: () => {setTab("Find Courts")},
+            onClick: () => { setTab("Find Courts") },
         },
         {
             label: "My Calender",
             value: "",
             icon: <Calendar1 className="w-6 h-6" />,
             color: "from-green-800 to-green-600",
-            onClick: () => {setTab("My Calendar")},
-        },
-        {
-            label: "Settings",
-            value: "",
-            icon: <Settings className="w-6 h-6" />,
-            color: "from-gray-400 to-gray-600",
-            onClick: () => {},
+            onClick: () => { setTab("My Calendar") },
         },
     ];
 

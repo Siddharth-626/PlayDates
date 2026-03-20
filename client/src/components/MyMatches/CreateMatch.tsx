@@ -85,20 +85,20 @@ export const CreateMatch = ({ CloseTab }: { CloseTab: () => void }) => {
             toast.success("match created");
             CloseTab();
         } catch (error) {
-            console.log("error while creating match ", error);
+            toast.error("Failed to create match. Please try again.");
         } finally {
             setLoading(false)
         }
     }
 
     useEffect(() => {
-        if (players.length == 4) {
+        if (players.length === 4) {
             setPreference(["Doubles"]);
         }
-        if (players.length == 2) {
+        if (players.length === 2) {
             setPreference(["Singles"]);
         }
-    }, players)
+    }, [players])
     return (
         <div className="flex flex-col gap-6 p-4 md:p-6 max-w-5xl mx-auto shadow-lg border border-green-300 rounded-xl">
             {/* Title */}
@@ -199,9 +199,7 @@ export const CreateMatch = ({ CloseTab }: { CloseTab: () => void }) => {
                             <label className="flex items-center gap-2 text-gray-700 dark:text-gray-200 mb-2 font-semibold">
                                 <FiUserPlus size={18} className="text-green-500" /> Select Teems
                             </label>
-                            <TeamsSelector OnClose={() => console.log()
-
-                            } players={players} OnSubmit={(players) => setPlayers(players)} />;
+                            <TeamsSelector OnClose={() => {}} players={players} OnSubmit={(players) => setPlayers(players)} />;
                         </div>}
                 </div>
             </div>

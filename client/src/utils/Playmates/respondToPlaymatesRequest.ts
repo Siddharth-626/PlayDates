@@ -47,7 +47,6 @@ export const respontToPlaymatesRequest = async (
         }
 
     } catch (err) {
-        console.log("err while responding to playmates request", err);
         toast.error("Failed to respond to playmate request")
     }
 }

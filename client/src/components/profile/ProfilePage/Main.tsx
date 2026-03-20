@@ -26,17 +26,14 @@ const PlayerPage = ({ userId, profileId }: { userId: string; profileId: string }
         });
         setPlayer(data);
       } catch (err) {
-        console.error("Error fetching player profile:", err);
+        // silently fail
       }
     };
     fetchPlayer();
   }, [userId, profileId]);
 
   const handleAddPlaymate = async () => {
-    if (!user?.uid || !selectedProfile?.id || !userId || !profileId) {
-      console.warn("Missing necessary IDs to send request");
-      return;
-    }
+    if (!user?.uid || !selectedProfile?.id || !userId || !profileId) return;
 
     try {
       await sendPlayMatesRequest({
@@ -47,7 +44,7 @@ const PlayerPage = ({ userId, profileId }: { userId: string; profileId: string }
       });
       setActionBtnStatus("pending");
     } catch (err) {
-      console.error("Error sending playmate request:", err);
+      // silently fail
     }
   };
 

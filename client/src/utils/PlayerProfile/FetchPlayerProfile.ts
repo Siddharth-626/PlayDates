@@ -1,12 +1,8 @@
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/services/config";
-import { PlayerProfile } from "../TYPE";
 
 export const FetchPlayerProfile = async ({ userUid, profileId }: { userUid: string; profileId: string }) => {
-    if (!userUid || !profileId) {
-        console.error("Missing userUid or profileId in FetchPlayerProfile");
-        return null;
-    }
+    if (!userUid || !profileId) return null;
 
     try {
         const ProfileRef = doc(db, "users", userUid, "profile", profileId);
@@ -28,9 +24,6 @@ export const FetchPlayerProfile = async ({ userUid, profileId }: { userUid: stri
             completed: data.completed || false,
         };
     } catch (err) {
-        console.error("Error while fetching profile:", err);
         return null;
-    } finally {
-        console.log("Player Fetch Success");
     }
 };

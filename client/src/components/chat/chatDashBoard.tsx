@@ -18,15 +18,15 @@ import { useChatDisplayData } from "@/context/chatDisplayDataContext";
 export const ChatDashBoard = () => {
     const { selectedProfile } = useProfile();
     const { playmates } = usePlaymates();
-    if (!playmates) return null;
     const [chats, setChats] = useState<any[]>([]);
     const [chatId, setChatId] = useState("");
     const [search, setSearch] = useState("");
     const [isSideBarOpen, setIsSideBarOpen] = useState(true);
     const [isChatCreaterOpen, setIsChatCreaterOpen] = useState(false);
-    const [selectedPerson, setSelectedPerson] = useState<PlayerProfile | null>(null
-    );
+    const [selectedPerson, setSelectedPerson] = useState<PlayerProfile | null>(null);
     const [isDesktop, setIsDesktop] = useState(false);
+
+    if (!playmates) return null;
 
     const { chatDisplayData, setChatDisplayData } = useChatDisplayData();
 
@@ -44,7 +44,7 @@ export const ChatDashBoard = () => {
         handleResize();
         window.addEventListener("resize", handleResize);
 
-        return () => window.addEventListener("resize", handleResize);;
+        return () => window.removeEventListener("resize", handleResize);
     }, []);
 
     const OnChatSelect = async (chat: any) => {

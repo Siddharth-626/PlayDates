@@ -8,6 +8,4 @@ export const handleScoreSubmit = async (Score: any, matchId: string) => {
     await updateDoc(matchRef, {
         score: Score,
     })
-    console.log("ScoreUpdated");
-
 }

@@ -31,7 +31,7 @@ export default function ActionButtons({
         setBtnStatus(status);
       }
     } catch (error) {
-      console.log("err while fetching play mate status");
+      // silently fail
     }
   };
 

@@ -38,8 +38,7 @@ export const MatchProvider = ({ children }: { children: React.ReactNode }) => {
             })
             setMatches(MatchData);
         } catch (err) {
-            console.log("err in the useFetchMatches Hook", err);
-
+            // silently fail
         } finally{
             setLoading(false)
         }

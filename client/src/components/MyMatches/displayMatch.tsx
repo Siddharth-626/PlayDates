@@ -100,7 +100,18 @@ export const DisplayMatch = ({ match, onRespond }: DisplayMatchProps) => {
     const isHost = selectedProfile?.id == matchData?.host?.profileId;
 
     if (!matchData) return null;
-    const { date, startTime, MatchType, endTime, score, players } = matchData;
+    const { date, MatchType, score, players } = matchData;
+
+    // Safely convert any Firestore Timestamp or non-string to a display string
+    const safeTimeString = (val: any): string => {
+        if (!val) return "";
+        if (typeof val === "string") return val;
+        if (val?.toDate) return val.toDate().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+        return String(val);
+    };
+
+    const startTime: string = safeTimeString(matchData.startTime);
+    const endTime: string = safeTimeString(matchData.endTime);
 
     const formattedDate =
         typeof date === "string"

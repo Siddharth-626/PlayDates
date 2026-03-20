@@ -39,7 +39,7 @@ export const ChatPersonCard = ({ chat, onClick }: Props) => {
 
     useEffect(() => {
         const unsubscribe = listenToMessages(chat.id, (messages) => {
-            const newMessages = messages.filter((msg: any) => msg.seen == false && msg.senderUid != selectedProfile?.userUid);
+            const newMessages = messages.filter((msg: any) => msg.seen == false && !(msg.senderUid === selectedProfile?.userUid && msg.senderProfileId === selectedProfile?.id));
             setUnSeenMessages(newMessages.length);
         })
 
@@ -53,7 +53,7 @@ export const ChatPersonCard = ({ chat, onClick }: Props) => {
     }
 
     const { photoUrl, name } = player;
-    const isMe = chat.lastMessage?.senderUid == selectedProfile?.userUid;
+    const isMe = chat.lastMessage?.senderUid === selectedProfile?.userUid && chat.lastMessage?.senderProfileId === selectedProfile?.id;
     
     return (
         <div

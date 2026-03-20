@@ -51,7 +51,7 @@ export const ChatDisplay = ({
 
     useEffect(() => {
         messages.forEach((msg) => {
-            const isMe = msg.senderUid === selectedProfile?.userUid;
+            const isMe = msg.senderUid === selectedProfile?.userUid && msg.senderProfileId === selectedProfile?.id;
             if (!isMe) {
                 handleMessageSeen(chatId, msg.id);
             }
@@ -136,7 +136,7 @@ export const ChatDisplay = ({
             {/* Messages */}
             <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3 bg-cover">
                 {messages.map((msg) => {
-                    const isMe = msg.senderUid === selectedProfile?.userUid;
+                    const isMe = msg.senderUid === selectedProfile?.userUid && msg.senderProfileId === selectedProfile?.id;
                     const isSeen = msg.seen;
 
                     return (

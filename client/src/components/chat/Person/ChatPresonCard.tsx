@@ -7,13 +7,12 @@ import { listenToMessages } from "@/utils/chat/listenToMessages";
 import { CheckCheck } from "lucide-react";
 
 type Props = {
-    onClick: (player: PlayerProfile) => void;
+    onClick: (player: PlayerProfile, chatId: string) => void;
     selectedPerson: PlayerProfile | null;
     chat: any;
-    setChatId: (chatID: string) => void
 };
 
-export const ChatPersonCard = ({ chat, setChatId, onClick }: Props) => {
+export const ChatPersonCard = ({ chat, onClick }: Props) => {
     const { selectedProfile } = useProfile();
     const [player, setPlayer] = useState<PlayerProfile | null>(null);
     const [unSeenMeesages, setUnSeenMessages] = useState(0);
@@ -40,7 +39,7 @@ export const ChatPersonCard = ({ chat, setChatId, onClick }: Props) => {
 
     useEffect(() => {
         const unsubscribe = listenToMessages(chat.id, (messages) => {
-            const newMessages = messages.filter((msg: any) => msg.seen == false && msg.senderUid != selectedProfile?.userUid);
+            const newMessages = messages.filter((msg: any) => msg.seen == false && !(msg.senderUid === selectedProfile?.userUid && msg.senderProfileId === selectedProfile?.id));
             setUnSeenMessages(newMessages.length);
         })
 
@@ -54,12 +53,12 @@ export const ChatPersonCard = ({ chat, setChatId, onClick }: Props) => {
     }
 
     const { photoUrl, name } = player;
-    const isMe = chat.lastMessage?.senderUid == selectedProfile?.userUid;
+    const isMe = chat.lastMessage?.senderUid === selectedProfile?.userUid && chat.lastMessage?.senderProfileId === selectedProfile?.id;
     
     return (
         <div
             className="flex items-center px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer transition"
-            onClick={() => { setChatId(chat.id); onClick(player) }}
+            onClick={() => onClick(player, chat.id)}
         >
             <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-green-500 shadow">
                 {photoUrl ? (

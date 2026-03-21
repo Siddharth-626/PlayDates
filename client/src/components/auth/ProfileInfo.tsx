@@ -20,7 +20,6 @@ export const ProfileInfo = () => {
             toast.success("User logged out successfully");
             router.push('/login');
         } catch (error) {
-            console.error("Error while logging out", error);
             toast.error('Error while logging out');
         }
     };

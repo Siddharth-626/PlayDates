@@ -9,11 +9,14 @@ export const createChat = async (players: PlayersType[], matchId: string) => {
         `${p.userUid}_${p.profileId}`
     ));
 
+    const participantUids = players.map((p) => p.userUid);
+
     await db.collection("chats").doc(matchId).set({
         type: "match",
         groupName: "",
         participants: players,
         participantsFinder: playerKeys,
+        participantUids,
         lastMessage: null,
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         matchId

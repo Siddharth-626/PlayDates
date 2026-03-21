@@ -23,9 +23,7 @@ export const MatchResultNotification = ({ note }: { note: any }) => {
         `users/${user.uid}/profile/${selectedProfile.id}/notifications/${note.id}`
     );
 
-    updateDoc(noteRef,{
-        isRead:true
-    });
+    updateDoc(noteRef, { isRead: true }).catch(() => {});
 }, [user?.uid, selectedProfile?.id, note?.id]);
 
     return (

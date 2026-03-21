@@ -3,68 +3,94 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     function isAdmin() {
-      // Allow requests from Firebase Admin SDK
       return request.auth != null && request.auth.token.admin == true;
+    }
+
+    function isAuthenticated() {
+      return request.auth != null;
     }
 
     // ======= Public Collections =======
 
     match /courts/{courtId} {
       allow read: if true;
-      allow write: if request.auth != null || isAdmin();
+      allow write: if isAuthenticated() || isAdmin();
     }
 
+    // Matches: any authenticated user can create; only participants can update/delete
     match /matches/{matchId} {
-      allow read: if true;
-      allow write: if request.auth != null || isAdmin();
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() &&
+        resource.data.players.hasAny([{'userUid': request.auth.uid}]) || isAdmin();
+      allow delete: if isAdmin();
     }
 
     match /profiles/{profileId} {
       allow read: if true;
-      allow write: if (request.auth != null && request.auth.uid == profileId) || isAdmin();
+      allow write: if (isAuthenticated() && request.auth.uid == profileId) || isAdmin();
+    }
+
+    // ======= Chat Collection =======
+
+    match /chats/{chatId} {
+      allow read: if isAuthenticated() &&
+        resource.data.participantUids.hasAny([request.auth.uid]) || isAdmin();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() &&
+        resource.data.participantUids.hasAny([request.auth.uid]) || isAdmin();
+
+      match /messages/{messageId} {
+        allow read: if isAuthenticated() &&
+          get(/databases/$(database)/documents/chats/$(chatId)).data.participantUids.hasAny([request.auth.uid]);
+        allow create: if isAuthenticated() && request.resource.data.senderUid == request.auth.uid;
+        allow update: if isAuthenticated() &&
+          get(/databases/$(database)/documents/chats/$(chatId)).data.participantUids.hasAny([request.auth.uid]);
+      }
     }
 
     // ======= User Collections =======
 
     match /users/{userId} {
-      allow read, write: if (request.auth != null && request.auth.uid == userId) || isAdmin();
+      allow read, write: if (isAuthenticated() && request.auth.uid == userId) || isAdmin();
 
       match /profile/{profileId} {
-        allow read, write: if (request.auth != null && request.auth.uid == userId) || isAdmin();
+        allow read, write: if (isAuthenticated() && request.auth.uid == userId) || isAdmin();
 
         match /availability/{availabilityId} {
-          allow read, write: if (request.auth != null && request.auth.uid == userId) || isAdmin();
+          allow read, write: if (isAuthenticated() && request.auth.uid == userId) || isAdmin();
         }
 
         match /notifications/{notifId} {
-          allow read, write: if (request.auth != null && request.auth.uid == userId) || isAdmin();
+          allow read, write: if (isAuthenticated() && request.auth.uid == userId) || isAdmin();
+        }
+
+        match /matches/{matchId} {
+          allow read, write: if (isAuthenticated() && request.auth.uid == userId) || isAdmin();
         }
       }
 
       match /profiles/{profileId} {
-        allow read, write: if (request.auth != null && request.auth.uid == userId) || isAdmin();
+        allow read, write: if (isAuthenticated() && request.auth.uid == userId) || isAdmin();
 
         match /notifications/{notifId} {
-          allow read, write: if (request.auth != null && request.auth.uid == userId) || isAdmin();
+          allow read, write: if (isAuthenticated() && request.auth.uid == userId) || isAdmin();
         }
       }
 
       match /playmates/{playmateId} {
-        allow read, write: if (request.auth != null && 
+        allow read, write: if (isAuthenticated() &&
           (request.auth.uid == userId || request.auth.uid == playmateId)) || isAdmin();
       }
     }
 
     // Extra profile rule
     match /users/{userId}/profiles/{profileId} {
-      allow read: if request.auth != null || isAdmin();
-    }
-     match /users/{userUid}/profile/{profileId}/matches/{matchId} {
-      allow read: if request.auth != null && request.auth.uid == userUid;
+      allow read: if isAuthenticated() || isAdmin();
     }
 
     match /users/{toUserUid}/profile/{toProfileId}/notifications/{notificationId} {
-      allow create: if (request.auth != null &&
+      allow create: if (isAuthenticated() &&
                     request.resource.data.keys().hasAll([
                       'id',
                       'type',
@@ -79,14 +105,14 @@ service cloud.firestore {
                     request.resource.data.isRead == false) || isAdmin();
     }
 
-    // Collection group access to 'profile'
+    // Collection group access to 'profile' — authenticated users only
     match /{documentPath=**}/profile/{profileId} {
-      allow read: if true;
-      allow write: if request.auth != null || isAdmin();
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() || isAdmin();
     }
 
     match /users/{userUid}/profile/{profileId}/selectedCourts/{docId} {
-      allow read, write: if (request.auth != null && request.auth.uid == userUid) || isAdmin();
+      allow read, write: if (isAuthenticated() && request.auth.uid == userUid) || isAdmin();
     }
 
     // Catch-All Deny

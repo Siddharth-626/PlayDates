@@ -27,7 +27,7 @@ export const CreateMatch = ({ CloseTab }: { CloseTab: () => void }) => {
     const [duration, setDuration] = useState('');
     const [preference, setPreference] = useState<string[]>([]);
     const [locations, setLocations] = useState<LocationStorageType[]>([]);
-    const [players, setPlayers] = useState<any[]>([{ userUid: user?.uid, profileId: selectedProfile?.id, status: "pending", name: selectedProfile?.name }]);
+    const [players, setPlayers] = useState<any[]>([{ userUid: user?.uid, profileId: selectedProfile?.id, status: "pending", name: selectedProfile?.name, photoUrl: selectedProfile?.photoUrl || "" }]);
     const [loading, setLoading] = useState(false);
     const [isAutoPlayerPickerSelected, setIsAutoPlayerPickerSelected] = useState(false);
     const [showSchedule, setShowSchedule] = useState(false);
@@ -85,20 +85,20 @@ export const CreateMatch = ({ CloseTab }: { CloseTab: () => void }) => {
             toast.success("match created");
             CloseTab();
         } catch (error) {
-            console.log("error while creating match ", error);
+            toast.error("Failed to create match. Please try again.");
         } finally {
             setLoading(false)
         }
     }
 
     useEffect(() => {
-        if (players.length == 4) {
+        if (players.length === 4) {
             setPreference(["Doubles"]);
         }
-        if (players.length == 2) {
+        if (players.length === 2) {
             setPreference(["Singles"]);
         }
-    }, players)
+    }, [players])
     return (
         <div className="flex flex-col gap-6 p-4 md:p-6 max-w-5xl mx-auto shadow-lg border border-green-300 rounded-xl">
             {/* Title */}
@@ -197,11 +197,9 @@ export const CreateMatch = ({ CloseTab }: { CloseTab: () => void }) => {
                     {players.length == 4 &&
                         <div className="bg-white dark:bg-gray-900 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-4">
                             <label className="flex items-center gap-2 text-gray-700 dark:text-gray-200 mb-2 font-semibold">
-                                <FiUserPlus size={18} className="text-green-500" /> Select Teems
+                                <FiUserPlus size={18} className="text-green-500" /> Select Teams
                             </label>
-                            <TeamsSelector OnClose={() => console.log()
-
-                            } players={players} OnSubmit={(players) => setPlayers(players)} />;
+                            <TeamsSelector OnClose={() => {}} players={players} OnSubmit={(players) => setPlayers(players)} />;
                         </div>}
                 </div>
             </div>

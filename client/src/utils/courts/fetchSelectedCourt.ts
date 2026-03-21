@@ -11,10 +11,7 @@ export const fetchSelectedCourt = async (
 
     const courts = await fetchAllCourts();
 
-    if (!userUid || !profileId || !courts) {
-        console.warn("Missing input:", { userUid, profileId, courts });
-        return;
-    }
+    if (!userUid || !profileId || !courts) return;
 
     try {
         const profileRef = doc(db, "users", userUid, "profile", profileId);
@@ -26,7 +23,7 @@ export const fetchSelectedCourt = async (
         const selectedCourt = courts.find(c => c.id === selectedCourtId);
         return selectedCourt;
     } catch (error) {
-        console.error("Error while fetching selected court:", error);
+        return undefined;
     }
 
     return;

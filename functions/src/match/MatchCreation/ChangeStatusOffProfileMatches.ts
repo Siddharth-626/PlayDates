@@ -7,19 +7,14 @@ const Change = async (BeforeMatchData: any, AfterMatchData: any, status: string,
     if (!BeforeMatchData || !AfterMatchData) return
     if (BeforeMatchData.status != status && AfterMatchData.status == status) {
         const players = AfterMatchData.players;
-        const Players = [];
 
+        const batch = db.batch();
         for (const player of players) {
             const { userUid, profileId } = player;
-
-            const playerMatchSnap = await db.doc(`users/${userUid}/profile/${profileId}/matches/${matchId}`).get();
-            playerMatchSnap.ref.update({ status: status });
-            Players.push({ userUid, profileId, status: status });
+            const ref = db.doc(`users/${userUid}/profile/${profileId}/matches/${matchId}`);
+            batch.update(ref, { status: status });
         }
-
-        await db.doc(`matches/${matchId}`).update({
-            players: Players
-        })
+        await batch.commit();
     }
 }
 export const ChangeStatusOffProfileMatches = onDocumentUpdated({
@@ -31,5 +26,5 @@ export const ChangeStatusOffProfileMatches = onDocumentUpdated({
     const AfterMatchData = event.data?.after.data();
     const matchId = event.params.matchId;
 
-    Change(BeforeMatchData, AfterMatchData, AfterMatchData?.status, matchId);
+    await Change(BeforeMatchData, AfterMatchData, AfterMatchData?.status, matchId);
 })

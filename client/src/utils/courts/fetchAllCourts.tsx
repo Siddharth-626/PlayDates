@@ -30,7 +30,6 @@ export const fetchAllCourts = async () => {
         })
         return courts;
     } catch (error) {
-        console.log("err while fetching all locations");
-
+        return [];
     }
 }

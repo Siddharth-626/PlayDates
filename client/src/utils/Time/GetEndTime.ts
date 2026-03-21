@@ -19,12 +19,17 @@ export const getEndTime = (duration:string,startTime:string)=>{
     if(!startTime || !duration) return;
     const now = new Date();
 
+    const isPM = /pm/i.test(startTime);
+    const isAM = /am/i.test(startTime);
     const formattedStartTime = startTime.replace(/\s?(am|pm)\s?/i, "").trim();
-    const [hours,minutes] = formattedStartTime.split(":").map(Number);
+    let [hours, minutes] = formattedStartTime.split(":").map(Number);
+
+    if (isPM && hours !== 12) hours += 12;
+    if (isAM && hours === 12) hours = 0;
 
     const StartTime = new Date();
 
-    StartTime.setHours(hours,minutes,0,0)
+    StartTime.setHours(hours, minutes, 0, 0);
 
     const durationMinutes = parseDurationToMinutes(duration);
 

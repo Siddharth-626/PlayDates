@@ -15,6 +15,6 @@ export const fetchCourt = async (courtId: string) => {
             ...courtData
         }
     } catch (error) {
-        console.log("err while fetching court", error);
+        return undefined;
     }
 }

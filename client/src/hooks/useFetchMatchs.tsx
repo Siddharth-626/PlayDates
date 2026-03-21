@@ -26,8 +26,7 @@ export const useFetchMatches = ({ userUid, profileId }: useFetchMatchesType) => 
             })
             setMatches(MatchData);
         } catch (err) {
-            console.log("err in the useFetchMatches Hook", err);
-
+            console.error("Failed to fetch matches:", err);
         }
     }
 

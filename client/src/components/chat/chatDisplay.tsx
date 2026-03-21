@@ -51,7 +51,7 @@ export const ChatDisplay = ({
 
     useEffect(() => {
         messages.forEach((msg) => {
-            const isMe = msg.senderUid === selectedProfile?.userUid;
+            const isMe = msg.senderUid === selectedProfile?.userUid && msg.senderProfileId === selectedProfile?.id;
             if (!isMe) {
                 handleMessageSeen(chatId, msg.id);
             }
@@ -75,7 +75,7 @@ export const ChatDisplay = ({
                             <div className="flex -space-x-2">
                                 {players.slice(1, players.length >= 3 ? 3 : players.length).map((p: any, idx: number) => (
                                     <img
-                                        key={idx}
+                                        key={p.userUid || p.name}
                                         src={p.photoUrl}
                                         alt={`${p.name}'s profile`}
                                         className="w-6 h-6 rounded-full object-cover border-2 border-white dark:border-green-700"
@@ -136,7 +136,7 @@ export const ChatDisplay = ({
             {/* Messages */}
             <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3 bg-cover">
                 {messages.map((msg) => {
-                    const isMe = msg.senderUid === selectedProfile?.userUid;
+                    const isMe = msg.senderUid === selectedProfile?.userUid && msg.senderProfileId === selectedProfile?.id;
                     const isSeen = msg.seen;
 
                     return (

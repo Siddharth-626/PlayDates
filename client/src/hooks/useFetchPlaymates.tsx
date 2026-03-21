@@ -1,6 +1,5 @@
 import { FetchPlaymates } from "@/utils/Playmates/FetchPlaymates";
-import { PlayerProfile, Playmate } from "@/utils/TYPE"
-import { log } from "node:console";
+import { PlayerProfile } from "@/utils/TYPE"
 import { useEffect, useState } from "react"
 
 
@@ -17,10 +16,10 @@ export const useFetchPlaymates = ({ userUid, profileId }: { userUid: string | un
         })
         if (data) {
             setPlaymates(data)
-            setHasFetched(false)
+            setHasFetched(true)
         }
         } catch (error) {
-            console.log("err in useFetch",error);
+            console.error("Failed to fetch playmates:", error);
         }
         finally{
             setLoading(false);
@@ -31,9 +30,6 @@ export const useFetchPlaymates = ({ userUid, profileId }: { userUid: string | un
             fetchPlaymates();
         }
     }, []);
-    useEffect(()=>{
-        console.log(playmates);
-    },[playmates])
 
     return { playmates, setPlaymates,loading };
 }

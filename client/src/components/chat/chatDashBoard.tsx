@@ -18,25 +18,23 @@ import { useChatDisplayData } from "@/context/chatDisplayDataContext";
 export const ChatDashBoard = () => {
     const { selectedProfile } = useProfile();
     const { playmates } = usePlaymates();
-    if (!playmates) return null;
     const [chats, setChats] = useState<any[]>([]);
-    const [chatId, setChatId] = useState("");
     const [search, setSearch] = useState("");
     const [isSideBarOpen, setIsSideBarOpen] = useState(true);
     const [isChatCreaterOpen, setIsChatCreaterOpen] = useState(false);
-    const [selectedPerson, setSelectedPerson] = useState<PlayerProfile | null>(null
-    );
+    const [selectedPerson, setSelectedPerson] = useState<PlayerProfile | null>(null);
     const [isDesktop, setIsDesktop] = useState(false);
 
     const { chatDisplayData, setChatDisplayData } = useChatDisplayData();
 
     useEffect(() => {
+        if (!playmates) return;
         const unsubscribe = listenToChats(selectedProfile?.userUid, selectedProfile?.id, (chat) => {
             setChats(chat)
         })
 
         return unsubscribe;
-    }, [selectedProfile?.userUid, selectedProfile?.id])
+    }, [selectedProfile?.userUid, selectedProfile?.id, playmates])
 
 
     useEffect(() => {
@@ -44,8 +42,10 @@ export const ChatDashBoard = () => {
         handleResize();
         window.addEventListener("resize", handleResize);
 
-        return () => window.addEventListener("resize", handleResize);;
+        return () => window.removeEventListener("resize", handleResize);
     }, []);
+
+    if (!playmates) return null;
 
     const OnChatSelect = async (chat: any) => {
         if (!isDesktop) {
@@ -59,13 +59,13 @@ export const ChatDashBoard = () => {
             type: "group"
         })
     };
-    const OnPersonClick = async (player: PlayerProfile) => {
+    const OnPersonClick = async (player: PlayerProfile, id: string) => {
         if (!isDesktop) {
             setIsSideBarOpen(false);
         }
         setSelectedPerson(player);
         setChatDisplayData({
-            chatId: chatId,
+            chatId: id,
             name: player?.name,
             photoUrl: player.photoUrl,
             userUid: player.userUid,
@@ -118,15 +118,14 @@ export const ChatDashBoard = () => {
 
 
                 <div className="flex-1 overflow-y-auto">
-                    {filterdChats?.slice(0, 15).map((chat, i) => {
+                    {filterdChats?.slice(0, 15).map((chat) => {
                         return chat.type == "1-1" ? <ChatPersonCard
                             selectedPerson={selectedPerson}
                             onClick={OnPersonClick}
-                            key={i}
+                            key={chat.id}
                             chat={chat}
-                            setChatId={(chatID) => setChatId(chatID)}
                         /> :
-                            <ChatListItem chat={chat} onClick={OnChatSelect} setChatId={(chatId) => setChatId(chatId)} key={i} />
+                            <ChatListItem chat={chat} onClick={OnChatSelect} key={chat.id} />
                     })}
                 </div>
                 {chats.length == 0 && (

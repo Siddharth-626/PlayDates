@@ -47,10 +47,8 @@ export const FetchPlaymates = async ({
         const PlaymateDocs = await Promise.all(playmateFetches);
         const PlayMates: PlayerProfile[] = PlaymateDocs.filter(Boolean) as PlayerProfile[];
 
-        console.log("playmates fetch success");
         return PlayMates;
     } catch (err) {
-        console.log("err while fetching playmates", err);
         return [];
     }
 };

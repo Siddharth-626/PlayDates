@@ -1,11 +1,25 @@
 import Navbar from "@/components/Navbar";
 import ProfileSetupForm from "@/components/profile/SetupProfile/ProfileSetupForm";
+import { useAuth } from "@/context/authContext";
 import { motion } from "framer-motion";
 import { UserPlus } from "lucide-react";
 import { GiTennisBall  } from "react-icons/gi";
+import { useRouter } from "next/router";
+import { useEffect } from "react";
 
 
 export default function SetupProfile() {
+  const { user, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.replace("/login");
+    }
+  }, [user, loading]);
+
+  if (loading || !user) return null;
+
   return (
     <> <Navbar />
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-100 via-slate-200 to-green-200 dark:from-gray-900 dark:via-green-900 dark:to-gray-800 px-4 transition-colors duration-300">

@@ -16,7 +16,7 @@ type FilterType = {
 }
 export default function Filters({ selectedLocation, onLocationChange, selectedSkill, onSkillChange }: FilterType) {
     const {courts} = useCourt();
-    if(!courts) return <p>Loading Courts.......................</p>
+    if(!courts) return <p className="text-gray-500 dark:text-gray-400 animate-pulse">Loading courts...</p>
     return (
         <div className="flex gap-4 flex-wrap">
             <AnimatePresence>

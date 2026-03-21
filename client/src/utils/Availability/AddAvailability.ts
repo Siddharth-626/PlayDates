@@ -27,6 +27,6 @@ export const AddAvailability = async ({
 
         await addDoc(availabilityRef, data);
     } catch (error) {
-        console.error("❌ Error while posting availability:", error);
+        throw error;
     }
 };

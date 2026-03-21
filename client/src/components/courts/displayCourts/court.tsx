@@ -34,7 +34,7 @@ export const DisplayCourts = () => {
     const debouncedToggleSelect = useCallback(
         debounce((court: courtType) => {
             toggleSelect(court);
-        }, 1000),
+        }, 300),
         [] // dependencies can be added if needed
     );
     const toggleSelect = (court: courtType) => {
@@ -88,7 +88,7 @@ export const DisplayCourts = () => {
                         <AnimatePresence>
                             {filteredCourts.map((court, index) => (
                                 <motion.div
-                                    key={court.title + index}
+                                    key={court.id || court.title}
                                     initial={{ opacity: 0, y: 30 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: -30 }}
@@ -108,9 +108,9 @@ export const DisplayCourts = () => {
                                             {court.description}
                                         </p>
                                         <div className="flex flex-wrap gap-2 mt-2">
-                                            {court.amenities?.map((item, i) => (
+                                            {court.amenities?.map((item) => (
                                                 <span
-                                                    key={i}
+                                                    key={item}
                                                     className="bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100 text-xs font-medium px-2 py-1 rounded-full"
                                                 >
                                                     {item}

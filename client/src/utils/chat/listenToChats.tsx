@@ -6,7 +6,7 @@ export const listenToChats = (
     profileId: string | undefined,
     callback: (chat: any) => void
 ) => {
-        if (!userUid || !profileId) return ()=> console.log("err");
+        if (!userUid || !profileId) return () => {};
 
         const q = query(
             collection(db, "chats"),

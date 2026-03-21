@@ -3,7 +3,7 @@ import { PlayersType } from "./Type";
 export const PlayersBasedOnPrefernce = (Prefernce: string, Players: PlayersType[] | undefined) => {
     if (!Players || Players.length < 2) return;
 
-    const selctedPlayers: PlayersType[] = []
+    const selectedPlayers: PlayersType[] = []
 
     let teamSize;
     if (Prefernce != undefined && typeof Prefernce === "string" && Prefernce.toLocaleLowerCase().includes("singles")) {
@@ -17,7 +17,7 @@ export const PlayersBasedOnPrefernce = (Prefernce: string, Players: PlayersType[
     }
 
     for (let i = 0; i < Math.min(teamSize, Players.length); i++) {
-        selctedPlayers.push(Players[i])
+        selectedPlayers.push(Players[i])
     }
-    return selctedPlayers;
+    return selectedPlayers;
 }

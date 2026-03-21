@@ -1,14 +1,9 @@
-'use client'
-
-import { db } from "@/services/config";
 import { PlayerProfile } from "@/utils/TYPE";
-import { collectionGroup, getDocs } from "firebase/firestore";
 import { motion, AnimatePresence } from 'framer-motion';
 import PlayerCard from './PlayerCard';
 import Filters from './FilterPlayers';
 import SearchBar from './SearchBar'
 import { useEffect, useState } from "react";
-import toast from "react-hot-toast";
 import { useAuth } from "@/context/authContext";
 import PlayerPage from "../profile/ProfilePage/Main";
 import { Button } from "@/components/ui/button";
@@ -23,15 +18,26 @@ export const FindPlayers = () => {
     const [locationFilter, setLocationFilter] = useState('');
     const [skillFilter, setSkillFilter] = useState('');
     const [selectedProfile, setSelectedProfile] = useState<PlayerProfile | null>(null);
+    const [fetchLoading, setFetchLoading] = useState(true);
+    const [fetchError, setFetchError] = useState<string | null>(null);
     const { user, loading } = useAuth();
 
     useEffect(() => {
         const fetchPlayers = async () => {
-            const allplayers = await FetchAllPlayers();
-            if (!allplayers) return;
+            try {
+                setFetchLoading(true);
+                setFetchError(null);
+                const allplayers = await FetchAllPlayers();
+                if (!allplayers) return;
 
-            setPlayers(allplayers);
-            setFiltered(allplayers);
+                setPlayers(allplayers);
+                setFiltered(allplayers);
+            } catch (error) {
+                console.error("Failed to fetch players:", error);
+                setFetchError("Failed to load players. Please try again.");
+            } finally {
+                setFetchLoading(false);
+            }
         };
 
         fetchPlayers();
@@ -54,7 +60,8 @@ export const FindPlayers = () => {
         setSelectedProfile(null);
     }, [locationFilter, skillFilter, searchItem, players]);
 
-    if (!filtered) return <Loading />;
+    if (fetchLoading) return <Loading />;
+    if (fetchError) return <div className="text-center text-red-600 py-16">{fetchError}</div>;
 
     return (
         <div className="p-4 md:p-8 min-h-[80vh]">
@@ -93,9 +100,9 @@ export const FindPlayers = () => {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 20 }}
-                            className="flex flex-col items-center justify-center py-16"
+                            className="flex flex-col items-center justify-center py-16 text-gray-500 dark:text-gray-400"
                         >
-                            <Loading />
+                            <p>No players found matching your filters.</p>
                         </motion.div>
                     ) : (
                         <motion.div
@@ -123,7 +130,7 @@ export const FindPlayers = () => {
                                         tabIndex={0}
                                         role="button"
                                         aria-label={`View ${player.name}'s profile`}
-                                        onKeyPress={(e) => {
+                                        onKeyDown={(e) => {
                                             if (e.key === "Enter" || e.key === " ") setSelectedProfile(player);
                                         }}
                                     >

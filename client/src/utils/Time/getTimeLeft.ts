@@ -1,9 +1,15 @@
 // utils/time.ts
-export const getTimeLeft = (startTime: string) => {
-    const now = new Date();
-    const formattedStartTime = startTime.replace(/\s?(am|pm)\s?/i, "").trim();
+export const getTimeLeft = (startTime: any) => {
+    if (!startTime || typeof startTime !== 'string') return null;
 
-    const [hours, minutes] = formattedStartTime.split(":").map(Number);
+    const now = new Date();
+    const isPM = /pm/i.test(startTime);
+    const isAM = /am/i.test(startTime);
+    const formattedStartTime = startTime.replace(/\s?(am|pm)\s?/i, "").trim();
+    let [hours, minutes] = formattedStartTime.split(":").map(Number);
+
+    if (isPM && hours !== 12) hours += 12;
+    if (isAM && hours === 12) hours = 0;
 
     const target = new Date();
     target.setHours(hours, minutes, 0, 0);
@@ -27,4 +33,5 @@ export const getTimeLeft = (startTime: string) => {
         return `${minutesLeft}m ${secondsLeft}s`
     }
 };
+
 

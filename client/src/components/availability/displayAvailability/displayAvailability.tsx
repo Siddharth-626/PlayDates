@@ -99,7 +99,7 @@ export const DisplayAvailability = () => {
                                     </span>
                                     <Clock className="ml-4 text-green-400" size={18} />
                                     <span className="text-md font-medium text-gray-700 dark:text-gray-200">
-                                        {getTime(item?.startDate)}
+                                        {getTime(item?.startDate)} - {getTime(item?.endDate)}
                                     </span>
                                 </div>
                                 <div className="flex items-center gap-3 mb-1">

@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { useAuth } from "./authContext";
 import { useProfile } from "./profileContext";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "@/services/config";
 
 
@@ -13,8 +13,8 @@ type MatchRecord = {
 type MatchContextType = {
     matches: MatchRecord[] | undefined,
     setMatches: React.Dispatch<React.SetStateAction<MatchRecord[] | undefined>>;
-    loading:boolean;
-    refreshMatches:()=>void;
+    loading: boolean;
+    refreshMatches: () => void;
 }
 
 const MatchContext = createContext<MatchContextType | undefined>(undefined);
@@ -24,51 +24,44 @@ export const MatchProvider = ({ children }: { children: React.ReactNode }) => {
     const { selectedProfile } = useProfile();
 
     const [matches, setMatches] = useState<MatchRecord[] | undefined>(undefined);
-    const [loading,setLoading] = useState(false)
-    const fetchData = async () => {
-        try {
-            setLoading(true)
-            const colectionRef = collection(db, "users", user?.uid!, "profile", selectedProfile?.id!, "matches");
-            const colectionSnap = await getDocs(colectionRef);
-
-            if (!colectionSnap) return;
-
-            const MatchData = colectionSnap.docs.map((doc) => {
-                const data = doc.data();
-
-                return {
-                    id: doc.id,
-                    ...data
-                }
-            })
-            setMatches(MatchData);
-        } catch (err) {
-            console.error("Failed to fetch matches:", err);
-        } finally{
-            setLoading(false)
-        }
-    }
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        if (user?.uid && selectedProfile?.id) {
-            fetchData();
-        }
-    }, [user?.uid, selectedProfile?.id])
+        if (!user?.uid || !selectedProfile?.id) return;
 
-    const refreshMatches = ()=>{
-        fetchData();
-    }
-    return(
-        <MatchContext.Provider value={{matches,setMatches,loading,refreshMatches}}>
+        setLoading(true);
+        const colectionRef = collection(db, "users", user.uid, "profile", selectedProfile.id, "matches");
+
+        const unsubscribe = onSnapshot(colectionRef, (snapshot) => {
+            const MatchData = snapshot.docs.map((doc) => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+            setMatches(MatchData);
+            setLoading(false);
+        }, (error) => {
+            console.error("Failed to fetch matches:", error);
+            setLoading(false);
+        });
+
+        return () => unsubscribe();
+    }, [user?.uid, selectedProfile?.id]);
+
+    const refreshMatches = () => {
+        // No-op: onSnapshot handles real-time updates automatically
+    };
+
+    return (
+        <MatchContext.Provider value={{ matches, setMatches, loading, refreshMatches }}>
             {children}
         </MatchContext.Provider>
     )
 }
 
-export const useMatchs = ()=>{
+export const useMatchs = () => {
     const context = useContext(MatchContext);
 
-    if(!context){
+    if (!context) {
         throw new Error("THere is no match context");
     }
     return context

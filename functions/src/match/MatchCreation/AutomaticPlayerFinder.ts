@@ -39,15 +39,16 @@ export const AddPlayersToMatch = onDocumentCreated(
             const match = doc.data();
             console.log("Checking Match:", match);
 
+            const matchRef = db.doc(`matches/${doc.id}`);
+
+            // Skip matches without proper time data for overlap check
+            if (!match.startTime || !match.endTime) continue;
+
             // Build object compatible with isTimeOverlap (needs startDate/endDate)
             const matchInfo = {
                 startDate: match.startTime,
                 endDate: match.endTime,
             };
-            console.log(matchInfo, availabilityData);
-
-
-            const matchRef = db.doc(`matches/${doc.id}`);
 
             const dateMatch =
                 match.date.toDate().toDateString() ===

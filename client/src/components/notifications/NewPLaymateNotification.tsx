@@ -34,7 +34,8 @@ const PlaymateRequestNotification: React.FC<PlaymateRequestNotificationProps> = 
         fetchPlayers();
     }, [note]);
 
-    if (note.type !== "playmates request" || note.status !== "pending" || !playerInfo) return null;
+    if (note.type !== "playmates request" || !playerInfo) return null;
+    const isResponded = note.status !== "pending";
 
     const handleAccept = () => {
         setShowConfetti(true);
@@ -53,7 +54,11 @@ const PlaymateRequestNotification: React.FC<PlaymateRequestNotificationProps> = 
             initial={{ opacity: 0, y: 20, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 0.4, type: "spring" }}
-            className="relative flex justify-between bg-gradient-to-br from-green-50 via-white to-green-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 border dark:border-gray-700 rounded-2xl p-5 shadow-xl w-full gap-5 items-center overflow-hidden"
+            className={`relative flex justify-between border rounded-2xl p-5 shadow-xl w-full gap-5 items-center overflow-hidden ${
+                isResponded
+                    ? "bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 opacity-60"
+                    : "bg-gradient-to-br from-green-50 via-white to-green-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 dark:border-gray-700"
+            }`}
         >
             <AnimatePresence>
                 {showConfetti && (
@@ -94,22 +99,34 @@ const PlaymateRequestNotification: React.FC<PlaymateRequestNotificationProps> = 
                 </p>
             </div>
             <div className="flex flex-col gap-2 min-w-[110px]">
-                <motion.button
-                    whileHover={{ scale: 1.05, boxShadow: "0 2px 8px #22c55e44" }}
-                    whileTap={{ scale: 0.97 }}
-                    className="flex items-center gap-1 bg-green-600 hover:bg-green-700 text-white text-sm px-5 py-2 rounded-xl font-semibold shadow transition-all"
-                    onClick={handleAccept}
-                >
-                    <BadgeCheck size={18} /> Accept
-                </motion.button>
-                <motion.button
-                    whileHover={{ scale: 1.05, boxShadow: "0 2px 8px #ef444444" }}
-                    whileTap={{ scale: 0.97 }}
-                    className="flex items-center gap-1 bg-red-500 hover:bg-red-600 text-white text-sm px-5 py-2 rounded-xl font-semibold shadow transition-all"
-                    onClick={handleReject}
-                >
-                    <XCircle size={18} /> Reject
-                </motion.button>
+                {isResponded ? (
+                    <span className={`text-sm font-semibold px-4 py-2 rounded-xl text-center ${
+                        note.status === "accepted"
+                            ? "bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300"
+                            : "bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300"
+                    }`}>
+                        {note.status === "accepted" ? "Accepted" : "Rejected"}
+                    </span>
+                ) : (
+                    <>
+                        <motion.button
+                            whileHover={{ scale: 1.05, boxShadow: "0 2px 8px #22c55e44" }}
+                            whileTap={{ scale: 0.97 }}
+                            className="flex items-center gap-1 bg-green-600 hover:bg-green-700 text-white text-sm px-5 py-2 rounded-xl font-semibold shadow transition-all"
+                            onClick={handleAccept}
+                        >
+                            <BadgeCheck size={18} /> Accept
+                        </motion.button>
+                        <motion.button
+                            whileHover={{ scale: 1.05, boxShadow: "0 2px 8px #ef444444" }}
+                            whileTap={{ scale: 0.97 }}
+                            className="flex items-center gap-1 bg-red-500 hover:bg-red-600 text-white text-sm px-5 py-2 rounded-xl font-semibold shadow transition-all"
+                            onClick={handleReject}
+                        >
+                            <XCircle size={18} /> Reject
+                        </motion.button>
+                    </>
+                )}
             </div>
         </motion.div>
     );

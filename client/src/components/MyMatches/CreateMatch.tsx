@@ -14,10 +14,20 @@ import { db } from "@/services/config";
 import { motion } from "framer-motion";
 import { useAuth } from "@/context/authContext";
 import { useProfile } from "@/context/profileContext";
-import { getEndTime } from "@/utils/Time/GetEndTime";
+import { parseTimeString } from "@/utils/Time/parseTimeString";
 import { TeamsSelector } from "../commonComponents/Players/SelectTeams";
 
-
+const parseDurationToMinutes = (durationStr: string): number => {
+    const lowerStr = durationStr.toLowerCase();
+    if (lowerStr.includes("hour")) {
+        const hours = parseFloat(lowerStr.split(" ")[0]);
+        return Math.round(hours * 60);
+    } else if (lowerStr.includes("min")) {
+        const minutes = parseInt(lowerStr.split(" ")[0]);
+        return minutes;
+    }
+    return 0;
+};
 
 export const CreateMatch = ({ CloseTab }: { CloseTab: () => void }) => {
     const { user } = useAuth();
@@ -46,9 +56,6 @@ export const CreateMatch = ({ CloseTab }: { CloseTab: () => void }) => {
     const pref = typeof preference[0] === "string" ? preference[0].toLowerCase() : "";
     const numberOfPlayers = pref.includes("singles") ? 2 : 4;
 
-    const endTime = getEndTime(duration, startTime);
-    let status = "created";
-
     const handleAutoPlayerSector = () => {
         setIsAutoPlayerPickerSelected(!isAutoPlayerPickerSelected);
     }
@@ -61,18 +68,43 @@ export const CreateMatch = ({ CloseTab }: { CloseTab: () => void }) => {
     const handleSubmit = async () => {
         try {
             setLoading(true)
-            if (!date || !locations[0] || !preference[0]) { toast.error("please enter all the fields"); setLoading(false); return };
+            if (!date || !locations[0] || !preference[0]) { toast.error("Please enter all the fields"); setLoading(false); return };
 
             if (preference[0] == "Doubles" && players.length < 4 && !isAutoPlayerPickerSelected) {
                 toast.error("You Need to select 4 Players To Play Doubles");
+                setLoading(false);
                 return
             }
-            const MatchData = {
+
+            // Parse time and build Timestamps
+            const parsed = parseTimeString(startTime);
+            let startTimestamp: Timestamp | null = null;
+            let endTimestamp: Timestamp | null = null;
+
+            if (parsed && duration) {
+                const startDate = new Date(date);
+                startDate.setHours(parsed.hours, parsed.minutes, 0, 0);
+
+                // Validate: match must be in the future
+                if (startDate.getTime() <= Date.now()) {
+                    toast.error("Match must be scheduled in the future");
+                    setLoading(false);
+                    return;
+                }
+
+                const durationMinutes = parseDurationToMinutes(duration);
+                const endDate = new Date(startDate.getTime() + durationMinutes * 60 * 1000);
+
+                startTimestamp = Timestamp.fromDate(startDate);
+                endTimestamp = Timestamp.fromDate(endDate);
+            }
+
+            const MatchData: any = {
                 players: players,
                 courtId: locations[0].courtId,
                 date: Timestamp.fromDate(date),
-                startTime: startTime || "",
-                endTime: endTime || "",
+                startTime: startTimestamp || "",
+                endTime: endTimestamp || "",
                 duration: duration || "",
                 status: isAutoPlayerPickerSelected && players.length < numberOfPlayers ? "open" : "created",
                 MatchType: preference[0],

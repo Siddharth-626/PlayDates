@@ -6,8 +6,20 @@ import { doc, Timestamp, updateDoc } from "firebase/firestore";
 import { db } from "@/services/config";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
-import { getEndTime } from "@/utils/Time/GetEndTime";
+import { parseTimeString } from "@/utils/Time/parseTimeString";
 import CustomDatePicker from "../Availability/DateSelector";
+
+const parseDurationToMinutes = (durationStr: string): number => {
+    const lowerStr = durationStr.toLowerCase();
+    if (lowerStr.includes("hour")) {
+        const hours = parseFloat(lowerStr.split(" ")[0]);
+        return Math.round(hours * 60);
+    } else if (lowerStr.includes("min")) {
+        const minutes = parseInt(lowerStr.split(" ")[0]);
+        return minutes;
+    }
+    return 0;
+};
 
 export const TimeSelctorPopUp = ({
     OnClose,
@@ -27,14 +39,32 @@ export const TimeSelctorPopUp = ({
             return;
         }
 
+        const parsed = parseTimeString(startTime);
+        if (!parsed) {
+            toast.error("Invalid time format");
+            return;
+        }
+
+        // Build Timestamps
+        const startDate = new Date(date);
+        startDate.setHours(parsed.hours, parsed.minutes, 0, 0);
+
+        // Validate: must be in the future
+        if (startDate.getTime() <= Date.now()) {
+            toast.error("Match must be scheduled in the future");
+            return;
+        }
+
+        const durationMinutes = parseDurationToMinutes(duration);
+        const endDate = new Date(startDate.getTime() + durationMinutes * 60 * 1000);
+
         setLoading(true);
-        const endTime = getEndTime(duration, startTime);
         const matchRef = doc(db, "matches", matchId);
 
         await updateDoc(matchRef, {
             status: "Time-Preposed",
-            startTime,
-            endTime,
+            startTime: Timestamp.fromDate(startDate),
+            endTime: Timestamp.fromDate(endDate),
             date: Timestamp.fromDate(date),
         });
 

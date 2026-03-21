@@ -13,8 +13,7 @@ import { AvailabilityType, courtType, LocationStorageType } from "@/utils/TYPE";
 import LocationSelector from "@/components/commonComponents/Profile/LocationSelector";
 import PreferencesSelector from "@/components/commonComponents/Profile/PreferencesSelector";
 import { Calendar, Clock, Timer, MapPin, List } from "lucide-react";
-import { insertTimeInDate } from "@/utils/Availability/insertTimeInDate";
-import { getEndTime } from "@/utils/Time/GetEndTime";
+import { parseTimeString } from "@/utils/Time/parseTimeString";
 import { Startup } from "@/components/HomeComponents/StartUp";
 
 export const Availability = ({onCreate}:{onCreate:()=>void}) => {
@@ -41,17 +40,28 @@ export const Availability = ({onCreate}:{onCreate:()=>void}) => {
         setloading(true)
         if (!date || !time || !duration || !locations || !preference) { toast.error("please enter all the fields"); setloading(false); return };
 
-        const endTime = getEndTime(duration,time);
-        if(!endTime) return
+        const parsed = parseTimeString(time);
+        if (!parsed) { toast.error("Invalid time format"); setloading(false); return; }
 
-        const startDate = insertTimeInDate(date,time);
-        const endDate = insertTimeInDate(date,endTime);
-        
+        // Build startDate by combining date + selected time
+        const startDate = new Date(date);
+        startDate.setHours(parsed.hours, parsed.minutes, 0, 0);
+
+        // Calculate duration in minutes
+        const durationMinutes = parseDurationToMinutes(duration);
+        const endDate = new Date(startDate.getTime() + durationMinutes * 60 * 1000);
+
+        // Validate: availability must be in the future
+        if (startDate.getTime() <= Date.now()) {
+            toast.error("Please select a future time");
+            setloading(false);
+            return;
+        }
+
         const data = {
             date: Timestamp.fromDate(date),
-            endDate:Timestamp.fromDate(endDate),
-            startDate:Timestamp.fromDate(startDate),
-            time: time,
+            startDate: Timestamp.fromDate(startDate),
+            endDate: Timestamp.fromDate(endDate),
             duration: duration,
             locations: locations,
             preference: preference || [],
@@ -146,3 +156,15 @@ export const Availability = ({onCreate}:{onCreate:()=>void}) => {
         </motion.div>
     );
 }
+
+const parseDurationToMinutes = (durationStr: string): number => {
+    const lowerStr = durationStr.toLowerCase();
+    if (lowerStr.includes("hour")) {
+        const hours = parseFloat(lowerStr.split(" ")[0]);
+        return Math.round(hours * 60);
+    } else if (lowerStr.includes("min")) {
+        const minutes = parseInt(lowerStr.split(" ")[0]);
+        return minutes;
+    }
+    return 0;
+};

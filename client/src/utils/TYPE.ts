@@ -43,7 +43,8 @@ export type MatchPreposalType = {
 export type AvailabilityType = {
     id: string;
     date: Date | Timestamp;
-    time: string;
+    startDate: Date | Timestamp;
+    endDate: Date | Timestamp;
     duration: string;
     locations: LocationStorageType[];
     preference: string[];

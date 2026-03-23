@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { courtType, LocationStorageType } from "@/utils/TYPE";
-import { ArrowLeft, Search } from "lucide-react";
+import { ArrowLeft, Search, MapPin, Check } from "lucide-react";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
@@ -13,147 +13,155 @@ import { debounce } from "@/utils/debounce";
 import toast from "react-hot-toast";
 import { Loading } from "@/components/ui/Loading";
 import { CourtCard } from "@/components/commonComponents/court/courtCard";
-import { Button } from "@/components/ui/button";
 
 export const DisplayCourts = () => {
     const { courts } = useCourt();
     const { user } = useAuth();
     const { selectedProfile } = useProfile();
-
     const [search, setSearch] = useState("");
-    const [ProfilePreferedLocations, setProfilePreferedLocations] = useState<string[]>([]);
-    const [sectedCourt, setSelectedCourt] = useState<courtType | undefined>(undefined);
-    if (!courts) {
-        return <Loading />;
-    }
-
-    const filteredCourts = courts.filter((court) =>
-        court.title.toLowerCase().includes(search.toLowerCase()) ||
-        court.location.address.toLowerCase().includes(search.toLowerCase())
-    );
-    const debouncedToggleSelect = useCallback(
-        debounce((court: courtType) => {
-            toggleSelect(court);
-        }, 300),
-        [] // dependencies can be added if needed
-    );
-    const toggleSelect = (court: courtType) => {
-        const LocationData: LocationStorageType = {
-            name: court.title,
-            courtId: court.id
-        }
-        AddLocationToProfile(user?.uid, selectedProfile?.id, LocationData);
-        toast.success("Location added to Profile")
-
-        setProfilePreferedLocations((prev) => {
-            if (prev.includes(court.title)) {
-                return prev;
-            }
-            return [...prev, court.title];
-        })
-    }
+    const [preferredLocations, setPreferredLocations] = useState<string[]>([]);
+    const [selectedCourt, setSelectedCourt] = useState<courtType | undefined>(undefined);
 
     useEffect(() => {
         if (selectedProfile?.locations) {
-            const initialLocations = selectedProfile.locations.map((loc) => loc.name);
-            setProfilePreferedLocations(initialLocations);
+            setPreferredLocations(selectedProfile.locations.map((loc) => loc.name));
         }
     }, [selectedProfile]);
 
-    const handleCourtSelect = (court: courtType | undefined) => {
-        setSelectedCourt(court);
-    }
+    if (!courts) return <Loading />;
 
-    if (!filteredCourts || filteredCourts.length === 0) {
-        return <Loading />;
-    }
+    const filteredCourts = courts.filter(
+        (court) =>
+            court.title.toLowerCase().includes(search.toLowerCase()) ||
+            court.location.address.toLowerCase().includes(search.toLowerCase())
+    );
+
+    const debouncedToggle = useCallback(
+        debounce((court: courtType) => {
+            const data: LocationStorageType = { name: court.title, courtId: court.id };
+            AddLocationToProfile(user?.uid, selectedProfile?.id, data);
+            toast.success("Court added to your profile");
+            setPreferredLocations((prev) =>
+                prev.includes(court.title) ? prev : [...prev, court.title]
+            );
+        }, 300),
+        []
+    );
+
+    if (!filteredCourts || filteredCourts.length === 0) return <Loading />;
+
     return (
-        <div>
-            {!sectedCourt ? (<div className="p-4 max-w-6xl mx-auto">
-                <div className="relative mb-6">
-                    <input
-                        type="text"
-                        placeholder="Search courts by name or address..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 rounded-lg border shadow-sm dark:bg-gray-900 dark:text-white"
-                    />
-                    <Search className="absolute left-3 top-2.5 text-gray-500" size={20} />
-                </div>
-
-                {filteredCourts.length === 0 ? (
-                    <p className="text-center text-gray-500 mt-10">No courts found.</p>
-                ) : (
-                    <div className="grid md:grid-cols-4 gap-6">
-                        <AnimatePresence>
-                            {filteredCourts.map((court, index) => (
-                                <motion.div
-                                    key={court.id || court.title}
-                                    initial={{ opacity: 0, y: 30 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -30 }}
-                                    transition={{ duration: 0.4, delay: index * 0.05 }}
-                                    onClick={() => handleCourtSelect(court)}
-                                    className="bg-gradient-to-r from-green-50 via-white to-green-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 text-gray-900 dark:text-white shadow-lg rounded-2xl overflow-hidden"
-                                >
-
-                                    <div className="p-4 space-y-2">
-                                        <h3 className="text-lg font-semibold text-green-600 dark:text-green-400">
-                                            {court.title}
-                                        </h3>
-                                        <p className="text-gray-600 dark:text-gray-400 text-sm">
-                                            {court.location?.address}
-                                        </p>
-                                        <p className="text-sm text-gray-700 dark:text-gray-300">
-                                            {court.description}
-                                        </p>
-                                        <div className="flex flex-wrap gap-2 mt-2">
-                                            {court.amenities?.map((item) => (
-                                                <span
-                                                    key={item}
-                                                    className="bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100 text-xs font-medium px-2 py-1 rounded-full"
-                                                >
-                                                    {item}
-                                                </span>
-                                            ))}
-                                        </div>
-                                        <button
-                                            onClick={() => debouncedToggleSelect(court)}
-                                            className={`mt-4 w-full py-2 text-sm rounded-lg font-semibold transition ${ProfilePreferedLocations?.includes(court.title)
-                                                ? "bg-gray-200 text-gray-800 dark:bg-gray-800 dark:text-white"
-                                                : "bg-green-600 text-white"
-                                                }`}
-                                        >
-                                            {ProfilePreferedLocations?.includes(court.title) ? "Added" : "Add court"}
-                                        </button>
-                                    </div>
-                                </motion.div>
-                            ))}
-                        </AnimatePresence>
+        <div className="min-h-screen bg-[#0d1b2a]">
+            {!selectedCourt ? (
+                <div className="p-4 md:p-6">
+                    {/* ── Header ─────────────────────────────────────── */}
+                    <div className="flex items-center gap-2.5 mb-5">
+                        <MapPin className="w-5 h-5 text-[#22c55e]" />
+                        <h1 className="text-[22px] font-bold text-white">Find Courts</h1>
                     </div>
-                )}
-            </div>) :
-                (
-                    <motion.div
-                        key="Court-detail"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 20 }}
-                        transition={{ duration: 0.4 }}
-                    >
-                        <div className="mb-4 flex justify-end">
-                            <Button
-                                variant="outline"
-                                className="text-sm flex items-center gap-2 hover:bg-green-50 dark:hover:bg-green-800 transition"
-                                onClick={() => setSelectedCourt(undefined)}
-                                aria-label="Back to players"
-                            >
-                                <ArrowLeft size={18} /> Back to Courts
-                            </Button>
+
+                    {/* ── Search ─────────────────────────────────────── */}
+                    <div className="flex items-center bg-[#1a2a3a] border border-[#2d4a3e] rounded-xl px-3 py-2.5 gap-2 mb-5">
+                        <Search className="w-4 h-4 text-[#22c55e] shrink-0" />
+                        <input
+                            type="text"
+                            placeholder="Search courts by name or address..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            className="flex-1 bg-transparent outline-none text-sm text-white placeholder-[#6b7280]"
+                        />
+                    </div>
+
+                    {/* ── Court grid ─────────────────────────────────── */}
+                    {filteredCourts.length === 0 ? (
+                        <p className="text-center text-[#6b7280] mt-12">No courts found.</p>
+                    ) : (
+                        <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            <AnimatePresence>
+                                {filteredCourts.map((court, idx) => {
+                                    const isAdded = preferredLocations.includes(court.title);
+                                    return (
+                                        <motion.div
+                                            key={court.id || court.title}
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: -20 }}
+                                            transition={{ duration: 0.3, delay: idx * 0.04 }}
+                                            onClick={() => setSelectedCourt(court)}
+                                            className="bg-[#111f2e] border border-[#1e3040] rounded-2xl overflow-hidden cursor-pointer hover:border-[#22c55e] transition-all group"
+                                        >
+                                            <div className="p-4 space-y-2.5">
+                                                <h3 className="text-[16px] font-bold text-[#22c55e] leading-tight group-hover:text-green-400 transition-colors">
+                                                    {court.title}
+                                                </h3>
+                                                <p className="text-[13px] text-[#94a3b8] leading-snug">
+                                                    {court.location?.address}
+                                                </p>
+                                                {court.description && (
+                                                    <p className="text-[13px] text-[#6b7280] line-clamp-2">
+                                                        {court.description}
+                                                    </p>
+                                                )}
+
+                                                {/* Amenity chips */}
+                                                {court.amenities?.length > 0 && (
+                                                    <div className="flex flex-wrap gap-1.5 pt-1">
+                                                        {court.amenities.map((item) => (
+                                                            <span
+                                                                key={item}
+                                                                className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-[#1a2a3a] border border-[#2d4a3e] text-[#94a3b8]"
+                                                            >
+                                                                {item}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                )}
+
+                                                {/* Add/Added button */}
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        debouncedToggle(court);
+                                                    }}
+                                                    className={`mt-2 w-full py-2 rounded-xl text-[13px] font-bold transition-all flex items-center justify-center gap-2 ${
+                                                        isAdded
+                                                            ? "bg-[#166534] border border-[#22c55e] text-[#22c55e]"
+                                                            : "bg-[#22c55e] text-black hover:bg-green-400"
+                                                    }`}
+                                                >
+                                                    {isAdded ? (
+                                                        <>
+                                                            <Check className="w-3.5 h-3.5" /> Added
+                                                        </>
+                                                    ) : (
+                                                        "Add Court"
+                                                    )}
+                                                </button>
+                                            </div>
+                                        </motion.div>
+                                    );
+                                })}
+                            </AnimatePresence>
                         </div>
-                        <CourtCard court={sectedCourt} />
-                    </motion.div>
-                )}
+                    )}
+                </div>
+            ) : (
+                <motion.div
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 16 }}
+                    transition={{ duration: 0.3 }}
+                    className="p-4 md:p-6"
+                >
+                    <button
+                        onClick={() => setSelectedCourt(undefined)}
+                        className="flex items-center gap-2 text-[13px] text-[#94a3b8] hover:text-white transition-colors mb-4 border border-[#1e3040] px-3 py-2 rounded-xl hover:border-[#22c55e]"
+                    >
+                        <ArrowLeft className="w-4 h-4" /> Back to Courts
+                    </button>
+                    <CourtCard court={selectedCourt} />
+                </motion.div>
+            )}
         </div>
     );
 };

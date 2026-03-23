@@ -3,20 +3,25 @@ import { admin } from "../../utils/admin";
 
 const db = admin.firestore();
 
-const SendStatus = async (status: string, matchId: string, players: any[],MatchData:any) => {
+const SendNotifications = async (status: string, matchId: string, players: any[], MatchData: any) => {
+    const startTimeDisplay = MatchData.startTime?.toDate
+        ? MatchData.startTime.toDate().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+        : MatchData.startTime || "TBD";
+
+    const batch = db.batch();
     for (const player of players) {
         const notification = {
-            type: "match preposal result",
-            message: `The Match at ${MatchData.startTime} is ${status == "preposed" ? "rejected":status} `,
-            isRead: false
-        }
-        await db.collection(`users/${player.userUid}/profile/${player.profileId}/notifications`).add(notification);
+            type: "match proposal result",
+            message: `The Match at ${startTimeDisplay} is ${status}`,
+            isRead: false,
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        };
+        const notifRef = db.collection(`users/${player.userUid}/profile/${player.profileId}/notifications`).doc();
+        batch.set(notifRef, notification);
     }
-    await db.doc(`matches/${matchId}`).update({
-        status: status
-    })
-    console.log(`chandged match status to ${status}`);
-}
+    await batch.commit();
+    console.log(`changeStatusOfMatch: sent ${status} notifications for match ${matchId} to ${players.length} players`);
+};
 
 
 export const changeStatusOfMatch = onDocumentUpdated({
@@ -26,30 +31,26 @@ export const changeStatusOfMatch = onDocumentUpdated({
     try {
         const { matchId } = event.params;
 
-        const MatchData = event.data?.after.data();
+        const afterData = event.data?.after.data();
         const beforeData = event.data?.before.data();
 
-        if (!MatchData || !beforeData) return;
+        if (!afterData || !beforeData) return;
 
-        // Prevent infinite loop: only act when player statuses changed, not match status
-        if (beforeData.status !== MatchData.status) return;
+        const players = afterData.players;
 
-        const players = MatchData.players;
+        // Only send notifications when the match status actually changes
+        // (the client sets the status in a transaction, so we react to the status change)
+        if (beforeData.status === afterData.status) return;
 
-        const isValid = players.every((player: any) =>
-            player.status === "accepted"
-        )
-        const isRejection = players.some((player: any) =>
-            player.status == "rejected"
-        )
+        const newStatus = afterData.status;
 
-        if (isValid && MatchData.status != "accepted" ) {
-            await SendStatus("accepted", matchId, players,MatchData);
+        // Send notifications for meaningful status transitions
+        if (newStatus === "accepted" || newStatus === "rejected") {
+            await SendNotifications(newStatus, matchId, players, afterData);
         }
-        if (isRejection) {
-            await SendStatus("proposed", matchId, players,MatchData);
-        }
+
+        console.log(`changeStatusOfMatch: match ${matchId} status changed from ${beforeData.status} to ${newStatus}`);
     } catch (error) {
-        console.log("Error while handling match status change", error);
+        console.error("changeStatusOfMatch: error handling match status change:", error);
     }
 })

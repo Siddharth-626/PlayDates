@@ -1,14 +1,13 @@
 import { Timestamp } from "firebase/firestore";
+import { parseTimeString } from "../Time/parseTimeString";
 
 
 export const insertTimeInDate = (date:any,time:string)=>{
-    const formattedTime = time.replace(/\s?(am|pm)\s?/i, "").trim();
-
-    const [hours,minutes] = formattedTime.split(":").map(Number);
+    const parsed = parseTimeString(time);
+    if (!parsed) return null;
 
     const target = date.toDate ? date.toDate() : new Date(date);
-
-    target.setHours(hours,minutes,0,0);
+    target.setHours(parsed.hours, parsed.minutes, 0, 0);
 
     return target;
 }

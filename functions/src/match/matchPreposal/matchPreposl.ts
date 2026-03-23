@@ -15,12 +15,15 @@ export const preposeMatch = onDocumentCreated(
         try {
 
             const { userUid, profileId } = event.params;
-            console.log(userUid, profileId);
+            console.log(`preposeMatch: triggered for user=${userUid}, profile=${profileId}`);
 
 
             const currentUserAvailability = event.data?.data();
 
-            if (!currentUserAvailability) return
+            if (!currentUserAvailability) {
+                console.error("preposeMatch: no availability data in event");
+                return;
+            }
 
             const currentUserProfileLocations: string[] =
                 currentUserAvailability.locations?.map((loc: LocationStorageType) => loc.courtId) || [];
@@ -28,7 +31,10 @@ export const preposeMatch = onDocumentCreated(
             const profileRef = db.doc(`users/${userUid}/profile/${profileId}`);
             const profileSnap = await profileRef.get();
             const profileData = profileSnap.data();
-            if (!profileData?.playmates?.length) return;
+            if (!profileData?.playmates?.length) {
+                console.log("preposeMatch: user has no playmates, skipping");
+                return;
+            }
 
             const players: PlayersType[] = [{ userUid, profileId, status: "pending", name: profileData.name,photoUrl:profileData.photoUrl }];
             for (const playmate of profileData.playmates) {
@@ -40,7 +46,7 @@ export const preposeMatch = onDocumentCreated(
                 const playmateAvailabilitySnap = await db
                     .collection(`users/${playmateUid}/profile/${playmateProfileId}/availability`)
                     .get();
-                if (!playmateAvailabilitySnap) return;
+                if (playmateAvailabilitySnap.empty) continue;
 
                 for (const doc of playmateAvailabilitySnap.docs) {
                     const playmateAvailability = doc.data();
@@ -74,7 +80,9 @@ export const preposeMatch = onDocumentCreated(
                     if (locationMatch && dateMatch && preference) {
 
                         if (isTimeOverlap(currentUserAvailability, playmateAvailability)) {
-                            if (players.length < 4) {
+                            // Prevent duplicate: check if player is already added
+                            const alreadyAdded = players.some(p => p.profileId === playmateProfileId);
+                            if (!alreadyAdded && players.length < 4) {
 
                                 players.push({ userUid: playmateUid, profileId: playmateProfileId, status: "pending", name: playmateProfileData?.name,photoUrl:playmateProfileData?.photoUrl});
                             }
@@ -89,7 +97,7 @@ export const preposeMatch = onDocumentCreated(
                         }
                         if (condition) {
                             const selectedPlayers = PlayersBasedOnPrefernce(preference, players);
-                            if (!selectedPlayers) return;
+                            if (!selectedPlayers) continue;
 
                             const commonTime = getCommonTime(currentUserAvailability, playmateAvailability);
                             const matchProposal = {
@@ -107,13 +115,13 @@ export const preposeMatch = onDocumentCreated(
                             };
 
                             await db.collection("matches").add(matchProposal);
-                            console.log("Proposed match successfully");
+                            console.log(`preposeMatch: proposed match created with ${selectedPlayers.length} players, type=${preference}`);
                         }
                     }
                 }
             }
         } catch (error) {
-            console.error("Error while proposing match:", error);
+            console.error("preposeMatch: error while proposing match:", error);
         }
     }
 );

@@ -21,10 +21,13 @@ export const ChangeStatusOffProfileMatches = onDocumentUpdated({
     document: "matches/{matchId}",
     region: "asia-south1",
 }, async (event) => {
+    try {
+        const BeforeMatchData = event.data?.before.data();
+        const AfterMatchData = event.data?.after.data();
+        const matchId = event.params.matchId;
 
-    const BeforeMatchData = event.data?.before.data();
-    const AfterMatchData = event.data?.after.data();
-    const matchId = event.params.matchId;
-
-    await Change(BeforeMatchData, AfterMatchData, AfterMatchData?.status, matchId);
+        await Change(BeforeMatchData, AfterMatchData, AfterMatchData?.status, matchId);
+    } catch (error) {
+        console.error("ChangeStatusOffProfileMatches: error:", error);
+    }
 })

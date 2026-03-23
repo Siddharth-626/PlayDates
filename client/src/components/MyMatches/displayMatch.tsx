@@ -2,11 +2,21 @@ import { fetchCourt } from "@/utils/courts/fetchCourt";
 import { FetchPlayerProfile } from "@/utils/PlayerProfile/FetchPlayerProfile";
 import { MatchPreposalType } from "@/utils/TYPE";
 import { useEffect, useState } from "react";
-import { CalendarDays, Clock, UsersRound, MapPin, CheckCircle2, XCircle, Loader2, Edit2, Plus, Timer, Check, Send, User } from "lucide-react";
+import {
+    CalendarDays,
+    Clock,
+    UsersRound,
+    MapPin,
+    CheckCircle2,
+    XCircle,
+    Plus,
+    User,
+    MoreVertical,
+    MessageCircle,
+} from "lucide-react";
 import { fetchMatch } from "@/utils/Match/fetchMatch";
-
 import clsx from "clsx";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { doc, updateDoc } from "firebase/firestore";
 import { Loading } from "../ui/Loading";
 import { db } from "@/services/config";
@@ -24,10 +34,46 @@ import { ChangeFieldInDb } from "@/utils/common/ChangeFieldInDb";
 import { useRouter } from "next/router";
 import { useChatDisplayData } from "@/context/chatDisplayDataContext";
 
-
 type DisplayMatchProps = {
     match: MatchPreposalType;
     onRespond: (status: string, matchId: string) => void;
+};
+
+// Standardized status badge
+function StatusBadge({ status }: { status: string }) {
+    const styles: Record<string, string> = {
+        accepted: "bg-[#166534] border border-[#22c55e] text-[#22c55e]",
+        pending: "bg-[#78350f] border border-[#f59e0b] text-[#fbbf24]",
+        rejected: "bg-[#7f1d1d] border border-[#ef4444] text-[#fca5a5]",
+        "match ended": "bg-[#1f2937] border border-[#4b5563] text-[#9ca3af]",
+    };
+    const cls = styles[status.toLowerCase()] ?? "bg-[#1f2937] border border-[#4b5563] text-[#9ca3af]";
+    return (
+        <span className={clsx("px-2.5 py-0.5 rounded-full text-[11px] font-semibold", cls)}>
+            {status}
+        </span>
+    );
+}
+
+// Metadata row
+function MetaRow({
+    icon,
+    label,
+    value,
+}: {
+    icon: React.ReactNode;
+    label: string;
+    value: string;
+}) {
+    return (
+        <div className="flex items-center justify-between py-2 border-b border-[#1e3040] last:border-b-0">
+            <div className="flex items-center gap-2 text-[#9ca3af] text-[13px]">
+                <span className="text-[#22c55e]">{icon}</span>
+                {label}
+            </div>
+            <span className="text-[14px] font-medium text-white">{value}</span>
+        </div>
+    );
 }
 
 export const DisplayMatch = ({ match, onRespond }: DisplayMatchProps) => {
@@ -36,7 +82,7 @@ export const DisplayMatch = ({ match, onRespond }: DisplayMatchProps) => {
     const { selectedProfile } = useProfile();
     const [matchData, setMatchData] = useState<any>(null);
     const [court, setCourt] = useState<string>("");
-    const [isTimeDropdowmOpen, setIsTimeDropDownOpen] = useState(false);
+    const [isTimeDropdownOpen, setIsTimeDropdownOpen] = useState(false);
     const [responseStatus, setResponseStatus] = useState<string>(match.status);
     const [isTimePreposed, setIsTimePreposed] = useState(false);
     const [isScoreDropdownOpen, setIsScoreDropdownOpen] = useState(false);
@@ -47,11 +93,10 @@ export const DisplayMatch = ({ match, onRespond }: DisplayMatchProps) => {
 
     useEffect(() => {
         if (!matchId) return;
-        const unsubscribe = fetchMatch(matchId, async (match) => {
-            if (match?.players && Array.isArray(match.players)) {
-                // Check if any player is missing name — if so, fetch from profile
+        const unsubscribe = fetchMatch(matchId, async (matchSnapshot) => {
+            if (matchSnapshot?.players && Array.isArray(matchSnapshot.players)) {
                 const playersWithNames = await Promise.all(
-                    match.players.map(async (player: any) => {
+                    matchSnapshot.players.map(async (player: any) => {
                         if (!player.name && player.userUid && player.profileId) {
                             try {
                                 const fetched = await FetchPlayerProfile({
@@ -70,16 +115,14 @@ export const DisplayMatch = ({ match, onRespond }: DisplayMatchProps) => {
                         return player;
                     })
                 );
-                setMatchData({ ...match, players: playersWithNames });
+                setMatchData({ ...matchSnapshot, players: playersWithNames });
             } else {
-                setMatchData(match);
+                setMatchData(matchSnapshot);
             }
         });
         return () => {
-            if (unsubscribe) {
-                unsubscribe();
-            }
-        }
+            if (unsubscribe) unsubscribe();
+        };
     }, [matchId]);
 
     useEffect(() => {
@@ -98,21 +141,17 @@ export const DisplayMatch = ({ match, onRespond }: DisplayMatchProps) => {
                 db,
                 `users/${user?.uid}/profile/${selectedProfile?.id}/matches/${match.id}`
             );
-            await updateDoc(matchRef, {
-                status: status,
-                isRead: true,
-            });
-
+            await updateDoc(matchRef, { status, isRead: true });
             setResponseStatus(status);
             onRespond(status, matchId);
             setIsTimePreposed(false);
         } catch (error) {
-            // silently fail
+            console.error("Failed to update match response:", error);
         }
     };
 
     useEffect(() => {
-        if (matchData?.status == "Time-Preposed" && match.status == "Time-Preposed") {
+        if (matchData?.status === "Time-Preposed" && match.status === "Time-Preposed") {
             setIsTimePreposed(true);
             setResponseStatus("Time");
         }
@@ -123,316 +162,277 @@ export const DisplayMatch = ({ match, onRespond }: DisplayMatchProps) => {
     }, [match.status]);
 
     if (!matchId) return null;
-
-    const isHost = selectedProfile?.id == matchData?.host?.profileId;
-
     if (!matchData) return null;
-    const { date, MatchType, score, players } = matchData;
 
-    // Safely convert any Firestore Timestamp or non-string to a display string with AM/PM
+    const { date, MatchType, score, players } = matchData;
+    const isHost = selectedProfile?.id === matchData?.host?.profileId;
+
     const safeTimeString = (val: any): string => {
         if (!val) return "";
         if (typeof val === "string") return val;
-        if (val?.toDate) return val.toDate().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true });
+        if (val?.toDate)
+            return val.toDate().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true });
         return String(val);
     };
 
-    // Keep raw values for time logic (Timestamps work directly with utilities)
     const rawStartTime = matchData.startTime;
     const rawEndTime = matchData.endTime;
-    const startTime: string = safeTimeString(rawStartTime);
-    const endTime: string = safeTimeString(rawEndTime);
+    const startTime = safeTimeString(rawStartTime);
+    const endTime = safeTimeString(rawEndTime);
 
     const formattedDate =
         typeof date === "string"
             ? new Date(date).toDateString()
-            : date?.toDate()?.toDateString();
+            : date?.toDate?.()?.toDateString() ?? "";
 
-    if (!date || !MatchType || !court || !players)
-        return <Loading />;
+    if (!date || !MatchType || !court || !players) return <Loading />;
 
-    // Match Creation Conditions
     let title = "Match Proposal";
-    const isMatchCreation = match.type == "created match";
+    const isMatchCreation = match.type === "created match";
     let isTimeGiven = true;
 
     if (isMatchCreation) {
         title = "Match Creation";
-        if (!rawStartTime || !rawEndTime) {
-            isTimeGiven = false;
-        }
+        if (!rawStartTime || !rawEndTime) isTimeGiven = false;
     }
-    if (!isHost) {
-        title = "Match Invite";
-    }
+    if (!isHost) title = "Match Invite";
+
     const isMatchEnded = isTimeGiven ? hasMatchEnded(date, rawEndTime) : false;
     const isScore = isMatchEnded && !matchData.score;
-    let team1 = MatchType == "Singles" ? `${players[0]?.name}` : `Team1`;
-    let team2 = MatchType == "Singles" ? `${players[1]?.name}` : "Team2";
 
-    if (MatchType == "Doubles") {
+    let team1 = MatchType === "Singles" ? `${players[0]?.name}` : "Team 1";
+    let team2 = MatchType === "Singles" ? `${players[1]?.name}` : "Team 2";
+
+    if (MatchType === "Doubles") {
         for (let i = 0; i < players.length; i++) {
-            players[i].team == "team1"
-                ? (team1 += `(${players[i].name})`)
-                : (team2 += `(${players[i].name})`);
+            players[i].team === "team1"
+                ? (team1 += ` (${players[i].name})`)
+                : (team2 += ` (${players[i].name})`);
         }
     }
-    const handleChangeTeams = (players: any) => {
-        ChangeFieldInDb("players", players, `matches/${matchId}`);
+
+    const handleChangeTeams = (updatedPlayers: any) => {
+        ChangeFieldInDb("players", updatedPlayers, `matches/${matchId}`);
     };
 
     const handleChatClick = () => {
         setChatDisplayData({
             chatId: matchId,
-            name: "Match Chat",
+            name: `Match Chat · ${court} · ${formattedDate}`,
             photoUrl: "",
-            players: players,
-            type: "match"
-        })
-        router.push("/chats")
-    }
+            players,
+            type: "match",
+        });
+        router.push("/chats");
+    };
 
     return (
         <div>
-            {isDisplayMatch ? (
+            {isDisplayMatch && (
                 <motion.div
-                    initial={{ opacity: 0, y: 30, scale: 0.97 }}
+                    initial={{ opacity: 0, y: 20, scale: 0.98 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 30, scale: 0.97 }}
-                    transition={{ duration: 0.4, type: "spring" }}
-                    className="bg-gradient-to-br from-green-50 via-white to-green-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 
-                     text-gray-900 dark:text-white rounded-2xl p-4 sm:p-6 shadow-lg border border-green-100 dark:border-green-700 w-full"
+                    transition={{ duration: 0.3 }}
+                    className="bg-[#111f2e] border border-[#1e3a2e] rounded-2xl overflow-hidden shadow-lg"
                 >
-                    {/* Header */}
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-                        <h2 className="text-lg sm:text-2xl font-bold text-green-700 flex items-center gap-2">
-                            {title}
-                        </h2>
-
-                        <div className="flex flex-wrap items-center gap-2">
-                            <div className=" flex items-center px-2 py-2 rounded-full border border-blue-600" onClick={handleChatClick}>
-                                <Send className="text-blue-600" />
-                            </div>
-
-                            {!isTimeGiven && isHost && (
-                                <button
-                                    onClick={() => { setIsTimeDropDownOpen(!isTimeDropdowmOpen); setIsDisplayMatch(!isDisplayMatch); }}
-                                    className="flex items-center text-xs sm:text-sm px-3 py-1 rounded-full font-semibold 
-                             text-yellow-700 border border-yellow-700 hover:bg-yellow-700 hover:text-white"
-                                >
-                                    <Plus size={14} className="mr-1" />
-                                    {isTimeDropdowmOpen ? "Close" : "Add Time"}
-                                </button>
-                            )}
-
+                    {/* ── Card Header ──────────────────────────────────── */}
+                    <div className="flex items-center justify-between px-5 py-4 border-b border-[#1e3040]">
+                        <span className="text-[#22c55e] font-bold text-[15px]">{title}</span>
+                        <div className="flex items-center gap-2">
                             {rawStartTime && (
-                                <GetTimeLeft endTime={rawEndTime} date={date} startTime={rawStartTime} />
+                                <GetTimeLeft
+                                    endTime={rawEndTime}
+                                    date={date}
+                                    startTime={rawStartTime}
+                                />
                             )}
+                            <StatusBadge
+                                status={isMatchEnded ? "Match Ended" : responseStatus}
+                            />
+                            {/* Chat button */}
+                            <button
+                                onClick={handleChatClick}
+                                className="p-1.5 rounded-lg hover:bg-[#1a2a3a] transition-colors"
+                                title="Open match chat"
+                            >
+                                <MessageCircle className="w-4 h-4 text-[#94a3b8]" />
+                            </button>
+                        </div>
+                    </div>
 
-                            {isScore && !score && isTimeGiven && (
+                    {/* ── Card Body ────────────────────────────────────── */}
+                    <div className="px-5 py-4 space-y-1">
+                        <MetaRow
+                            icon={<MapPin className="w-4 h-4" />}
+                            label="Court"
+                            value={court}
+                        />
+                        <MetaRow
+                            icon={<CalendarDays className="w-4 h-4" />}
+                            label="Date"
+                            value={formattedDate}
+                        />
+                        <MetaRow
+                            icon={<Clock className="w-4 h-4" />}
+                            label="Start"
+                            value={startTime || "Not set"}
+                        />
+                        <MetaRow
+                            icon={<Clock className="w-4 h-4" />}
+                            label="End"
+                            value={endTime || "Not set"}
+                        />
+                        <MetaRow
+                            icon={<UsersRound className="w-4 h-4" />}
+                            label="Type"
+                            value={MatchType}
+                        />
+                        {isMatchCreation && (
+                            <MetaRow
+                                icon={<User className="w-4 h-4" />}
+                                label="Host"
+                                value={players?.[0]?.name || "Unknown"}
+                            />
+                        )}
+                    </div>
+
+                    {/* ── Players ──────────────────────────────────────── */}
+                    <div className="px-5 pb-4">
+                        <div className="flex items-center justify-between mb-2">
+                            <span className="text-[13px] font-semibold text-[#9ca3af] uppercase tracking-wider">
+                                Players
+                            </span>
+                            {MatchType === "Doubles" && (
                                 <button
                                     onClick={() => {
-                                        setIsDisplayMatch(!isDisplayMatch);
-                                        setIsScoreDropdownOpen(!isScoreDropdownOpen);
+                                        setIsDisplayMatch(false);
+                                        setIsTeamsPopupOpen(true);
                                     }}
-                                    className="flex items-center text-xs sm:text-sm px-3 py-1 rounded-full font-semibold 
-                             text-blue-600 border border-blue-700 hover:bg-blue-700 hover:text-white"
+                                    className="flex items-center gap-1.5 text-[12px] font-semibold text-white border border-[#22c55e] px-3 py-1 rounded-full hover:bg-[#22c55e] hover:text-black transition-all"
                                 >
-                                    <Plus size={14} className="mr-1" /> Add Score
+                                    <UsersRound className="w-3.5 h-3.5" /> Change Teams
                                 </button>
                             )}
-
-                            <span
-                                className={clsx(
-                                    "px-3 py-1 rounded-full text-xs sm:text-sm font-semibold shadow",
-                                    responseStatus === "pending" &&
-                                    "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-200",
-                                    responseStatus === "accepted" &&
-                                    "bg-green-600 text-white",
-                                    responseStatus === "rejected" &&
-                                    "bg-red-600 text-white"
-                                )}
-                            >
-                                {responseStatus}
-                            </span>
                         </div>
+                        <ul className="space-y-2">
+                            {players.map((player: any, i: number) => (
+                                <li key={i} className="flex items-center gap-3 h-10">
+                                    {player.photoUrl ? (
+                                        <img
+                                            src={player.photoUrl}
+                                            alt={player.name}
+                                            className="w-8 h-8 rounded-full object-cover border-2 border-[#22c55e] shrink-0"
+                                        />
+                                    ) : (
+                                        <div className="w-8 h-8 rounded-full bg-[#1a2a3a] border-2 border-[#2d4a3e] flex items-center justify-center shrink-0">
+                                            <User className="w-4 h-4 text-[#6b7280]" />
+                                        </div>
+                                    )}
+                                    <span className="text-[14px] font-medium text-white flex-1">
+                                        {player.name}
+                                    </span>
+                                    {MatchType === "Doubles" && (
+                                        <span
+                                            className={clsx(
+                                                "text-[11px] font-semibold px-2 py-0.5 rounded-full",
+                                                player.team === "team1"
+                                                    ? "bg-[#166534] text-[#22c55e]"
+                                                    : "bg-[#1e3a5f] text-[#60a5fa]"
+                                            )}
+                                        >
+                                            {player.team}
+                                        </span>
+                                    )}
+                                    <StatusBadge status={player.status || "pending"} />
+                                </li>
+                            ))}
+                        </ul>
                     </div>
 
-                    {/* Details Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 text-sm sm:text-base">
-                        {/* Left Column - Court & Time */}
-                        <div className="space-y-2">
-                            <div className="flex items-center gap-2">
-                                <MapPin className="w-5 h-5 text-green-600" />
-                                <span className="font-semibold">Court:</span>
-                                <span>{court}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <CalendarDays className="w-5 h-5 text-green-600" />
-                                <span className="font-semibold">Date:</span>
-                                <span>{formattedDate}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <Clock className="w-5 h-5 text-green-600" />
-                                <span className="font-semibold">Start:</span>
-                                <span>{startTime || "No Time provided"}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <Clock className="w-5 h-5 text-green-600" />
-                                <span className="font-semibold">End:</span>
-                                <span>{endTime || "No Time provided"}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <UsersRound className="w-5 h-5 text-green-600" />
-                                <span className="font-semibold">Type:</span>
-                                <span>{MatchType}</span>
-                            </div>
-                            {isMatchCreation && (
-                                <div className="flex items-center gap-2">
-                                    <UsersRound className="w-5 h-5 text-green-600" />
-                                    <span className="font-semibold">Host:</span>
-                                    <span>{players?.[0]?.name || "No host"}</span>
-                                </div>
-                            )}
+                    {/* ── Score ────────────────────────────────────────── */}
+                    {score && (
+                        <div className="px-5 pb-4">
+                            <ScoreDisplay score={score} teamNames={{ team1, team2 }} />
                         </div>
+                    )}
 
-                        {/* Middle Column - Players */}
-                        <div className="flex flex-col gap-2">
-                            <div className="flex items-center gap-2 flex-wrap">
-                                <UsersRound className="w-5 h-5 text-green-600" />
-                                <span className="font-semibold">Players:</span>
-                                {MatchType == "Doubles" && (
+                    {/* ── Card Footer / Actions ─────────────────────────── */}
+                    <div className="px-5 py-3 border-t border-[#1e3040] flex flex-wrap items-center gap-2">
+                        {isMatchEnded ? (
+                            <>
+                                <span className="text-[13px] italic text-[#4b5563] flex-1 text-center">
+                                    Match ended — no actions available
+                                </span>
+                                {isScore && !score && (
                                     <button
                                         onClick={() => {
-                                            setIsDisplayMatch(!isDisplayMatch);
-                                            setIsTeamsPopupOpen(!isTeamsPopupOpen);
+                                            setIsDisplayMatch(false);
+                                            setIsScoreDropdownOpen(true);
                                         }}
-                                        className="flex items-center text-xs sm:text-sm px-3 py-1 rounded-full font-semibold 
-                                text-blue-600 border border-blue-700 hover:bg-blue-700 hover:text-white"
+                                        className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#22c55e] text-black font-bold text-sm"
                                     >
-                                        <UsersRound size={14} className="mr-1" />{" "}
-                                        {isTeamsPopupOpen ? "Close" : "Change Teams"}
+                                        <Plus className="w-4 h-4" /> Add Score
                                     </button>
                                 )}
-                            </div>
-                            <ul className="space-y-2">
-                                {players.map((player: any, i: any) => (
-                                    <li
-                                        key={i}
-                                        className="flex sm:flex-row sm:items-center gap-2 py-1 px-2 rounded-lg 
-                                    hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                                    >
-                                        {player.photoUrl ? (
-                                            <img
-                                                src={player.photoUrl}
-                                                alt={player.name}
-                                                className="w-6 h-6 rounded-full object-cover"
-                                            />
-                                        ) : (
-                                            <div className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-300 dark:bg-gray-600">
-                                                <User className="w-4 h-4 text-white" />
-                                            </div>
-                                        )}
-                                        <span className="font-medium">{player.name}</span>
-                                        {MatchType == "Doubles" && (
-                                            <span
-                                                className={`text-xs font-semibold px-2 py-0.5 rounded-full self-start sm:self-center
-                        ${player.team === "team1"
-                                                        ? "bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300"
-                                                        : player.team === "team2"
-                                                            ? "bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-300"
-                                                            : "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
-                                                    }`}
-                                            >
-                                                {player.team}
-                                            </span>
-                                        )}
-                                        <span
-                                            className={`text-xs font-semibold px-2 py-0.5 rounded-full self-start sm:self-center
-                                                ${player.status === "accepted"
-                                                    ? "bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300"
-                                                    : player.status === "pending"
-                                                        ? "bg-yellow-100 text-yellow-600 dark:bg-yellow-900 dark:text-yellow-300"
-                                                        : "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
-                                                }`}
-                                        >
-                                            {player.status}
-                                        </span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-
-                        {/* Right Column - Score */}
-                        <div>
-                            {score && (
-                                <div className="mt-3">
-                                    <ScoreDisplay
-                                        score={score}
-                                        teamNames={{ team1: team1, team2: team2 }}
-                                    />
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 mt-6">
-                        {isMatchEnded ? (
-                            <span className="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 font-semibold text-sm">
-                                Match Ended - No actions available
-                            </span>
+                            </>
                         ) : (
                             <>
+                                {!isTimeGiven && isHost && (
+                                    <button
+                                        onClick={() => {
+                                            setIsDisplayMatch(false);
+                                            setIsTimeDropdownOpen(true);
+                                        }}
+                                        className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[13px] font-semibold text-[#fbbf24] border border-[#f59e0b] hover:bg-[#78350f] transition-all"
+                                    >
+                                        <Plus className="w-3.5 h-3.5" /> Add Time
+                                    </button>
+                                )}
+
                                 {responseStatus !== "rejected" && (
                                     <motion.button
-                                        whileHover={{ scale: 1.05 }}
+                                        whileHover={{ scale: 1.03 }}
                                         whileTap={{ scale: 0.97 }}
                                         onClick={() => handleMatchResponse("rejected")}
-                                        className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 rounded-lg
-                                         text-red-600 border border-red-500 hover:bg-red-100 dark:hover:bg-red-900 font-semibold"
+                                        className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[13px] font-semibold text-[#fca5a5] border border-[#ef4444] hover:bg-[#7f1d1d] transition-all"
                                     >
-                                        <XCircle className="w-5 h-5" /> Reject
+                                        <XCircle className="w-4 h-4" /> Reject
                                     </motion.button>
                                 )}
 
                                 {responseStatus !== "accepted" && (
                                     <motion.button
-                                        whileHover={{ scale: 1.05 }}
+                                        whileHover={{ scale: 1.03 }}
                                         whileTap={{ scale: 0.97 }}
                                         onClick={() => handleMatchResponse("accepted")}
-                                        className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 rounded-lg
-                                   bg-green-600 text-white hover:bg-green-700 font-semibold"
+                                        className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[13px] font-semibold bg-[#22c55e] text-black shadow-[0_0_8px_rgba(34,197,94,0.3)] transition-all"
                                     >
-                                        <CheckCircle2 className="w-5 h-5" /> Accept
+                                        <CheckCircle2 className="w-4 h-4" /> Accept
                                     </motion.button>
                                 )}
                             </>
                         )}
                     </div>
                 </motion.div>
-            ) : null}
+            )}
 
-            {/* Score Selector */}
+            {/* ── Overlays ─────────────────────────────────────────────── */}
             {isScoreDropdownOpen && (
                 <ScoreSelectorPopup
-                    isOpen={true}
+                    isOpen
                     onClose={() => {
                         setIsDisplayMatch(true);
                         setIsScoreDropdownOpen(false);
                     }}
-                    onSubmit={(score: any) => {
-                        handleScoreSubmit(score, matchId);
-                    }}
-                    teamNames={{ team1: team1, team2: team2 }}
+                    onSubmit={(s: any) => handleScoreSubmit(s, matchId)}
+                    teamNames={{ team1, team2 }}
                 />
             )}
 
-            {/* Teams Selector */}
             {isTeamsPopupOpen && (
-                <div className="bg-white dark:bg-gray-900 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-4">
-                    <label className="flex items-center gap-2 text-gray-700 dark:text-gray-200 mb-2 font-semibold">
-                        <FiUserPlus size={18} className="text-green-500" /> Select Teams
+                <div className="bg-[#111f2e] rounded-2xl border border-[#1e3040] p-4 mt-2">
+                    <label className="flex items-center gap-2 text-white mb-3 font-semibold text-sm">
+                        <FiUserPlus className="text-[#22c55e]" /> Select Teams
                     </label>
                     <TeamsSelector
                         OnClose={() => {
@@ -444,16 +444,17 @@ export const DisplayMatch = ({ match, onRespond }: DisplayMatchProps) => {
                     />
                 </div>
             )}
-            {isTimeDropdowmOpen && (
-                <div className="bg-white dark:bg-gray-900 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-4">
-                    <label className="flex items-center gap-2 text-gray-700 dark:text-gray-200 mb-2 font-semibold">
-                        <Clock size={18} className="text-green-500" /> Add Time
+
+            {isTimeDropdownOpen && (
+                <div className="bg-[#111f2e] rounded-2xl border border-[#1e3040] p-4 mt-2">
+                    <label className="flex items-center gap-2 text-white mb-3 font-semibold text-sm">
+                        <Clock className="text-[#22c55e]" size={16} /> Add Time
                     </label>
                     <TimeSelctorPopUp
                         matchId={matchId}
                         OnClose={() => {
                             setIsDisplayMatch(true);
-                            setIsTimeDropDownOpen(false);
+                            setIsTimeDropdownOpen(false);
                         }}
                     />
                 </div>

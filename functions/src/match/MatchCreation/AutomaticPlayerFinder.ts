@@ -15,8 +15,12 @@ export const AddPlayersToMatch = onDocumentCreated(
         const { userUid, profileId } = event.params;
 
         const availabilityData = event.data?.data();
-        console.log("New Availability:", availabilityData);
-        if (!availabilityData) return;
+        if (!availabilityData) {
+            console.error("AddPlayersToMatch: no availability data in event");
+            return;
+        }
+
+        console.log(`AddPlayersToMatch: processing availability for user=${userUid}, profile=${profileId}`);
 
         const date = availabilityData.date.toDate();
         const startOfDay = new Date(date);
@@ -35,11 +39,22 @@ export const AddPlayersToMatch = onDocumentCreated(
             .where("date", "<=", endDateTime)
             .get();
 
-        for (const doc of OpenMatchSnap.docs) {
-            const match = doc.data();
-            console.log("Checking Match:", match);
+        if (OpenMatchSnap.empty) {
+            console.log("AddPlayersToMatch: no open matches found for this date");
+            return;
+        }
 
-            const matchRef = db.doc(`matches/${doc.id}`);
+        // Fetch player profile once outside the loop
+        const playerProfileSnap = await db.doc(`users/${userUid}/profile/${profileId}`).get();
+        const playerProfileData = playerProfileSnap.data();
+        if (!playerProfileData) {
+            console.error(`AddPlayersToMatch: player profile not found for user=${userUid}, profile=${profileId}`);
+            return;
+        }
+
+        for (const matchDoc of OpenMatchSnap.docs) {
+            const match = matchDoc.data();
+            const matchRef = db.doc(`matches/${matchDoc.id}`);
 
             // Skip matches without proper time data for overlap check
             if (!match.startTime || !match.endTime) continue;
@@ -70,35 +85,54 @@ export const AddPlayersToMatch = onDocumentCreated(
                 ? 2
                 : 4;
 
-            console.log("locationMatch:", locationMatch, "preferenceMatch:", preferenceMatch, "dateMatch:", dateMatch);
+            if (!dateMatch || !preferenceMatch || !locationMatch) continue;
+            if (!isTimeOverlap(matchInfo, availabilityData)) continue;
 
-            if (dateMatch && preferenceMatch && locationMatch) {
-                if (isTimeOverlap(matchInfo, availabilityData)) {
-                    if (match.players.length < playerCap) {
-                        // Fetch the player's profile to get name and photoUrl
-                        const playerProfileSnap = await db.doc(`users/${userUid}/profile/${profileId}`).get();
-                        const playerProfileData = playerProfileSnap.data();
+            // Use a transaction to prevent race conditions when multiple players
+            // try to join the same match simultaneously
+            try {
+                await db.runTransaction(async (transaction) => {
+                    const freshSnap = await transaction.get(matchRef);
+                    const freshMatch = freshSnap.data();
+                    if (!freshMatch || freshMatch.status !== "open") return;
 
-                        await matchRef.update({
-                            players: admin.firestore.FieldValue.arrayUnion({
-                                userUid,
-                                profileId,
-                                status: "pending",
-                                name: playerProfileData?.name || "",
-                                photoUrl: playerProfileData?.photoUrl || "",
-                            }),
-                        });
+                    const currentPlayers = freshMatch.players || [];
 
-                        if (match.players.length + 1 >= playerCap) {
-                            await matchRef.update({
-                                status: "created",
-                            });
-                            console.log("Match full, status updated");
-                        }
-
-                        console.log("Player Added");
+                    // Check if player is already in the match
+                    const alreadyInMatch = currentPlayers.some(
+                        (p: any) => p.userUid === userUid && p.profileId === profileId
+                    );
+                    if (alreadyInMatch) {
+                        console.log(`AddPlayersToMatch: player ${profileId} already in match ${matchDoc.id}`);
+                        return;
                     }
-                }
+
+                    if (currentPlayers.length >= playerCap) {
+                        console.log(`AddPlayersToMatch: match ${matchDoc.id} already full`);
+                        return;
+                    }
+
+                    const newPlayer = {
+                        userUid,
+                        profileId,
+                        status: "pending",
+                        name: playerProfileData.name || "",
+                        photoUrl: playerProfileData.photoUrl || "",
+                    };
+
+                    const updatedPlayers = [...currentPlayers, newPlayer];
+                    const updates: any = { players: updatedPlayers };
+
+                    if (updatedPlayers.length >= playerCap) {
+                        updates.status = "created";
+                        console.log(`AddPlayersToMatch: match ${matchDoc.id} is now full, status → created`);
+                    }
+
+                    transaction.update(matchRef, updates);
+                    console.log(`AddPlayersToMatch: added player ${profileId} to match ${matchDoc.id}`);
+                });
+            } catch (error) {
+                console.error(`AddPlayersToMatch: transaction failed for match ${matchDoc.id}:`, error);
             }
         }
     }

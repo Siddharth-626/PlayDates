@@ -10,6 +10,7 @@ import { AddProposedMatchToProfile } from "./match/common/AddPreposedMatchToMatc
 import { changeStatusOfMatch } from "./match/common/ChangeStatusOffMatch";
 import { clearOldNotification } from "./notifications/clearOldNotification";
 import { clearOldProfileMatches } from "./match/common/clearOldProfileMatches";
+import { clearOldMatchPreposal } from "./match/common/ClearOldMatchPreposal";
 import { ChangeStatusOffProfileMatches } from "./match/MatchCreation/ChangeStatusOffProfileMatches";
 import { AddPlayersToMatch } from "./match/MatchCreation/AutomaticPlayerFinder";
 import { AddNewPlayersToProfileMatch } from "./match/MatchCreation/AddNewPlayersToProfileMatch";
@@ -18,6 +19,7 @@ export {AddNewPlayersToProfileMatch}
 export {AddPlayersToMatch}
 export {ChangeStatusOffProfileMatches};
 export {clearOldProfileMatches}
+export {clearOldMatchPreposal}
 export {clearOldNotification}
 export {changeStatusOfMatch};
 export { preposeMatch };

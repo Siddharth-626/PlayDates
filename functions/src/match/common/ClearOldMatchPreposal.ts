@@ -19,7 +19,7 @@ export const clearOldMatchPreposal = onSchedule(
                 .where("date", "<", cutoff)
                 .get();
 
-            const batch = db.batch();
+            let batch = db.batch();
             let count = 0;
 
             for (const matchDoc of matchSnap.docs) {
@@ -29,9 +29,10 @@ export const clearOldMatchPreposal = onSchedule(
                 batch.delete(matchDoc.ref);
                 count++;
 
-                // Firestore batch limit is 500
+                // Firestore batch limit is 500 — commit and create new batch
                 if (count === 500) {
                     await batch.commit();
+                    batch = db.batch();
                     count = 0;
                 }
             }
@@ -40,8 +41,8 @@ export const clearOldMatchPreposal = onSchedule(
                 await batch.commit();
             }
 
-            console.log("Old match proposals cleared");
+            console.log(`clearOldMatchPreposal: cleared old match proposals (cutoff: ${currentDate.toISOString()})`);
         } catch (error) {
-            console.error("Error while clearing old matches:", error);
+            console.error("clearOldMatchPreposal: error while clearing old matches:", error);
         }
     })

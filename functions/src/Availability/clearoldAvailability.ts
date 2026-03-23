@@ -22,16 +22,17 @@ export const clearOldAvailability = onSchedule(
                 .where("endDate", "<", cutoff)
                 .get();
 
-            const batch = db.batch();
+            let batch = db.batch();
             let count = 0;
 
             for (const doc of expiredSnap.docs) {
                 batch.delete(doc.ref);
                 count++;
 
-                // Firestore batch limit is 500
+                // Firestore batch limit is 500 — commit and create new batch
                 if (count === 500) {
                     await batch.commit();
+                    batch = db.batch();
                     count = 0;
                 }
             }

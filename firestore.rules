@@ -10,6 +10,14 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    // Check if the current user is a participant in a players array
+    function isParticipant(players) {
+      return players.size() >= 1 && players[0].userUid == request.auth.uid ||
+             players.size() >= 2 && players[1].userUid == request.auth.uid ||
+             players.size() >= 3 && players[2].userUid == request.auth.uid ||
+             players.size() >= 4 && players[3].userUid == request.auth.uid;
+    }
+
     // ======= Public Collections =======
 
     match /courts/{courtId} {
@@ -22,7 +30,8 @@ service cloud.firestore {
       allow read: if isAuthenticated();
       allow create: if isAuthenticated();
       allow update: if isAuthenticated() &&
-        resource.data.players.hasAny([{'userUid': request.auth.uid}]) || isAdmin();
+        (resource.data.players.size() > 0 &&
+        isParticipant(resource.data.players)) || isAdmin();
       allow delete: if isAdmin();
     }
 

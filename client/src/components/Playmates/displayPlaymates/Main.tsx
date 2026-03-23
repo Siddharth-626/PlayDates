@@ -1,103 +1,132 @@
 import { useEffect, useState, useMemo } from "react";
 import { PlayerProfile } from "@/utils/TYPE";
-import { Button } from "@/components/ui/button";
 import { AnimatePresence, motion } from "framer-motion";
-import { Users, ArrowLeft } from "lucide-react";
+import { Users, ArrowLeft, Search } from "lucide-react";
 import { Loading } from "@/components/ui/Loading";
 import PlayerPage from "@/components/profile/ProfilePage/Main";
 import PlayerCard from "@/components/FindPlayers/PlayerCard";
 import { usePlaymates } from "@/context/playmatesContext";
 
 export const DisplayPlaymates = () => {
-  const [SelectedProfile, setSelectedProfile] = useState<PlayerProfile | null>(null);
-  const { playmates, loading } = usePlaymates();
+    const [selectedProfile, setSelectedProfile] = useState<PlayerProfile | null>(null);
+    const [search, setSearch] = useState("");
+    const { playmates, loading } = usePlaymates();
 
-  const playmatesGrid = useMemo(
-    () => (
-      <motion.div
-        key="player-grid"
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        transition={{ duration: 0.3 }}
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
-        aria-label="Playmates Grid"
-      >
-        {playmates?.map((player, i) => (
-          <motion.div
-            key={player.id}
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.04 }}
-          >
-            <div
-              onClick={() => setSelectedProfile(player)}
-              className="cursor-pointer hover:scale-105 active:scale-95 transition-transform duration-200"
-              tabIndex={0}
-              role="button"
-              aria-label={`View ${player.name}'s profile`}
-              onKeyPress={(e) => {
-                if (e.key === "Enter" || e.key === " ") setSelectedProfile(player);
-              }}
-            >
-              <PlayerCard player={player} />
+    const filtered = useMemo(() => {
+        if (!playmates) return [];
+        if (!search.trim()) return playmates;
+        return playmates.filter((p) =>
+            p.name.toLowerCase().includes(search.toLowerCase())
+        );
+    }, [playmates, search]);
+
+    if (loading) return <Loading />;
+
+    return (
+        <div className="min-h-screen bg-[#0d1b2a] p-4 md:p-6">
+            {/* Header */}
+            <div className="flex items-center gap-2.5 mb-5">
+                <Users className="w-5 h-5 text-[#22c55e]" />
+                <h1 className="text-[22px] font-bold text-white">Your Playmates</h1>
             </div>
-          </motion.div>
-        ))}
-      </motion.div>
-    ),
-    [playmates]
-  );
 
-  if (loading) return <Loading />;
+            <AnimatePresence mode="wait">
+                {!selectedProfile ? (
+                    <motion.div
+                        key="list"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                    >
+                        {/* Search bar */}
+                        {(playmates?.length ?? 0) > 0 && (
+                            <div className="flex items-center bg-[#1a2a3a] border border-[#2d4a3e] rounded-xl px-3 py-2.5 gap-2 mb-5">
+                                <Search className="w-4 h-4 text-[#22c55e] shrink-0" />
+                                <input
+                                    type="text"
+                                    placeholder="Search your playmates..."
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                    className="flex-1 bg-transparent outline-none text-sm text-white placeholder-[#6b7280]"
+                                />
+                            </div>
+                        )}
 
-  return (
-    <div className="p-4 md:p-6 min-h-[70vh]">
-      <h1 className="font-mono text-3xl font-bold mb-6 text-center text-green-700 dark:text-green-200 flex items-center justify-center gap-2">
-        <Users className="text-green-500 dark:text-green-300" size={32} /> Your Playmates
-      </h1>
-
-      <AnimatePresence mode="wait">
-        {!SelectedProfile ? (
-          playmates!.length === 0 ? (
-            <motion.div
-              key="empty"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              className="flex flex-col items-center justify-center py-16"
-            >
-              <Users className="text-green-200 dark:text-green-700 mb-2" size={60} />
-              <span className="text-gray-500 dark:text-gray-400 text-lg">
-                No playmates found yet.
-              </span>
-            </motion.div>
-          ) : (
-            playmatesGrid
-          )
-        ) : (
-          <motion.div
-            key="player-detail"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            transition={{ duration: 0.4 }}
-            className="max-w-2xl mx-auto bg-white/90 dark:bg-gray-900/90 shadow-xl rounded-2xl p-6"
-          >
-            <div className="mb-4 flex justify-start">
-              <Button
-                variant="outline"
-                className="text-sm flex items-center gap-2 hover:bg-green-50 dark:hover:bg-green-800 transition"
-                onClick={() => setSelectedProfile(null)}
-                aria-label="Back to playmates"
-              >
-                <ArrowLeft size={18} /> Back to playmates
-              </Button>
-            </div>
-            <PlayerPage profileId={SelectedProfile.id} userId={SelectedProfile.userUid} />
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
+                        {/* Empty state */}
+                        {(playmates?.length ?? 0) === 0 ? (
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="flex flex-col items-center justify-center py-20 text-center"
+                            >
+                                <Users className="w-12 h-12 text-[#2d4a3e] mb-3" />
+                                <p className="text-[#6b7280] font-medium">No playmates yet.</p>
+                                <p className="text-sm text-[#4b5563] mt-1">
+                                    Find players and send a connection request.
+                                </p>
+                            </motion.div>
+                        ) : filtered.length === 0 ? (
+                            <p className="text-center text-[#6b7280] py-12">
+                                No playmates match your search.
+                            </p>
+                        ) : (
+                            <motion.div
+                                key="grid"
+                                initial={{ opacity: 0, scale: 0.97 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.97 }}
+                                transition={{ duration: 0.25 }}
+                                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+                            >
+                                {filtered.map((player, i) => (
+                                    <motion.div
+                                        key={player.id}
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: i * 0.04 }}
+                                    >
+                                        <div
+                                            onClick={() => setSelectedProfile(player)}
+                                            className="cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-transform duration-150"
+                                            role="button"
+                                            tabIndex={0}
+                                            aria-label={`View ${player.name}'s profile`}
+                                            onKeyDown={(e) => {
+                                                if (e.key === "Enter" || e.key === " ")
+                                                    setSelectedProfile(player);
+                                            }}
+                                        >
+                                            <PlayerCard player={player} />
+                                        </div>
+                                    </motion.div>
+                                ))}
+                            </motion.div>
+                        )}
+                    </motion.div>
+                ) : (
+                    <motion.div
+                        key="detail"
+                        initial={{ opacity: 0, y: 16 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 16 }}
+                        transition={{ duration: 0.3 }}
+                        className="max-w-2xl mx-auto"
+                    >
+                        <button
+                            onClick={() => setSelectedProfile(null)}
+                            className="flex items-center gap-2 text-[13px] text-[#94a3b8] hover:text-white transition-colors mb-4 border border-[#1e3040] px-3 py-2 rounded-xl hover:border-[#22c55e]"
+                        >
+                            <ArrowLeft className="w-4 h-4" /> Back to playmates
+                        </button>
+                        <div className="bg-[#111f2e] border border-[#1e3040] rounded-2xl p-6">
+                            <PlayerPage
+                                profileId={selectedProfile.id}
+                                userId={selectedProfile.userUid}
+                            />
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
 };

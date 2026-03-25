@@ -23,11 +23,19 @@ export const DisplayPlaymates = () => {
     if (loading) return <Loading />;
 
     return (
-        <div className="min-h-screen bg-[#0d1b2a] p-4 md:p-6">
+        <div className="min-h-screen p-4 md:p-6" style={{ background: 'var(--surface-base)' }}>
             {/* Header */}
-            <div className="flex items-center gap-2.5 mb-5">
-                <Users className="w-5 h-5 text-[#22c55e]" />
-                <h1 className="text-[22px] font-bold text-white">Your Playmates</h1>
+            <div className="flex items-center gap-3 mb-6">
+                <div
+                    className="w-10 h-10 rounded-xl flex items-center justify-center"
+                    style={{ background: 'var(--accent-green)15' }}
+                >
+                    <Users className="w-5 h-5" style={{ color: 'var(--accent-green)' }} />
+                </div>
+                <div>
+                    <h1 className="font-outfit text-xl font-bold" style={{ color: 'var(--content-primary)' }}>Your Playmates</h1>
+                    <p className="text-xs" style={{ color: 'var(--content-muted)' }}>Connect and play with friends</p>
+                </div>
             </div>
 
             <AnimatePresence mode="wait">
@@ -40,14 +48,18 @@ export const DisplayPlaymates = () => {
                     >
                         {/* Search bar */}
                         {(playmates?.length ?? 0) > 0 && (
-                            <div className="flex items-center bg-[#1a2a3a] border border-[#2d4a3e] rounded-xl px-3 py-2.5 gap-2 mb-5">
-                                <Search className="w-4 h-4 text-[#22c55e] shrink-0" />
+                            <div
+                                className="flex items-center rounded-xl px-3 py-2.5 gap-2 mb-5 border"
+                                style={{ background: 'var(--surface-overlay)', borderColor: 'var(--border-subtle)' }}
+                            >
+                                <Search className="w-4 h-4 shrink-0" style={{ color: 'var(--accent-green)' }} />
                                 <input
                                     type="text"
                                     placeholder="Search your playmates..."
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
-                                    className="flex-1 bg-transparent outline-none text-sm text-white placeholder-[#6b7280]"
+                                    className="flex-1 bg-transparent outline-none text-sm"
+                                    style={{ color: 'var(--content-primary)' }}
                                 />
                             </div>
                         )}
@@ -59,14 +71,19 @@ export const DisplayPlaymates = () => {
                                 animate={{ opacity: 1, y: 0 }}
                                 className="flex flex-col items-center justify-center py-20 text-center"
                             >
-                                <Users className="w-12 h-12 text-[#2d4a3e] mb-3" />
-                                <p className="text-[#6b7280] font-medium">No playmates yet.</p>
-                                <p className="text-sm text-[#4b5563] mt-1">
+                                <div
+                                    className="w-16 h-16 rounded-full flex items-center justify-center mb-4 animate-float"
+                                    style={{ background: 'var(--surface-overlay)' }}
+                                >
+                                    <Users className="w-7 h-7" style={{ color: 'var(--content-muted)' }} />
+                                </div>
+                                <p className="font-semibold" style={{ color: 'var(--content-secondary)' }}>No playmates yet</p>
+                                <p className="text-sm mt-1 mb-4" style={{ color: 'var(--content-muted)' }}>
                                     Find players and send a connection request.
                                 </p>
                             </motion.div>
                         ) : filtered.length === 0 ? (
-                            <p className="text-center text-[#6b7280] py-12">
+                            <p className="text-center text-sm py-12" style={{ color: 'var(--content-muted)' }}>
                                 No playmates match your search.
                             </p>
                         ) : (
@@ -96,7 +113,7 @@ export const DisplayPlaymates = () => {
                                                     setSelectedProfile(player);
                                             }}
                                         >
-                                            <PlayerCard player={player} />
+                                            <PlayerCard player={player} hideAction />
                                         </div>
                                     </motion.div>
                                 ))}
@@ -114,11 +131,23 @@ export const DisplayPlaymates = () => {
                     >
                         <button
                             onClick={() => setSelectedProfile(null)}
-                            className="flex items-center gap-2 text-[13px] text-[#94a3b8] hover:text-white transition-colors mb-4 border border-[#1e3040] px-3 py-2 rounded-xl hover:border-[#22c55e]"
+                            className="flex items-center gap-2 text-[13px] transition-colors mb-4 border px-3 py-2 rounded-xl"
+                            style={{
+                                color: 'var(--content-secondary)',
+                                borderColor: 'var(--border-subtle)',
+                            }}
+                            onMouseEnter={e => {
+                                e.currentTarget.style.color = 'var(--content-primary)';
+                                e.currentTarget.style.borderColor = 'var(--accent-green)';
+                            }}
+                            onMouseLeave={e => {
+                                e.currentTarget.style.color = 'var(--content-secondary)';
+                                e.currentTarget.style.borderColor = 'var(--border-subtle)';
+                            }}
                         >
                             <ArrowLeft className="w-4 h-4" /> Back to playmates
                         </button>
-                        <div className="bg-[#111f2e] border border-[#1e3040] rounded-2xl p-6">
+                        <div className="rounded-2xl p-6 border" style={{ background: 'var(--surface-raised)', borderColor: 'var(--border-subtle)' }}>
                             <PlayerPage
                                 profileId={selectedProfile.id}
                                 userId={selectedProfile.userUid}

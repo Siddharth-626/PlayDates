@@ -1,8 +1,8 @@
 export default function AboutSection({ about }: { about: string }) {
   return (
     <div>
-      <h3 className="text-xl font-semibold mb-1 text-green-700 dark:text-green-300">About</h3>
-      <p className="text-gray-600 dark:text-gray-300">{about || "No bio provided."}</p>
+      <h3 className="text-body font-semibold mb-2 text-[var(--content-primary)]">About</h3>
+      <p className="text-body-sm text-[var(--content-secondary)]">{about || "No bio provided."}</p>
     </div>
   );
 }

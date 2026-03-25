@@ -97,19 +97,30 @@ export const ChatDashBoard = () => {
     );
 
     return (
-        <div className="flex h-screen bg-[#0d1b2a]">
+        <div className="flex h-screen" style={{ background: 'var(--surface-base)' }}>
             {/* ── Chat sidebar ──────────────────────────────────────── */}
             {(isDesktop || isSideBarOpen) && (
-                <div className="flex flex-col w-full max-w-sm h-screen bg-[#0a1628] border-r border-[#1e3040]">
+                <div
+                    className="flex flex-col w-full max-w-sm h-screen border-r shrink-0"
+                    style={{ background: 'var(--sidebar-bg)', borderColor: 'var(--border-subtle)' }}
+                >
                     {/* Header */}
-                    <div className="flex items-center justify-between px-4 h-14 border-b border-[#1e3040] shrink-0">
-                        <h1 className="text-base font-bold text-white">Chats</h1>
+                    <div
+                        className="flex items-center justify-between px-4 h-14 border-b shrink-0"
+                        style={{ borderColor: 'var(--border-subtle)' }}
+                    >
+                        <h1 className="font-outfit text-base font-bold" style={{ color: 'var(--content-primary)' }}>
+                            Chats
+                        </h1>
                         <button
                             onClick={() => setIsChatCreaterOpen(!isChatCreaterOpen)}
-                            className="p-2 rounded-xl hover:bg-[#1a2a3a] transition-colors"
+                            className="p-2 rounded-xl transition-colors"
+                            style={{ background: 'transparent' }}
+                            onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface-overlay)')}
+                            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                             aria-label="New chat"
                         >
-                            <PencilSquareIcon className="w-5 h-5 text-[#94a3b8]" />
+                            <PencilSquareIcon className="w-5 h-5" style={{ color: 'var(--content-secondary)' }} />
                         </button>
 
                         {isChatCreaterOpen && (
@@ -119,12 +130,16 @@ export const ChatDashBoard = () => {
 
                     {/* Search */}
                     <div className="px-3 py-3 shrink-0">
-                        <div className="flex items-center bg-[#1a2a3a] border border-[#2d4a3e] rounded-xl px-3 py-2.5 gap-2">
-                            <MagnifyingGlassIcon className="w-4 h-4 text-[#22c55e] shrink-0" />
+                        <div
+                            className="flex items-center rounded-xl px-3 py-2.5 gap-2 border"
+                            style={{ background: 'var(--surface-overlay)', borderColor: 'var(--border-subtle)' }}
+                        >
+                            <MagnifyingGlassIcon className="w-4 h-4 shrink-0" style={{ color: 'var(--accent-green)' }} />
                             <input
                                 type="text"
                                 placeholder="Search chats..."
-                                className="flex-1 bg-transparent outline-none text-sm text-white placeholder-[#6b7280]"
+                                className="flex-1 bg-transparent outline-none text-sm"
+                                style={{ color: 'var(--content-primary)' }}
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                             />
@@ -152,14 +167,20 @@ export const ChatDashBoard = () => {
 
                         {chats.length === 0 && (
                             <div className="flex flex-col items-center justify-center h-full text-center px-6 py-12 space-y-3">
-                                <PencilSquareIcon className="w-8 h-8 text-[#22c55e]" />
-                                <p className="text-sm text-[#94a3b8]">No chats yet.</p>
-                                <p className="text-sm text-[#6b7280]">
+                                <div
+                                    className="w-14 h-14 rounded-full flex items-center justify-center animate-float"
+                                    style={{ background: 'var(--surface-overlay)' }}
+                                >
+                                    <PencilSquareIcon className="w-6 h-6" style={{ color: 'var(--accent-green)' }} />
+                                </div>
+                                <p className="text-sm font-semibold" style={{ color: 'var(--content-secondary)' }}>No chats yet.</p>
+                                <p className="text-sm" style={{ color: 'var(--content-muted)' }}>
                                     Start a conversation with your playmates.
                                 </p>
                                 <button
                                     onClick={() => setIsChatCreaterOpen(true)}
-                                    className="mt-2 px-4 py-2 rounded-xl bg-[#22c55e] text-black text-sm font-bold"
+                                    className="mt-2 px-4 py-2 rounded-xl text-sm font-bold transition-opacity hover:opacity-90"
+                                    style={{ background: 'var(--accent-green)', color: '#fff' }}
                                 >
                                     New Chat
                                 </button>
@@ -171,7 +192,7 @@ export const ChatDashBoard = () => {
 
             {/* ── Chat display area ─────────────────────────────────── */}
             {(isDesktop || !isSideBarOpen) && (
-                <div className="flex-1 flex items-center justify-center bg-[#0d1b2a]">
+                <div className="flex-1 flex items-center justify-center" style={{ background: 'var(--surface-base)' }}>
                     {chatDisplayData ? (
                         <ChatDisplay
                             OnClose={() => setIsSideBarOpen(true)}
@@ -180,16 +201,20 @@ export const ChatDashBoard = () => {
                         />
                     ) : (
                         <div className="text-center space-y-3 px-8">
-                            <div className="w-16 h-16 rounded-full bg-[#1a2a3a] flex items-center justify-center mx-auto">
-                                <PencilSquareIcon className="w-7 h-7 text-[#22c55e]" />
+                            <div
+                                className="w-16 h-16 rounded-full flex items-center justify-center mx-auto animate-float"
+                                style={{ background: 'var(--surface-overlay)' }}
+                            >
+                                <PencilSquareIcon className="w-7 h-7" style={{ color: 'var(--accent-green)' }} />
                             </div>
-                            <p className="text-white font-semibold text-lg">No chat selected</p>
-                            <p className="text-sm text-[#6b7280]">
+                            <p className="font-semibold text-lg" style={{ color: 'var(--content-primary)' }}>No chat selected</p>
+                            <p className="text-sm" style={{ color: 'var(--content-muted)' }}>
                                 Pick a chat from the list or start a new one.
                             </p>
                             <button
                                 onClick={() => setIsChatCreaterOpen(true)}
-                                className="px-5 py-2.5 rounded-xl bg-[#22c55e] text-black text-sm font-bold"
+                                className="px-5 py-2.5 rounded-xl text-sm font-bold transition-opacity hover:opacity-90"
+                                style={{ background: 'var(--accent-green)', color: '#fff' }}
                             >
                                 New Chat
                             </button>

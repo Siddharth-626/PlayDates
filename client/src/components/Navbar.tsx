@@ -18,10 +18,10 @@ export default function Navbar() {
   if (!mount) return null;
 
   return (
-    <nav className="w-full px-6 py-3 flex items-center justify-between bg-gradient-to-r from-green-600 via-green-700 to-green-800 shadow-lg transition-colors">
+    <nav className="w-full px-6 py-3 flex items-center justify-between bg-[var(--surface-raised)] border-b border-[var(--border-subtle)] shadow-elevation-1 transition-colors">
       {/* Left Side - Logo & Home */}
       <div className="flex items-center gap-4">
-        <Link href="/" className="flex items-center gap-2 text-2xl font-extrabold text-white hover:text-green-200 transition">
+        <Link href="/" className="flex items-center gap-2 text-2xl font-extrabold text-[var(--content-primary)] hover:text-[var(--accent-green)] transition">
           <HomeIcon className="w-7 h-7" />
           Playdates
         </Link>
@@ -31,16 +31,16 @@ export default function Navbar() {
       <div className="flex items-center gap-4">
         {/* Responsive Hamburger */}
         <button
-          className="md:hidden p-2 rounded-full bg-white/10 hover:bg-white/20 transition"
+          className="md:hidden p-2 rounded-full bg-[var(--surface-inset)] hover:bg-[var(--border-subtle)] transition"
           onClick={() => setMenuOpen(!menuOpen)}
           aria-label="Open menu"
         >
           <MenuIcon className="w-6 h-6 text-white" />
         </button>
 
-        <div className={`flex-col md:flex-row md:flex items-center gap-4 ${menuOpen ? 'flex' : 'hidden'} md:gap-4 absolute md:static top-16 right-6 bg-green-700 md:bg-transparent rounded-xl shadow-lg md:shadow-none p-4 md:p-0 z-50`}>
+        <div className={`flex-col md:flex-row md:flex items-center gap-4 ${menuOpen ? 'flex' : 'hidden'} md:gap-4 absolute md:static top-16 right-6 bg-[var(--surface-raised)] md:bg-transparent rounded-xl shadow-dropdown md:shadow-none p-4 md:p-0 z-50 border border-[var(--border-subtle)] md:border-none`}>
           {!user ? (
-            <Link href="/login" className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 text-white hover:bg-white/20 transition font-semibold">
+            <Link href="/login" className="btn-primary flex items-center gap-2 text-sm">
               <LogInIcon className="w-5 h-5" />
               Login
             </Link>
@@ -53,7 +53,7 @@ export default function Navbar() {
           {/* Theme Toggle */}
           <button
             onClick={toggleTheme}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 text-white hover:bg-white/20 transition font-semibold"
+            className="p-2 rounded-xl bg-[var(--surface-inset)] hover:bg-[var(--border-subtle)] text-[var(--content-secondary)] transition"
             aria-label="Toggle theme"
           >
             {theme === 'light' ? (

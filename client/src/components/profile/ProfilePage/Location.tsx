@@ -1,13 +1,14 @@
 import { LocationStorageType } from "@/utils/TYPE";
+import { MapPin } from "lucide-react";
 
 export default function LocationsSection({ locations }: { locations: LocationStorageType[] }) {
   return (
-    <div className="flex items-center flex-col">
-      <h3 className="text-xl font-semibold mb-1 text-green-700 dark:text-green-300">Preferred Courts</h3>
+    <div>
+      <h3 className="text-body font-semibold mb-2 text-[var(--content-primary)]">Preferred Courts</h3>
       <div className="flex flex-wrap gap-2">
         {locations.map(loc => (
-          <span key={loc.name} className="px-3 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded-full text-sm">
-            {loc.name}
+          <span key={loc.name} className="inline-flex items-center gap-1.5 px-3 py-1 badge-green text-sm">
+            <MapPin className="w-3 h-3" />{loc.name}
           </span>
         ))}
       </div>

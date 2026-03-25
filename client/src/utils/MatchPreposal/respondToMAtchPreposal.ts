@@ -20,7 +20,14 @@ export const respondToMatchPreposal = async({
     await runTransaction(db, async (transaction) => {
         const matchSnap = await transaction.get(MatchRef);
         const matchData = matchSnap?.data();
-        if (!matchData || !Array.isArray(matchData.players)) return;
+        if (!matchData || !Array.isArray(matchData.players)) {
+            throw new Error("Match not found or has invalid player data");
+        }
+
+        // Once a match is finalized, no further status changes are allowed
+        if (matchData.status === "accepted" || matchData.status === "rejected") {
+            return;
+        }
 
         const updatedPlayers = matchData.players.map((player: any) => {
             if (player.userUid === userUid && player.profileId === profileId) {

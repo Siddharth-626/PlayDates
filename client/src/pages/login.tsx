@@ -1,8 +1,6 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import Link from "next/link";
-import { AiOutlineEyeInvisible, AiOutlineEye } from "react-icons/ai";
-import { LogInIcon, UserPlus, ShieldCheck, Mail, Lock, } from "lucide-react";
-import Navbar from "../components/Navbar";
+import { Eye, EyeOff, Mail, Lock, Trophy, ArrowRight, Loader2 } from "lucide-react";
 import { sendPasswordResetEmail, signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../services/config";
 import { useRouter } from "next/router";
@@ -10,229 +8,249 @@ import { checkIfProfileExist } from "@/utils/checkUserProfile";
 import { GoogleLogin } from "@/components/auth/GoogleLogin";
 import toast from "react-hot-toast";
 import { FirebaseError } from "firebase/app";
-import { motion } from "framer-motion";
 import { useAuth } from "@/context/authContext";
+import { useTheme } from "@/context/ThemeContext";
+import { SunIcon, MoonIcon } from "lucide-react";
+
+const AUTH_ERROR_MAP: Record<string, string> = {
+  "auth/invalid-credential":      "Invalid email or password.",
+  "auth/wrong-password":          "Incorrect password.",
+  "auth/too-many-requests":       "Too many attempts. Try again later.",
+  "auth/network-request-failed":  "Network error. Check your connection.",
+  "auth/user-not-found":          "No account found with that email.",
+};
 
 export default function Login() {
   const { user, loading: authLoading } = useAuth();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const { theme, toggleTheme } = useTheme();
+  const [email,       setEmail]       = useState("");
+  const [password,    setPassword]    = useState("");
+  const [showPass,    setShowPass]    = useState(false);
+  const [error,       setError]       = useState("");
+  const [loading,     setLoading]     = useState(false);
   const router = useRouter();
 
   useEffect(() => {
-    if (!authLoading && user) {
-      router.replace("/");
-    }
+    if (!authLoading && user) router.replace("/");
   }, [user, authLoading, router]);
 
-  const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const validateEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 
   const handleLogin = async () => {
     setError("");
-    if (!email || !password) {
-      setError("Please enter both email and password.");
-      toast.error("Please enter both email and password.");
-      return;
-    }
-    if (!validateEmail(email)) {
-      setError("Please enter a valid email address.");
-      toast.error("Please enter a valid email address.");
-      return;
-    }
+    if (!email || !password) { setError("Enter both email and password."); return; }
+    if (!validateEmail(email)) { setError("Enter a valid email address."); return; }
     try {
       setLoading(true);
-      const userCredentials = await signInWithEmailAndPassword(auth, email, password);
-      const uid = userCredentials.user.uid;
-      const profileExist = await checkIfProfileExist(uid);
-      router.push(profileExist ? "/" : "/setup");
-    } catch (err: any) {
-      let message = "Login failed. Please try again.";
-      if (err instanceof FirebaseError) {
-        switch (err.code) {
-          case "auth/invalid-credential":
-            message = "Invalid Email or Password";
-            break;
-          case "auth/wrong-password":
-            message = "Incorrect password.";
-            break;
-          case "auth/too-many-requests":
-            message = "Too many attempts. Please try again later.";
-            break;
-          case "auth/network-request-failed":
-            message = "Network error. Please check your connection.";
-            break;
-          default:
-            message = err.message;
-        }
-      }
-      setError(message);
-      toast.error(message);
+      const cred = await signInWithEmailAndPassword(auth, email, password);
+      const exists = await checkIfProfileExist(cred.user.uid);
+      router.push(exists ? "/" : "/setup");
+    } catch (err) {
+      const code = err instanceof FirebaseError ? err.code : "";
+      const msg  = AUTH_ERROR_MAP[code] || "Login failed. Please try again.";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
   };
 
   const handleForgotPassword = async () => {
-    if (!email) {
-      toast.error("Enter your email address first.");
-      return;
-    }
-    if (!validateEmail(email)) {
-      toast.error("Please enter a valid email address.");
-      return;
-    }
+    if (!email)              { toast.error("Enter your email first."); return; }
+    if (!validateEmail(email)) { toast.error("Enter a valid email."); return; }
     try {
       await sendPasswordResetEmail(auth, email);
-      toast.success("Password reset email sent!");
+      toast.success("Reset email sent!");
     } catch {
-      toast.error("Could not send reset email. Check the address and try again.");
+      toast.error("Could not send reset email.");
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-green-100 via-green-50 to-green-200 dark:from-gray-900 dark:via-green-900 dark:to-gray-800 transition-colors duration-300">
-      <Navbar />
-      <div className="flex items-center justify-center px-4 py-12 min-h-[80vh]">
-        <motion.div
-          initial={{ opacity: 0, y: 40, scale: 0.97 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.6, type: "spring" }}
-          className="w-full max-w-md p-8 bg-white/80 dark:bg-gray-900/80 shadow-2xl rounded-3xl backdrop-blur-lg border border-green-200 dark:border-green-700 relative overflow-hidden"
-        >
-          {/* Decorative Tennis Ball */}
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ duration: 1, type: "spring" }}
-            className="absolute -top-8 -left-8 w-20 h-20 flex items-center justify-center bg-green-300/40 dark:bg-green-700/40 rounded-full blur-xl z-0"
-          >
-            <ShieldCheck className="w-8 h-8 text-green-700 opacity-70" />
-          </motion.div>
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ duration: 1.2, type: "spring" }}
-            className="absolute -bottom-8 -right-8 w-20 h-20 flex items-center justify-center bg-green-400/30 dark:bg-green-800/30 rounded-full blur-xl z-0"
-          >
-            <ShieldCheck className="w-8 h-8 text-green-700 opacity-70" />
-          </motion.div>
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") handleLogin();
+  };
 
-          <div className="relative z-10">
-            <h2 className="text-3xl font-extrabold text-green-800 dark:text-green-200 mb-2 flex items-center gap-2">
-              <LogInIcon className="w-7 h-7 text-green-600 dark:text-green-300" />
-              Welcome Back
-            </h2>
-            <h3 className="text-xl font-semibold text-green-700 dark:text-green-100 mb-2 flex items-center gap-2">
-              <span className="italic font-bold">PLAY DATES</span>
-              <span className="text-green-500 animate-bounce">🎾</span>
-            </h3>
-            <p className="text-gray-700 dark:text-gray-300 mb-6 text-base">
-              Sign in to join the fun and track your matches!
+  return (
+    <div className="min-h-screen flex bg-[var(--surface-base)]">
+      {/* ── Left panel — branding ────────────────────────────────────── */}
+      <div className="hidden lg:flex flex-col justify-between w-1/2 bg-brand-green-900 p-12 relative overflow-hidden">
+        {/* Abstract court lines */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-1/2 left-0 right-0 h-px bg-white" />
+          <div className="absolute top-0 bottom-0 left-1/2 w-px bg-white" />
+          <div className="absolute top-1/4 left-1/4 right-1/4 bottom-1/4 border border-white rounded-full" />
+          <div className="absolute -top-20 -right-20 w-80 h-80 border border-white rounded-full" />
+          <div className="absolute -bottom-20 -left-20 w-80 h-80 border border-white rounded-full" />
+        </div>
+
+        {/* Logo */}
+        <div className="relative flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-brand-gold-500 flex items-center justify-center shadow-glow-gold">
+            <Trophy className="w-5 h-5 text-white" />
+          </div>
+          <span className="text-white font-bold text-xl tracking-tight">Playdates</span>
+        </div>
+
+        {/* Hero copy */}
+        <div className="relative">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-green-700/60 border border-brand-green-600/40 mb-6">
+            <span className="w-2 h-2 rounded-full bg-brand-gold-400 animate-pulse-soft" />
+            <span className="text-caption text-brand-green-200 font-medium">Tennis matchmaking</span>
+          </div>
+          <h1 className="text-h1 text-white mb-4 leading-tight">
+            Find your perfect<br />
+            <span className="text-brand-gold-400">tennis partner</span>
+          </h1>
+          <p className="text-body-lg text-brand-green-200 max-w-sm">
+            Connect with players at your skill level, book courts, and never miss a match.
+          </p>
+        </div>
+
+        {/* Social proof */}
+        <div className="relative flex items-center gap-4">
+          <div className="flex -space-x-2">
+            {["/images/players/defaultProfilePhoto.jpg"].map((src, i) => (
+              <div key={i} className="w-8 h-8 rounded-full border-2 border-brand-green-700 bg-brand-green-800 overflow-hidden">
+                <img src={src} alt="" className="w-full h-full object-cover" />
+              </div>
+            ))}
+          </div>
+          <p className="text-caption text-brand-green-300">Trusted by tennis players everywhere</p>
+        </div>
+      </div>
+
+      {/* ── Right panel — form ────────────────────────────────────────── */}
+      <div className="flex-1 flex flex-col">
+        {/* Theme toggle + signup link */}
+        <div className="flex items-center justify-between px-6 py-4">
+          <div className="lg:hidden flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-brand-green-600 flex items-center justify-center">
+              <Trophy className="w-4 h-4 text-white" />
+            </div>
+            <span className="font-bold text-[var(--content-primary)] text-base">Playdates</span>
+          </div>
+          <div className="hidden lg:block" />
+          <div className="flex items-center gap-3">
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-xl bg-[var(--surface-inset)] hover:bg-[var(--border-subtle)] transition-colors"
+              aria-label="Toggle theme"
+            >
+              {theme === "dark"
+                ? <SunIcon className="w-4 h-4 text-[var(--content-muted)]" />
+                : <MoonIcon className="w-4 h-4 text-[var(--content-muted)]" />
+              }
+            </button>
+            <Link
+              href="/signup"
+              className="text-body text-[var(--content-muted)] hover:text-[var(--content-primary)] transition-colors"
+            >
+              Create account
+            </Link>
+          </div>
+        </div>
+
+        {/* Form */}
+        <div className="flex-1 flex items-center justify-center px-6 py-8">
+          <div className="w-full max-w-sm animate-fade-in">
+            <h2 className="text-h2 text-[var(--content-primary)] mb-1">Welcome back</h2>
+            <p className="text-body text-[var(--content-muted)] mb-8">
+              Sign in to your Playdates account
             </p>
 
+            {/* Error */}
             {error && (
-              <motion.p
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="text-red-600 bg-red-100 dark:bg-red-800 dark:text-red-300 px-4 py-2 mb-4 rounded-md text-sm font-medium"
-              >
+              <div className="flex items-start gap-2 p-3.5 mb-5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 text-body">
+                <span className="shrink-0 mt-0.5">⚠</span>
                 {error}
-              </motion.p>
+              </div>
             )}
 
-            {/* Email Input */}
-            <label className="text-green-900 dark:text-green-200 text-sm font-semibold mb-1 block" htmlFor="email">
-              Email
-            </label>
-            <div className="flex items-center border border-green-200 dark:border-green-600 rounded-lg px-3 py-2 mb-4 bg-green-50 dark:bg-gray-700 focus-within:ring-2 focus-within:ring-green-400 transition">
-              <Mail className="text-green-500 mr-2 w-5 h-5" />
-              <input
-                id="email"
-                type="email"
-                placeholder="Enter your email"
-                className="flex-grow bg-transparent outline-none text-green-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                autoComplete="email"
-                aria-label="Email"
-              />
-            </div>
+            <div className="space-y-4">
+              {/* Email */}
+              <div>
+                <label htmlFor="email" className="input-label">Email</label>
+                <div className="relative">
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--content-muted)]" />
+                  <input
+                    id="email"
+                    type="email"
+                    placeholder="you@example.com"
+                    autoComplete="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    className="input-base pl-10"
+                  />
+                </div>
+              </div>
 
-            {/* Password Input */}
-            <label className="text-green-900 dark:text-green-200 text-sm font-semibold mb-1 block" htmlFor="password">
-              Password
-            </label>
-            <div className="flex items-center border border-green-200 dark:border-green-600 rounded-lg px-3 py-2 mb-2 bg-green-50 dark:bg-gray-700 focus-within:ring-2 focus-within:ring-green-400 transition">
-              <Lock className="text-green-500 mr-2 w-5 h-5" />
-              <input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                placeholder="Enter your password"
-                className="flex-grow bg-transparent outline-none text-green-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="current-password"
-                aria-label="Password"
-              />
+              {/* Password */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label htmlFor="password" className="input-label mb-0">Password</label>
+                  <button
+                    type="button"
+                    onClick={handleForgotPassword}
+                    className="text-caption text-[var(--accent-green)] hover:text-brand-green-500 font-medium transition-colors"
+                  >
+                    Forgot password?
+                  </button>
+                </div>
+                <div className="relative">
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--content-muted)]" />
+                  <input
+                    id="password"
+                    type={showPass ? "text" : "password"}
+                    placeholder="Enter your password"
+                    autoComplete="current-password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    className="input-base pl-10 pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPass((v) => !v)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[var(--content-muted)] hover:text-[var(--content-secondary)] transition-colors"
+                    aria-label={showPass ? "Hide password" : "Show password"}
+                  >
+                    {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Submit */}
               <button
                 type="button"
-                aria-label={showPassword ? "Hide password" : "Show password"}
-                className="ml-2 focus:outline-none"
-                onClick={() => setShowPassword((v) => !v)}
+                onClick={handleLogin}
+                disabled={loading}
+                className="btn-primary w-full mt-2"
               >
-                {showPassword ? (
-                  <AiOutlineEyeInvisible className="text-gray-500 dark:text-gray-300 w-5 h-5" />
-                ) : (
-                  <AiOutlineEye className="text-gray-500 dark:text-gray-300 w-5 h-5" />
-                )}
+                {loading
+                  ? <Loader2 className="w-4 h-4 animate-spin" />
+                  : <><span>Sign In</span><ArrowRight className="w-4 h-4" /></>
+                }
               </button>
             </div>
 
-            {/* Links */}
-            <div className="flex justify-between mb-4">
-              <button
-                type="button"
-                onClick={handleForgotPassword}
-                className="text-sm text-green-700 dark:text-green-300 font-semibold hover:underline transition"
-              >
-                Forgot Password?
-              </button>
-              <Link href="/signup" className="flex items-center gap-1 text-sm text-green-700 dark:text-green-300 font-semibold hover:underline transition">
-                <UserPlus className="w-4 h-4" />
-                Create Account
+            {/* Divider */}
+            <div className="flex items-center gap-3 my-6">
+              <div className="flex-1 h-px bg-[var(--border-subtle)]" />
+              <span className="text-caption text-[var(--content-muted)]">or continue with</span>
+              <div className="flex-1 h-px bg-[var(--border-subtle)]" />
+            </div>
+
+            <GoogleLogin />
+
+            <p className="mt-6 text-center text-body text-[var(--content-muted)]">
+              Don&apos;t have an account?{" "}
+              <Link href="/signup" className="text-[var(--accent-green)] font-semibold hover:underline">
+                Create account
               </Link>
-            </div>
-
-            {/* Login Button */}
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.98 }}
-              className="w-full bg-gradient-to-r from-green-600 via-green-700 to-green-800 dark:from-green-700 dark:via-green-800 dark:to-green-900 text-white py-2 rounded-lg hover:bg-green-800 dark:hover:bg-green-700 transition font-semibold cursor-pointer shadow-lg flex items-center justify-center gap-2 text-lg disabled:opacity-60 disabled:cursor-not-allowed"
-              onClick={handleLogin}
-              disabled={loading}
-              type="button"
-            >
-              <LogInIcon className="w-5 h-5" />
-              {loading ? "Signing in..." : "Login"}
-            </motion.button>
-
-            <div className="flex items-center my-6">
-              <div className="flex-grow h-px bg-green-200 dark:bg-green-700" />
-              <span className="mx-3 text-gray-500 dark:text-gray-400 text-sm font-medium">OR</span>
-              <div className="flex-grow h-px bg-green-200 dark:bg-green-700" />
-            </div>
-
-            <motion.div
-              whileHover={{ scale: 1.03 }}
-              className="mt-2 w-full"
-            >
-              <GoogleLogin />
-            </motion.div>
+            </p>
           </div>
-        </motion.div>
+        </div>
       </div>
     </div>
   );

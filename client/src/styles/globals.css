@@ -6,28 +6,347 @@
 @import "swiper/css/navigation";
 @import "swiper/css/pagination";
 
-* {
-  @apply transition-colors duration-700 ease-in-out;
-}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap');
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   DESIGN SYSTEM — CSS Custom Properties
+   Light mode: clean whites + green brand
+   Dark mode:  deep navy + green brand (NOT inverted — true dark)
+───────────────────────────────────────────────────────────────────────────── */
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Surface layers */
+  --surface-base:    #f8faf9;
+  --surface-raised:  #ffffff;
+  --surface-overlay: #ffffff;
+  --surface-inset:   #f0f4f2;
+
+  /* Content */
+  --content-primary:   #0f1f14;
+  --content-secondary: #374151;
+  --content-muted:     #6b7280;
+  --content-inverse:   #ffffff;
+
+  /* Borders */
+  --border-subtle:  #e5ede8;
+  --border-default: #d1d5db;
+  --border-strong:  #9ca3af;
+
+  /* Accent */
+  --accent-green: #16a34a;
+  --accent-gold:  #d97706;
+
+  /* Component-specific */
+  --sidebar-bg:       #ffffff;
+  --sidebar-border:   #e5ede8;
+  --card-bg:          #ffffff;
+  --input-bg:         #f8faf9;
+  --input-border:     #d1fae5;
+  --input-focus-ring: #16a34a;
+  --badge-bg:         #dcfce7;
+  --badge-text:       #15803d;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.dark {
+  /* Surface layers — deep navy palette */
+  --surface-base:    #0f172a;
+  --surface-raised:  #1e293b;
+  --surface-overlay: #263548;
+  --surface-inset:   #131f2e;
+
+  /* Content */
+  --content-primary:   #f1f5f9;
+  --content-secondary: #94a3b8;
+  --content-muted:     #64748b;
+  --content-inverse:   #0f172a;
+
+  /* Borders */
+  --border-subtle:  #334155;
+  --border-default: #334155;
+  --border-strong:  #475569;
+
+  /* Accent */
+  --accent-green: #22c55e;
+  --accent-gold:  #f59e0b;
+
+  /* Component-specific */
+  --sidebar-bg:       #131f2e;
+  --sidebar-border:   #334155;
+  --card-bg:          #1e293b;
+  --input-bg:         #263548;
+  --input-border:     #334155;
+  --input-focus-ring: #22c55e;
+  --badge-bg:         rgba(34,197,94,0.12);
+  --badge-text:       #4ade80;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   BASE STYLES
+───────────────────────────────────────────────────────────────────────────── */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Limit overly broad transition to color-only properties */
+* {
+  transition-property: color, background-color, border-color, fill, stroke, box-shadow, opacity;
+  transition-duration: 200ms;
+  transition-timing-function: ease-in-out;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
-  background-color: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--surface-base);
+  color: var(--content-primary);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  line-height: 1.6;
+  min-height: 100vh;
 }
 
+/* ─────────────────────────────────────────────────────────────────────────────
+   HEADING FONT (Outfit)
+───────────────────────────────────────────────────────────────────────────── */
+h1, h2, h3, h4, h5, h6,
+.font-display {
+  font-family: 'Outfit', 'Inter', system-ui, sans-serif;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   SCROLLBAR
+───────────────────────────────────────────────────────────────────────────── */
+
+::-webkit-scrollbar       { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-default); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--border-strong); }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   UTILITY COMPONENT CLASSES
+   Use these instead of hardcoded colors in components
+───────────────────────────────────────────────────────────────────────────── */
+
+@layer components {
+  /* Cards */
+  .card {
+    @apply bg-[var(--card-bg)] border border-[var(--border-subtle)] rounded-xl shadow-card;
+  }
+
+  .card-hover {
+    @apply card transition-all duration-200 hover:shadow-elevation-2 hover:-translate-y-0.5;
+  }
+
+  /* Form Controls */
+  .input-base {
+    @apply w-full bg-[var(--input-bg)] border border-[var(--input-border)] rounded-xl
+           px-4 py-3 text-body text-[var(--content-primary)]
+           placeholder:text-[var(--content-muted)]
+           focus:outline-none focus:ring-2 focus:ring-[var(--input-focus-ring)] focus:border-transparent
+           transition-all duration-150;
+  }
+
+  .input-error {
+    @apply border-red-500 focus:ring-red-500;
+  }
+
+  .input-label {
+    @apply block text-caption font-semibold text-[var(--content-secondary)] mb-1.5 tracking-wide uppercase;
+  }
+
+  /* Buttons */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2
+           bg-brand-green-600 hover:bg-brand-green-700 active:bg-brand-green-800
+           text-white font-semibold text-body rounded-xl px-6 py-3
+           transition-all duration-150 shadow-elevation-1
+           focus:outline-none focus:ring-2 focus:ring-brand-green-500 focus:ring-offset-2
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2
+           bg-transparent border border-[var(--border-default)] hover:border-[var(--accent-green)]
+           text-[var(--content-primary)] hover:text-[var(--accent-green)]
+           font-semibold text-body rounded-xl px-6 py-3
+           transition-all duration-150
+           focus:outline-none focus:ring-2 focus:ring-[var(--accent-green)] focus:ring-offset-2
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2
+           bg-transparent hover:bg-[var(--surface-inset)]
+           text-[var(--content-secondary)] hover:text-[var(--content-primary)]
+           font-medium text-body rounded-xl px-4 py-2
+           transition-all duration-150;
+  }
+
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2
+           bg-red-600 hover:bg-red-700 active:bg-red-800
+           text-white font-semibold text-body rounded-xl px-6 py-3
+           transition-all duration-150
+           focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2;
+  }
+
+  .btn-gold {
+    @apply inline-flex items-center justify-center gap-2
+           bg-brand-gold-500 hover:bg-brand-gold-600 active:bg-brand-gold-700
+           text-white font-semibold text-body rounded-xl px-6 py-3
+           transition-all duration-150
+           focus:outline-none focus:ring-2 focus:ring-brand-gold-400 focus:ring-offset-2;
+  }
+
+  /* Badges */
+  .badge {
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-caption font-semibold;
+  }
+  .badge-green  { @apply badge bg-[var(--badge-bg)] text-[var(--badge-text)]; }
+  .badge-gold   { @apply badge bg-brand-gold-100 text-brand-gold-800 dark:bg-brand-gold-900/30 dark:text-brand-gold-400; }
+  .badge-red    { @apply badge bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400; }
+  .badge-gray   { @apply badge bg-[var(--surface-inset)] text-[var(--content-muted)]; }
+
+  /* Sidebar nav item */
+  .nav-item {
+    @apply flex items-center gap-3 px-4 py-2.5 rounded-xl text-body font-medium
+           text-[var(--content-muted)] hover:text-[var(--content-primary)] hover:bg-[var(--surface-inset)]
+           transition-all duration-150 cursor-pointer;
+  }
+  .nav-item-active {
+    @apply nav-item text-[var(--accent-green)] bg-[var(--surface-inset)]
+           ring-1 ring-[var(--accent-green)]/20;
+  }
+
+  /* Section heading */
+  .section-title {
+    @apply text-overline text-[var(--content-muted)] uppercase tracking-widest mb-3;
+  }
+
+  /* Glass effect surface */
+  .glass {
+    @apply bg-white/80 dark:bg-[#1e293b]/80 backdrop-blur-xl border border-[var(--border-subtle)];
+  }
+
+  /* Shimmer skeleton */
+  .skeleton {
+    @apply bg-[var(--surface-inset)] rounded-lg animate-shimmer bg-[length:400%_100%];
+    background-image: linear-gradient(
+      90deg,
+      var(--surface-inset) 0%,
+      var(--surface-raised) 40%,
+      var(--surface-overlay) 60%,
+      var(--surface-inset) 100%
+    );
+  }
+
+  /* Active nav item left border */
+  .nav-item-active-bar {
+    @apply relative text-[var(--accent-green)] bg-[var(--accent-green)]/10 font-semibold;
+  }
+  .nav-item-active-bar::before {
+    content: '';
+    @apply absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 bg-[var(--accent-green)] rounded-r-full;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   KEYFRAME ANIMATIONS
+───────────────────────────────────────────────────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: 200% center; }
+  100% { background-position: -200% center; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%      { transform: translateY(-10px); }
+}
+
+@keyframes notification-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.4); }
+  50%      { box-shadow: 0 0 0 6px rgba(34,197,94,0); }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   LEGACY CARD — kept for backward compat, prefer .card class above
+───────────────────────────────────────────────────────────────────────────── */
 .card-style {
-  @apply bg-gradient-to-br from-black via-gray-900 to-gray-800 dark:from-zinc-800 dark:to-black rounded-3xl shadow-2xl border border-green-500 p-6 transform transition-all duration-300 hover:scale-[1.03] hover:shadow-green-500/50;
+  @apply bg-[var(--card-bg)] border border-[var(--border-subtle)] rounded-2xl shadow-elevation-2 p-6
+         transition-all duration-200 hover:shadow-elevation-3 hover:-translate-y-0.5;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   DATE PICKER — theme-aware overrides
+───────────────────────────────────────────────────────────────────────────── */
+.custom-calendar {
+  background-color: var(--surface-raised) !important;
+  border: none !important;
+  font-family: 'Inter', system-ui, sans-serif !important;
+  width: 100% !important;
+}
+.custom-calendar .react-datepicker__header {
+  background-color: var(--surface-inset) !important;
+  border-bottom: 1px solid var(--border-subtle) !important;
+  padding: 12px 0 8px !important;
+}
+.custom-calendar .react-datepicker__current-month {
+  color: var(--content-primary) !important;
+  font-weight: 700 !important;
+  font-size: 14px !important;
+}
+.custom-calendar .react-datepicker__day-name {
+  color: var(--content-muted) !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+}
+.custom-calendar .react-datepicker__day {
+  color: var(--content-primary) !important;
+  border-radius: 8px !important;
+  font-size: 13px !important;
+  transition: all 0.15s !important;
+}
+.custom-calendar .react-datepicker__day:hover {
+  background-color: var(--accent-green) !important;
+  color: #fff !important;
+  opacity: 0.85;
+}
+.custom-calendar .react-datepicker__day--selected,
+.custom-calendar .react-datepicker__day--keyboard-selected {
+  background-color: var(--accent-green) !important;
+  color: #fff !important;
+  font-weight: 700 !important;
+}
+.custom-calendar .react-datepicker__day--disabled {
+  color: var(--content-muted) !important;
+  opacity: 0.4 !important;
+}
+.custom-calendar .react-datepicker__day--outside-month {
+  opacity: 0.3 !important;
+}
+.custom-calendar .react-datepicker__navigation-icon::before {
+  border-color: var(--content-muted) !important;
+}
+.custom-calendar .react-datepicker__navigation:hover .react-datepicker__navigation-icon::before {
+  border-color: var(--accent-green) !important;
+}
+.date-picker-wrapper .react-datepicker {
+  width: 100% !important;
+  border: none !important;
+  background: transparent !important;
+}
+.date-picker-wrapper .react-datepicker__month-container {
+  width: 100% !important;
+}
+.date-picker-wrapper .react-datepicker__week {
+  display: flex !important;
+  justify-content: space-around !important;
 }

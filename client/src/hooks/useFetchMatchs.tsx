@@ -1,5 +1,5 @@
 import { db } from "@/services/config";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, onSnapshot } from "firebase/firestore";
 import { useEffect, useState } from "react";
 
 type useFetchMatchesType = {
@@ -9,31 +9,26 @@ type useFetchMatchesType = {
 export const useFetchMatches = ({ userUid, profileId }: useFetchMatchesType) => {
     const [matches, setMatches] = useState<any[] | undefined>();
 
-    const fetchData = async () => {
-        try {
-            const colectionRef = collection(db, "users", userUid!, "profile", profileId!, "matches");
-            const colectionSnap = await getDocs(colectionRef);
-
-            if (!colectionSnap) return;
-
-            const MatchData = colectionSnap.docs.map((doc) => {
-                const data = doc.data();
-
-                return {
-                    id: doc.id,
-                    ...data
-                }
-            })
-            setMatches(MatchData);
-        } catch (err) {
-            console.error("Failed to fetch matches:", err);
-        }
-    }
-
     useEffect(() => {
-        if(userUid && profileId) {
-            fetchData();
-        }
-    }, [userUid, profileId])
-    return {matches};
+        if (!userUid || !profileId) return;
+
+        const collectionRef = collection(db, "users", userUid, "profile", profileId, "matches");
+        const unsubscribe = onSnapshot(
+            collectionRef,
+            (snapshot) => {
+                const matchData = snapshot.docs.map((doc) => ({
+                    id: doc.id,
+                    ...doc.data(),
+                }));
+                setMatches(matchData);
+            },
+            (error) => {
+                console.error("Failed to listen to matches:", error);
+            }
+        );
+
+        return () => unsubscribe();
+    }, [userUid, profileId]);
+
+    return { matches };
 }

@@ -76,54 +76,92 @@ export const NotificationTab = ({ notifications, setNotifications }: Notificatio
     };
 
     return (
-        <div className="space-y-6 animate-fade-in max-w-2xl mx-auto">
-            <div className="flex justify-between items-center pb-2 border-b border-gray-200 dark:border-gray-700">
-                <h2 className="text-2xl font-bold text-gray-800 dark:text-white tracking-tight flex items-center gap-2">
-                    <Bell className="text-green-600"/> Notifications
-                    {unreadNotifications.length > 0 && (
-                        <span className="bg-green-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                            {unreadNotifications.length}
-                        </span>
-                    )}
-                </h2>
-                <button
-                    className="text-green-700 dark:text-green-400 hover:underline text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-green-400 rounded px-2 py-1 transition"
-                    onClick={handleMarkAllRead}
-                >
-                    Mark all as read
-                </button>
+        <div className="space-y-6 max-w-2xl mx-auto">
+            {/* Header */}
+            <div className="flex justify-between items-center pb-3 border-b" style={{ borderColor: 'var(--border-subtle)' }}>
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'var(--accent-green)15' }}>
+                        <Bell className="w-5 h-5" style={{ color: 'var(--accent-green)' }} />
+                    </div>
+                    <div>
+                        <h2 className="font-outfit text-xl font-bold" style={{ color: 'var(--content-primary)' }}>
+                            Notifications
+                            {unreadNotifications.length > 0 && (
+                                <span
+                                    className="ml-2 text-xs font-bold px-2 py-0.5 rounded-full animate-notif-pulse"
+                                    style={{ background: 'var(--accent-green)', color: '#fff' }}
+                                >
+                                    {unreadNotifications.length}
+                                </span>
+                            )}
+                        </h2>
+                        <p className="text-xs" style={{ color: 'var(--content-muted)' }}>
+                            {unreadNotifications.length > 0
+                                ? `${unreadNotifications.length} unread`
+                                : 'All caught up'}
+                        </p>
+                    </div>
+                </div>
+                {/* item 31: only show when there are unread notifications */}
+                {unreadNotifications.length > 0 && (
+                    <button
+                        className="text-sm font-semibold px-3 py-1.5 rounded-lg transition-colors hover:opacity-80"
+                        style={{ color: 'var(--accent-green)', background: 'var(--accent-green)15' }}
+                        onClick={handleMarkAllRead}
+                    >
+                        Mark all read
+                    </button>
+                )}
             </div>
 
-            {/* New (Unread) Notifications */}
-            <div className="space-y-4">
+            {/* Unread / New */}
+            <div className="space-y-3">
                 {unreadNotifications.length === 0 && readNotifications.length === 0 ? (
-                    <div className="flex flex-col items-center py-12 opacity-70">
-                        <span className="text-5xl mb-2">🎉</span>
-                        <p className="text-gray-500 dark:text-gray-400 text-lg">No notifications.</p>
+                    <div className="flex flex-col items-center py-16 text-center">
+                        <div
+                            className="w-16 h-16 rounded-full flex items-center justify-center mb-4 animate-float"
+                            style={{ background: 'var(--surface-overlay)' }}
+                        >
+                            <Bell className="w-7 h-7" style={{ color: 'var(--content-muted)' }} />
+                        </div>
+                        <p className="font-semibold" style={{ color: 'var(--content-secondary)' }}>No notifications</p>
+                        <p className="text-sm mt-1" style={{ color: 'var(--content-muted)' }}>You&apos;re all caught up!</p>
                     </div>
                 ) : (
                     <>
                         {unreadNotifications.length === 0 ? (
-                            <p className="text-gray-500 dark:text-gray-400 text-sm text-center py-4">No new notifications</p>
+                            <p className="text-sm text-center py-3" style={{ color: 'var(--content-muted)' }}>No new notifications</p>
                         ) : (
-                            unreadNotifications.map(renderNotification)
+                            <div className="space-y-3">
+                                <p className="text-xs font-semibold uppercase tracking-wider px-1" style={{ color: 'var(--content-muted)' }}>New</p>
+                                {unreadNotifications.map((note) => (
+                                    <div
+                                        key={note.id}
+                                        className="rounded-xl overflow-hidden transition-all duration-300 hover:-translate-y-0.5"
+                                        style={{ borderLeft: '3px solid var(--accent-green)' }}
+                                    >
+                                        {renderNotification(note)}
+                                    </div>
+                                ))}
+                            </div>
                         )}
                     </>
                 )}
             </div>
 
-            {/* Old (Read) Notifications - Collapsible */}
+            {/* Read / Earlier */}
             {readNotifications.length > 0 && (
-                <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+                <div className="pt-3 border-t" style={{ borderColor: 'var(--border-subtle)' }}>
                     <button
                         onClick={() => setShowOldNotifications(!showOldNotifications)}
-                        className="flex items-center gap-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 text-sm font-semibold transition w-full"
+                        className="flex items-center gap-2 text-sm font-semibold w-full transition-colors mb-3"
+                        style={{ color: 'var(--content-muted)' }}
                     >
-                        {showOldNotifications ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-                        Previous Notifications ({readNotifications.length})
+                        {showOldNotifications ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                        Earlier ({readNotifications.length})
                     </button>
                     {showOldNotifications && (
-                        <div className="space-y-3 mt-3">
+                        <div className="space-y-2">
                             {readNotifications.map(renderNotification)}
                         </div>
                     )}

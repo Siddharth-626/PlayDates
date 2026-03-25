@@ -6,7 +6,6 @@ import SearchBar from './SearchBar'
 import { useEffect, useState } from "react";
 import { useAuth } from "@/context/authContext";
 import PlayerPage from "../profile/ProfilePage/Main";
-import { Button } from "@/components/ui/button";
 import { Loading } from "../ui/Loading";
 import { Users, ArrowLeft } from "lucide-react";
 import { FetchAllPlayers } from "@/utils/FindPlayers/FetchAllPlayers";
@@ -45,6 +44,8 @@ export const FindPlayers = () => {
 
     useEffect(() => {
         const result = players.filter(player =>
+            // item 14: exclude own profiles by matching userUid
+            player.userUid !== user?.uid &&
             (
                 !locationFilter ||
                 player.locations.some(loc => loc.name.toLowerCase().includes(locationFilter.toLowerCase()))
@@ -58,22 +59,28 @@ export const FindPlayers = () => {
         );
         setFiltered(result);
         setSelectedProfile(null);
-    }, [locationFilter, skillFilter, searchItem, players]);
+    }, [locationFilter, skillFilter, searchItem, players, user?.uid]);
 
     if (fetchLoading) return <Loading />;
     if (fetchError) return <div className="text-center text-red-600 py-16">{fetchError}</div>;
 
     return (
-        <div className="p-4 md:p-8 min-h-[80vh]">
-            <motion.h1
-                initial={{ opacity: 0, y: -20 }}
+        <div className="p-5 md:p-8 min-h-screen">
+            {/* Page Header */}
+            <motion.div
+                initial={{ opacity: 0, y: -12 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, type: "spring" }}
-                className="font-mono text-3xl font-bold mb-6 text-center text-green-700 dark:text-green-200 flex items-center justify-center gap-2"
+                transition={{ duration: 0.3 }}
+                className="flex items-center gap-3 mb-6"
             >
-                <Users className="text-green-500 dark:text-green-300" size={32} />
-                Find Players
-            </motion.h1>
+                <div className="w-10 h-10 rounded-xl bg-[var(--accent-green)]/10 flex items-center justify-center shrink-0">
+                    <Users className="w-5 h-5 text-[var(--accent-green)]" />
+                </div>
+                <div>
+                    <h1 className="font-outfit text-[20px] font-bold text-[var(--content-primary)] leading-tight">Find Players</h1>
+                    <p className="text-[12px] text-[var(--content-muted)]">Discover tennis partners near you</p>
+                </div>
+            </motion.div>
 
             {!selectedProfile && (
                 <motion.div
@@ -100,7 +107,7 @@ export const FindPlayers = () => {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 20 }}
-                            className="flex flex-col items-center justify-center py-16 text-gray-500 dark:text-gray-400"
+                            className="flex flex-col items-center justify-center py-16 text-[var(--content-muted)]"
                         >
                             <p>No players found matching your filters.</p>
                         </motion.div>
@@ -134,7 +141,7 @@ export const FindPlayers = () => {
                                             if (e.key === "Enter" || e.key === " ") setSelectedProfile(player);
                                         }}
                                     >
-                                        <PlayerCard player={player} />
+                                        <PlayerCard player={player} hideAction />
                                     </div>
                                 </motion.div>
                             ))}
@@ -147,17 +154,18 @@ export const FindPlayers = () => {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 20 }}
                         transition={{ duration: 0.4 }}
-                        className="max-w-2xl mx-auto bg-white dark:bg-gray-900 shadow-lg rounded-xl p-6"
+                        className="max-w-2xl mx-auto"
                     >
                         <div className="mb-4 flex justify-start">
-                            <Button
-                                variant="outline"
-                                className="text-sm flex items-center gap-2 hover:bg-green-50 dark:hover:bg-green-800 transition"
+                            <button
                                 onClick={() => setSelectedProfile(null)}
                                 aria-label="Back to players"
+                                className="flex items-center gap-2 px-3 py-2 rounded-lg text-[13px]
+                                           text-[var(--content-secondary)] hover:text-[var(--content-primary)]
+                                           hover:bg-[var(--surface-inset)] transition-colors"
                             >
-                                <ArrowLeft size={18} /> Back to players
-                            </Button>
+                                <ArrowLeft size={16} /> Back to players
+                            </button>
                         </div>
                         <PlayerPage
                             profileId={selectedProfile.id}

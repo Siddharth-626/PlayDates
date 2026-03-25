@@ -51,30 +51,35 @@ export const DisplayCourts = () => {
     if (!filteredCourts || filteredCourts.length === 0) return <Loading />;
 
     return (
-        <div className="min-h-screen bg-[#0d1b2a]">
+        <div className="min-h-screen bg-[var(--surface-base)]">
             {!selectedCourt ? (
                 <div className="p-4 md:p-6">
                     {/* ── Header ─────────────────────────────────────── */}
                     <div className="flex items-center gap-2.5 mb-5">
-                        <MapPin className="w-5 h-5 text-[#22c55e]" />
-                        <h1 className="text-[22px] font-bold text-white">Find Courts</h1>
+                        <div className="w-9 h-9 rounded-xl bg-[var(--accent-green)]/10 flex items-center justify-center">
+                            <MapPin className="w-5 h-5 text-[var(--accent-green)]" />
+                        </div>
+                        <div>
+                            <h1 className="text-[22px] font-bold text-[var(--content-primary)]">Find Courts</h1>
+                            <p className="text-[12px] text-[var(--content-muted)]">Browse and save your favourite courts</p>
+                        </div>
                     </div>
 
                     {/* ── Search ─────────────────────────────────────── */}
-                    <div className="flex items-center bg-[#1a2a3a] border border-[#2d4a3e] rounded-xl px-3 py-2.5 gap-2 mb-5">
-                        <Search className="w-4 h-4 text-[#22c55e] shrink-0" />
+                    <div className="flex items-center bg-[var(--surface-inset)] border border-[var(--border-subtle)] rounded-xl px-3 py-2.5 gap-2 mb-5">
+                        <Search className="w-4 h-4 text-[var(--accent-green)] shrink-0" />
                         <input
                             type="text"
                             placeholder="Search courts by name or address..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            className="flex-1 bg-transparent outline-none text-sm text-white placeholder-[#6b7280]"
+                            className="flex-1 bg-transparent outline-none text-sm text-[var(--content-primary)] placeholder:text-[var(--content-muted)]"
                         />
                     </div>
 
                     {/* ── Court grid ─────────────────────────────────── */}
                     {filteredCourts.length === 0 ? (
-                        <p className="text-center text-[#6b7280] mt-12">No courts found.</p>
+                        <p className="text-center text-[var(--content-muted)] mt-12">No courts found.</p>
                     ) : (
                         <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                             <AnimatePresence>
@@ -88,17 +93,18 @@ export const DisplayCourts = () => {
                                             exit={{ opacity: 0, y: -20 }}
                                             transition={{ duration: 0.3, delay: idx * 0.04 }}
                                             onClick={() => setSelectedCourt(court)}
-                                            className="bg-[#111f2e] border border-[#1e3040] rounded-2xl overflow-hidden cursor-pointer hover:border-[#22c55e] transition-all group"
+                                            className="bg-[var(--card-bg)] border border-[var(--border-subtle)] rounded-2xl overflow-hidden cursor-pointer hover:border-[var(--accent-green)]/50 hover:shadow-card transition-all group"
                                         >
                                             <div className="p-4 space-y-2.5">
-                                                <h3 className="text-[16px] font-bold text-[#22c55e] leading-tight group-hover:text-green-400 transition-colors">
+                                                <h3 className="text-[16px] font-bold text-[var(--content-primary)] leading-tight group-hover:text-[var(--accent-green)] transition-colors">
                                                     {court.title}
                                                 </h3>
-                                                <p className="text-[13px] text-[#94a3b8] leading-snug">
+                                                <p className="text-[13px] text-[var(--content-secondary)] leading-snug flex items-start gap-1">
+                                                    <MapPin className="w-3.5 h-3.5 text-[var(--accent-green)] shrink-0 mt-0.5" />
                                                     {court.location?.address}
                                                 </p>
                                                 {court.description && (
-                                                    <p className="text-[13px] text-[#6b7280] line-clamp-2">
+                                                    <p className="text-[13px] text-[var(--content-muted)] line-clamp-2">
                                                         {court.description}
                                                     </p>
                                                 )}
@@ -109,7 +115,7 @@ export const DisplayCourts = () => {
                                                         {court.amenities.map((item) => (
                                                             <span
                                                                 key={item}
-                                                                className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-[#1a2a3a] border border-[#2d4a3e] text-[#94a3b8]"
+                                                                className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-[var(--surface-inset)] border border-[var(--border-subtle)] text-[var(--content-muted)]"
                                                             >
                                                                 {item}
                                                             </span>
@@ -125,8 +131,8 @@ export const DisplayCourts = () => {
                                                     }}
                                                     className={`mt-2 w-full py-2 rounded-xl text-[13px] font-bold transition-all flex items-center justify-center gap-2 ${
                                                         isAdded
-                                                            ? "bg-[#166534] border border-[#22c55e] text-[#22c55e]"
-                                                            : "bg-[#22c55e] text-black hover:bg-green-400"
+                                                            ? "bg-[var(--accent-green)]/10 border border-[var(--accent-green)]/40 text-[var(--accent-green)]"
+                                                            : "bg-[var(--accent-green)] text-white hover:opacity-90"
                                                     }`}
                                                 >
                                                     {isAdded ? (
@@ -155,7 +161,7 @@ export const DisplayCourts = () => {
                 >
                     <button
                         onClick={() => setSelectedCourt(undefined)}
-                        className="flex items-center gap-2 text-[13px] text-[#94a3b8] hover:text-white transition-colors mb-4 border border-[#1e3040] px-3 py-2 rounded-xl hover:border-[#22c55e]"
+                        className="flex items-center gap-2 text-[13px] text-[var(--content-secondary)] hover:text-[var(--content-primary)] transition-colors mb-4 border border-[var(--border-subtle)] hover:border-[var(--accent-green)]/50 px-3 py-2 rounded-xl"
                     >
                         <ArrowLeft className="w-4 h-4" /> Back to Courts
                     </button>

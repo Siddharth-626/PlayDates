@@ -1,4 +1,4 @@
-import { onDocumentCreated } from "firebase-functions/firestore";
+import { onDocumentCreated } from "firebase-functions/v2/firestore";
 import { admin } from "../../utils/admin";
 import { isTimeOverlap } from "../../utils/ChekIfTimeOverlap";
 import { Timestamp } from "firebase-admin/firestore";

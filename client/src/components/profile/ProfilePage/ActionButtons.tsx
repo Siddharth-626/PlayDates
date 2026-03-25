@@ -77,21 +77,21 @@ export default function ActionButtons({
             onAdd();
             onAddAsPlaymateClick("pending");
           }}
-          className="w-full sm:w-auto bg-green-600 text-white px-6 py-2 rounded-lg shadow-md hover:bg-green-700 transition"
+          className="btn-primary flex-1"
         >
-          Add as my playmate
+          Add as Playmate
         </button>
       )}
 
       {btnStatus == "pending" && (
-        <button className="w-full sm:w-auto bg-transparent border border-green-500 text-green-600 dark:text-green-300 px-6 py-2 rounded-lg shadow-md transition">
-          Requested
+        <button className="btn-secondary flex-1 cursor-default opacity-70">
+          Request Sent
         </button>
       )}
 
       <button
         onClick={handleChatClick}
-        className="w-full sm:w-auto border border-green-600 text-green-600 px-6 py-2 rounded-lg hover:bg-green-100 dark:hover:bg-green-900 transition"
+        className="btn-secondary flex-1"
       >
         Chat
       </button>

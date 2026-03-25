@@ -1,233 +1,259 @@
-import { useEffect, useState } from 'react';
-import Navbar from '../components/Navbar';
-import { FiPhone } from 'react-icons/fi';
-import { AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai';
-import { Mail, Lock, User, ArrowRight } from 'lucide-react';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth, db } from '@/services/config';
-import { doc, setDoc } from 'firebase/firestore';
-import { useRouter } from 'next/router';
-import { checkIfProfileExist } from '@/utils/checkUserProfile';
-import toast from 'react-hot-toast';
-import { motion } from 'framer-motion';
-import { useAuth } from '@/context/authContext';
+﻿import { useEffect, useState } from "react";
+import Link from "next/link";
+import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Loader2, Trophy, Phone } from "lucide-react";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { auth, db } from "@/services/config";
+import { doc, setDoc } from "firebase/firestore";
+import { useRouter } from "next/router";
+import { checkIfProfileExist } from "@/utils/checkUserProfile";
+import toast from "react-hot-toast";
+import { useAuth } from "@/context/authContext";
+import { GoogleLogin } from "@/components/auth/GoogleLogin";
+import { useTheme } from "@/context/ThemeContext";
+import { SunIcon, MoonIcon } from "lucide-react";
 
 export default function Signup() {
   const { user, loading: authLoading } = useAuth();
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const { theme, toggleTheme } = useTheme();
+  const [name,            setName]            = useState("");
+  const [email,           setEmail]           = useState("");
+  const [password,        setPassword]        = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [phoneNumber,     setPhoneNumber]     = useState("");
+  const [showPass,        setShowPass]        = useState(false);
+  const [showConfirm,     setShowConfirm]     = useState(false);
+  const [error,           setError]           = useState("");
+  const [loading,         setLoading]         = useState(false);
   const router = useRouter();
 
   useEffect(() => {
-    if (!authLoading && user) {
-      router.replace('/');
-    }
+    if (!authLoading && user) router.replace("/");
   }, [user, authLoading, router]);
 
   const handleSignup = async () => {
-    setError('');
-    if (!name.trim()) {
-      setError('Name is required.');
-      return;
-    }
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters.');
-      return;
-    }
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setError('Invalid email format');
-      return;
-    }
+    setError("");
+    if (!name.trim())                       { setError("Name is required."); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setError("Enter a valid email."); return; }
+    if (password.length < 6)               { setError("Password must be at least 6 characters."); return; }
+    if (password !== confirmPassword)      { setError("Passwords do not match."); return; }
     try {
       setLoading(true);
-      const userCredentials = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredentials.user;
-      await setDoc(doc(db, 'users', user.uid), {
-        name,
-        email,
-        phoneNumber,
-        createdAt: new Date().toISOString(),
+      const cred = await createUserWithEmailAndPassword(auth, email, password);
+      await setDoc(doc(db, "users", cred.user.uid), {
+        name, email, phoneNumber, createdAt: new Date().toISOString(),
       });
-      toast.success("User registered successfully");
-      const profileExist = await checkIfProfileExist(user.uid);
-      router.push(profileExist ? '/' : '/setup');
+      toast.success("Account created!");
+      const exists = await checkIfProfileExist(cred.user.uid);
+      router.push(exists ? "/" : "/setup");
     } catch (err: any) {
-      if (err.code === 'auth/email-already-in-use') {
-        setError('Email already in use. Please login or use a different email.');
-      } else if (err.code === 'auth/invalid-email') {
-        setError('Invalid email. Please enter a valid email address.');
-      } else {
-        setError(err.message || 'Signup failed');
-      }
+      const msg = err.code === "auth/email-already-in-use"
+        ? "Email already in use. Try logging in."
+        : err.code === "auth/invalid-email"
+        ? "Invalid email address."
+        : err.message || "Signup failed.";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") handleSignup();
+  };
+
   return (
-    <>
-      <Navbar />
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 via-white to-green-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 text-gray-900 dark:text-white px-4">
-        <motion.div
-          initial={{ opacity: 0, y: 40, scale: 0.97 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.6, type: "spring" }}
-          className="w-full max-w-md bg-white/90 dark:bg-gray-900/90 rounded-2xl shadow-2xl p-8 backdrop-blur-lg border border-green-200 dark:border-green-700"
-        >
-          <motion.h2
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.5, type: "spring" }}
-            className="text-3xl font-extrabold text-green-600 dark:text-green-300 mb-2 uppercase flex items-center gap-2"
-          >
-            <User className="w-7 h-7" />
-            Sign Up
-          </motion.h2>
-          <h3 className="text-xl font-semibold mb-6">
-            Create your <span className="font-bold text-green-500 dark:text-green-400">PLAY DATES</span> account
-          </h3>
-
-          {/* Name */}
-          <label className="block mb-1 text-sm font-medium text-green-900 dark:text-green-200" htmlFor="name">Name</label>
-          <div className="flex items-center border border-green-200 dark:border-green-600 rounded-lg px-3 py-2 mb-4 bg-green-50 dark:bg-gray-700 focus-within:ring-2 focus-within:ring-green-400 transition">
-            <User className="text-green-500 mr-2 w-5 h-5" />
-            <input
-              id="name"
-              type="text"
-              placeholder="Enter your name"
-              className="flex-grow bg-transparent outline-none text-green-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              autoComplete="name"
-              aria-label="Name"
-            />
+    <div className="min-h-screen flex bg-[var(--surface-base)]">
+      {/* ── Left branding panel ─────────────────────────────────── */}
+      <div className="hidden lg:flex flex-col justify-between w-5/12 bg-brand-green-900 p-12 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-1/2 left-0 right-0 h-px bg-white" />
+          <div className="absolute top-0 bottom-0 left-1/2 w-px bg-white" />
+          <div className="absolute top-1/4 left-1/4 right-1/4 bottom-1/4 border border-white rounded-full" />
+          <div className="absolute -top-20 -right-20 w-80 h-80 border border-white rounded-full" />
+        </div>
+        <div className="relative flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-brand-gold-500 flex items-center justify-center">
+            <Trophy className="w-5 h-5 text-white" />
           </div>
-
-          {/* Email */}
-          <label className="block mb-1 text-sm font-medium text-green-900 dark:text-green-200" htmlFor="email">Email</label>
-          <div className="flex items-center border border-green-200 dark:border-green-600 rounded-lg px-3 py-2 mb-4 bg-green-50 dark:bg-gray-700 focus-within:ring-2 focus-within:ring-green-400 transition">
-            <Mail className="text-green-500 mr-2 w-5 h-5" />
-            <input
-              id="email"
-              type="email"
-              placeholder="Enter your email"
-              className="flex-grow bg-transparent outline-none text-green-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              autoComplete="email"
-              aria-label="Email"
-            />
-          </div>
-
-          {/* Password */}
-          <label className="block mb-1 text-sm font-medium text-green-900 dark:text-green-200" htmlFor="password">Password</label>
-          <div className="flex items-center border border-green-200 dark:border-green-600 rounded-lg px-3 py-2 mb-4 bg-green-50 dark:bg-gray-700 focus-within:ring-2 focus-within:ring-green-400 transition">
-            <Lock className="text-green-500 mr-2 w-5 h-5" />
-            <input
-              id="password"
-              type={showPassword ? "text" : "password"}
-              placeholder="Enter your password (min. 6 chars)"
-              className="flex-grow bg-transparent outline-none text-green-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              autoComplete="new-password"
-              aria-label="Password"
-            />
-            <button
-              type="button"
-              aria-label={showPassword ? "Hide password" : "Show password"}
-              className="ml-2 focus:outline-none"
-              onClick={() => setShowPassword((v) => !v)}
-            >
-              {showPassword ? (
-                <AiOutlineEyeInvisible className="text-gray-500 dark:text-gray-300 w-5 h-5" />
-              ) : (
-                <AiOutlineEye className="text-gray-500 dark:text-gray-300 w-5 h-5" />
-              )}
-            </button>
-          </div>
-
-          {/* Confirm Password */}
-          <label className="block mb-1 text-sm font-medium text-green-900 dark:text-green-200" htmlFor="confirmPassword">Confirm Password</label>
-          <div className="flex items-center border border-green-200 dark:border-green-600 rounded-lg px-3 py-2 mb-4 bg-green-50 dark:bg-gray-700 focus-within:ring-2 focus-within:ring-green-400 transition">
-            <Lock className="text-green-500 mr-2 w-5 h-5" />
-            <input
-              id="confirmPassword"
-              type={showConfirmPassword ? "text" : "password"}
-              placeholder="Re-enter your password"
-              className="flex-grow bg-transparent outline-none text-green-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              autoComplete="new-password"
-              aria-label="Confirm Password"
-            />
-            <button
-              type="button"
-              aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
-              className="ml-2 focus:outline-none"
-              onClick={() => setShowConfirmPassword((v) => !v)}
-            >
-              {showConfirmPassword ? (
-                <AiOutlineEyeInvisible className="text-gray-500 dark:text-gray-300 w-5 h-5" />
-              ) : (
-                <AiOutlineEye className="text-gray-500 dark:text-gray-300 w-5 h-5" />
-              )}
-            </button>
-          </div>
-
-          {/* Phone Number */}
-          <label className="block mb-1 text-sm font-medium text-green-900 dark:text-green-200" htmlFor="phone">Phone Number</label>
-          <div className="flex items-center border border-green-200 dark:border-green-600 rounded-lg px-3 py-2 mb-6 bg-green-50 dark:bg-gray-700 focus-within:ring-2 focus-within:ring-green-400 transition">
-            <FiPhone className="text-green-500 mr-2 w-5 h-5" />
-            <input
-              id="phone"
-              type="tel"
-              placeholder="Enter your phone number"
-              className="flex-grow bg-transparent outline-none text-green-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400"
-              value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
-              autoComplete="tel"
-              aria-label="Phone Number"
-            />
-          </div>
-
-          {/* Error Message */}
-          {error && (
-            <motion.p
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-red-600 bg-red-100 dark:bg-red-800 dark:text-red-300 px-4 py-2 mb-4 rounded-md text-sm font-medium"
-            >
-              {error}
-            </motion.p>
-          )}
-
-          {/* Submit Button */}
-          <motion.button
-            whileHover={{ scale: 1.04 }}
-            whileTap={{ scale: 0.97 }}
-            className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white font-semibold py-2 rounded-lg shadow-lg hover:bg-green-800 dark:hover:bg-green-700 transition flex items-center justify-center gap-2 text-lg disabled:opacity-60 disabled:cursor-not-allowed"
-            onClick={handleSignup}
-            disabled={loading}
-            type="button"
-            aria-label="Register"
-          >
-            {loading ? "Registering..." : <><span>Register</span> <ArrowRight className="w-5 h-5" /></>}
-          </motion.button>
-        </motion.div>
+          <span className="text-white font-bold text-xl">Playdates</span>
+        </div>
+        <div className="relative">
+          <h1 className="text-h1 text-white mb-4 leading-tight">
+            Join the<br />
+            <span className="text-brand-gold-400">tennis community</span>
+          </h1>
+          <p className="text-body-lg text-brand-green-200">
+            Set up your player profile in minutes and start finding matches today.
+          </p>
+        </div>
+        <div className="relative">
+          <p className="text-caption text-brand-green-400">Already on Playdates?</p>
+          <Link href="/login" className="text-body font-semibold text-brand-green-200 hover:text-white transition-colors">
+            Sign in instead →
+          </Link>
+        </div>
       </div>
-    </>
+
+      {/* ── Right form panel ─────────────────────────────────────── */}
+      <div className="flex-1 flex flex-col">
+        <div className="flex items-center justify-between px-6 py-4">
+          <div className="lg:hidden flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-brand-green-600 flex items-center justify-center">
+              <Trophy className="w-4 h-4 text-white" />
+            </div>
+            <span className="font-bold text-[var(--content-primary)] text-base">Playdates</span>
+          </div>
+          <div className="hidden lg:block" />
+          <div className="flex items-center gap-3">
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-xl bg-[var(--surface-inset)] hover:bg-[var(--border-subtle)] transition-colors"
+              aria-label="Toggle theme"
+            >
+              {theme === "dark"
+                ? <SunIcon className="w-4 h-4 text-[var(--content-muted)]" />
+                : <MoonIcon className="w-4 h-4 text-[var(--content-muted)]" />
+              }
+            </button>
+            <Link href="/login" className="text-body text-[var(--content-muted)] hover:text-[var(--content-primary)] transition-colors">
+              Sign in
+            </Link>
+          </div>
+        </div>
+
+        <div className="flex-1 flex items-center justify-center px-6 py-6">
+          <div className="w-full max-w-sm animate-fade-in">
+            <h2 className="text-h2 text-[var(--content-primary)] mb-1">Create account</h2>
+            <p className="text-body text-[var(--content-muted)] mb-6">
+              Start your Playdates journey
+            </p>
+
+            {error && (
+              <div className="flex items-start gap-2 p-3.5 mb-5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 text-body">
+                <span className="shrink-0 mt-0.5">⚠</span>
+                {error}
+              </div>
+            )}
+
+            <div className="space-y-3.5" onKeyDown={handleKeyDown}>
+              {/* Name */}
+              <div>
+                <label htmlFor="name" className="input-label">Full Name</label>
+                <div className="relative">
+                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--content-muted)]" />
+                  <input
+                    id="name" type="text" placeholder="Your name"
+                    autoComplete="name" value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="input-base pl-10"
+                  />
+                </div>
+              </div>
+
+              {/* Email */}
+              <div>
+                <label htmlFor="email" className="input-label">Email</label>
+                <div className="relative">
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--content-muted)]" />
+                  <input
+                    id="email" type="email" placeholder="you@example.com"
+                    autoComplete="email" value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="input-base pl-10"
+                  />
+                </div>
+              </div>
+
+              {/* Phone */}
+              <div>
+                <label htmlFor="phone" className="input-label">Phone <span className="text-[var(--content-muted)] normal-case font-normal">(optional)</span></label>
+                <div className="relative">
+                  <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--content-muted)]" />
+                  <input
+                    id="phone" type="tel" placeholder="+1 555 000 0000"
+                    autoComplete="tel" value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    className="input-base pl-10"
+                  />
+                </div>
+              </div>
+
+              {/* Password */}
+              <div>
+                <label htmlFor="password" className="input-label">Password</label>
+                <div className="relative">
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--content-muted)]" />
+                  <input
+                    id="password" type={showPass ? "text" : "password"}
+                    placeholder="At least 6 characters"
+                    autoComplete="new-password" value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="input-base pl-10 pr-10"
+                  />
+                  <button
+                    type="button" onClick={() => setShowPass((v) => !v)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[var(--content-muted)] hover:text-[var(--content-secondary)] transition-colors"
+                    aria-label={showPass ? "Hide password" : "Show password"}
+                  >
+                    {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Confirm Password */}
+              <div>
+                <label htmlFor="confirmPassword" className="input-label">Confirm Password</label>
+                <div className="relative">
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--content-muted)]" />
+                  <input
+                    id="confirmPassword" type={showConfirm ? "text" : "password"}
+                    placeholder="Re-enter password"
+                    autoComplete="new-password" value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className={`input-base pl-10 pr-10 ${confirmPassword && confirmPassword !== password ? "input-error" : ""}`}
+                  />
+                  <button
+                    type="button" onClick={() => setShowConfirm((v) => !v)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[var(--content-muted)] hover:text-[var(--content-secondary)] transition-colors"
+                    aria-label={showConfirm ? "Hide password" : "Show password"}
+                  >
+                    {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+                {confirmPassword && confirmPassword !== password && (
+                  <p className="mt-1.5 text-caption text-red-500">Passwords do not match</p>
+                )}
+              </div>
+
+              <button
+                type="button" onClick={handleSignup} disabled={loading}
+                className="btn-primary w-full mt-2"
+              >
+                {loading
+                  ? <Loader2 className="w-4 h-4 animate-spin" />
+                  : <><span>Create Account</span><ArrowRight className="w-4 h-4" /></>
+                }
+              </button>
+            </div>
+
+            <div className="flex items-center gap-3 my-5">
+              <div className="flex-1 h-px bg-[var(--border-subtle)]" />
+              <span className="text-caption text-[var(--content-muted)]">or</span>
+              <div className="flex-1 h-px bg-[var(--border-subtle)]" />
+            </div>
+
+            <GoogleLogin />
+
+            <p className="mt-5 text-center text-body text-[var(--content-muted)]">
+              Already have an account?{" "}
+              <Link href="/login" className="text-[var(--accent-green)] font-semibold hover:underline">
+                Sign in
+              </Link>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

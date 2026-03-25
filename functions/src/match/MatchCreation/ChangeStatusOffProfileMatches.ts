@@ -1,4 +1,4 @@
-import { onDocumentUpdated } from "firebase-functions/firestore";
+import { onDocumentUpdated } from "firebase-functions/v2/firestore";
 import { admin } from "../../utils/admin";
 
 const db = admin.firestore();

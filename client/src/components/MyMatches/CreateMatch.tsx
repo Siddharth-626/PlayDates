@@ -132,25 +132,23 @@ export const CreateMatch = ({ CloseTab }: { CloseTab: () => void }) => {
         }
     }, [players])
     return (
-        <div className="flex flex-col gap-6 p-4 md:p-6 max-w-5xl mx-auto shadow-lg border border-green-300 rounded-xl">
+        <div className="flex flex-col gap-5 p-4 md:p-6 max-w-2xl mx-auto">
             {/* Title */}
-            <h2 className="text-2xl md:text-3xl font-bold text-green-600 dark:text-green-400 text-center">
+            <h2 className="text-h2 font-bold text-[var(--content-primary)] text-center">
                 Create a New Match
             </h2>
 
             {/* Responsive Grid */}
             <div className="flex flex-col gap-6">
                 {/* Left: Match Schedule */}
-                <motion.div
-                    className="bg-gradient-to-br from-green-50 via-white to-green-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 text-gray-900 dark:text-white rounded-xl shadow-lg border border-green-200 dark:border-green-700"
-                >
+                <div className="card">
                     {/* Header (Collapsible in mobile) */}
                     <button
                         onClick={() => setShowSchedule(!showSchedule)}
                         className="flex w-full justify-between items-center px-4 py-3"
                     >
-                        <span className="flex items-center gap-2 font-semibold text-gray-700 dark:text-gray-200">
-                            <Calendar className="text-green-500" size={20} />
+                        <span className="flex items-center gap-2 font-semibold text-[var(--content-primary)]">
+                            <Calendar className="text-[var(--accent-green)]" size={20} />
                             Match Schedule
                         </span>
                         <span className="" onClick={() => setShowSchedule(!showSchedule)}>
@@ -168,32 +166,32 @@ export const CreateMatch = ({ CloseTab }: { CloseTab: () => void }) => {
                         >
                             {/* Date */}
                             <div className="flex items-center gap-3">
-                                <Calendar className="text-green-500" size={18} />
+                                <Calendar className="text-[var(--accent-green)]" size={18} />
                                 <CustomDatePicker selectedDate={date} onChange={setDate} />
                             </div>
 
                             {/* Time */}
                             <div className="flex items-center gap-3">
-                                <Clock className="text-blue-500" size={18} />
+                                <Clock className="text-[var(--accent-green)]" size={18} />
                                 <TimePicker time={startTime} onChange={setStartTime} />
                             </div>
 
                             {/* Duration */}
                             <div className="flex items-center gap-3">
-                                <Timer className="text-purple-500" size={18} />
+                                <Timer className="text-[var(--accent-green)]" size={18} />
                                 <DurationSelector duration={duration} onChange={setDuration} />
                             </div>
                         </motion.div>
                     )}
-                </motion.div>
+                </div>
 
                 {/* Right: Other Settings */}
                 <div className="flex flex-col gap-6">
 
                     {/* Preferences */}
-                    <div className="bg-white dark:bg-gray-900 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-4">
-                        <label className="flex items-center gap-2 text-gray-700 dark:text-gray-200 mb-2 font-semibold">
-                            <List size={18} className="text-yellow-500" /> Preferences
+                    <div className="card p-4">
+                        <label className="flex items-center gap-2 text-[var(--content-primary)] mb-2 font-semibold">
+                            <List size={18} className="text-[var(--accent-green)]" /> Preferences
                         </label>
                         <PreferencesSelector
                             type="Match-Creation"
@@ -203,9 +201,9 @@ export const CreateMatch = ({ CloseTab }: { CloseTab: () => void }) => {
                     </div>
 
                     {/* Location */}
-                    <div className="bg-white dark:bg-gray-900 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-4">
-                        <label className="flex items-center gap-2 text-gray-700 dark:text-gray-200 mb-2 font-semibold">
-                            <MapPin size={18} className="text-pink-500" /> Location
+                    <div className="card p-4">
+                        <label className="flex items-center gap-2 text-[var(--content-primary)] mb-2 font-semibold">
+                            <MapPin size={18} className="text-[var(--accent-green)]" /> Location
                         </label>
                         <LocationSelector
                             type="Match-Creation"
@@ -213,9 +211,9 @@ export const CreateMatch = ({ CloseTab }: { CloseTab: () => void }) => {
                             onChange={SelectLocation}
                         />
                     </div>
-                    <div className="bg-white dark:bg-gray-900 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-4">
-                        <label className="flex items-center gap-2 text-gray-700 dark:text-gray-200 mb-2 font-semibold">
-                            <FiUserPlus size={18} className="text-green-500" /> Players
+                    <div className="card p-4">
+                        <label className="flex items-center gap-2 text-[var(--content-primary)] mb-2 font-semibold">
+                            <FiUserPlus size={18} className="text-[var(--accent-green)]" /> Players
                         </label>
                         <PlaymatePicker
                             type="match"
@@ -227,9 +225,9 @@ export const CreateMatch = ({ CloseTab }: { CloseTab: () => void }) => {
                         />
                     </div>
                     {players.length == 4 &&
-                        <div className="bg-white dark:bg-gray-900 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-4">
-                            <label className="flex items-center gap-2 text-gray-700 dark:text-gray-200 mb-2 font-semibold">
-                                <FiUserPlus size={18} className="text-green-500" /> Select Teams
+                        <div className="card p-4">
+                            <label className="flex items-center gap-2 text-[var(--content-primary)] mb-2 font-semibold">
+                                <FiUserPlus size={18} className="text-[var(--accent-green)]" /> Select Teams
                             </label>
                             <TeamsSelector OnClose={() => {}} players={players} OnSubmit={(players) => setPlayers(players)} />;
                         </div>}
@@ -237,11 +235,10 @@ export const CreateMatch = ({ CloseTab }: { CloseTab: () => void }) => {
             </div>
 
             {/* Create Button */}
-            <motion.button
-                whileTap={{ scale: 0.97 }}
+            <button
                 onClick={handleSubmit}
                 disabled={loading}
-                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-3 rounded-2xl font-semibold shadow-md transition-all"
+                className="btn-primary w-full flex items-center justify-center gap-2 py-3"
             >
                 {loading ? (
                     <>
@@ -252,7 +249,7 @@ export const CreateMatch = ({ CloseTab }: { CloseTab: () => void }) => {
                         <Plus size={20} /> Create Match
                     </>
                 )}
-            </motion.button>
+            </button>
         </div>
     );
 }

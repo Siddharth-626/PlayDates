@@ -1,38 +1,39 @@
-import React, { useState } from "react";
+import React from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import {motion} from"framer-motion";
+import { Calendar } from "lucide-react";
+
 type DateProps = {
     selectedDate: Date | null;
-    onChange: (date: Date | null) => void
-}
+    onChange: (date: Date | null) => void;
+};
 
 const CustomDatePicker = ({ selectedDate, onChange }: DateProps) => {
-    
     return (
         <div className="w-full">
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, type: "spring" }}
-                className="flex flex-col items-center bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 max-w-md mx-auto"
-            >
-                <h2 className="text-xl font-semibold text-green-600 mb-4 text-center">
-                    Select a Date 📅
-                </h2>
-
-               { <DatePicker
+            <div className="flex items-center gap-2 text-[13px] font-medium text-[var(--content-muted)] mb-2">
+                <Calendar className="w-4 h-4 text-[var(--accent-green)]" />
+                Select Date
+            </div>
+            <div className="date-picker-wrapper rounded-xl overflow-hidden border border-[var(--border-subtle)] bg-[var(--surface-raised)]">
+                <DatePicker
                     selected={selectedDate}
                     onChange={onChange}
                     inline
                     minDate={new Date()}
-                    calendarClassName="!bg-white dark:!bg-gray-800 !text-black dark:!text-white !rounded-lg"
-                    dayClassName={(date) =>
-                        "!text-sm hover:bg-green-100 dark:hover:bg-green-900 rounded-md transition-all"
-                    }
-                />}
-            </motion.div>
+                    calendarClassName="custom-calendar"
+                />
+            </div>
+            {selectedDate && (
+                <div className="flex items-center justify-center gap-2 mt-2 py-2.5 rounded-xl bg-[var(--accent-green)]/10 border border-[var(--accent-green)]/20">
+                    <Calendar className="w-4 h-4 text-[var(--accent-green)]" />
+                    <span className="text-[14px] font-bold text-[var(--accent-green)]">
+                        {selectedDate.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })}
+                    </span>
+                </div>
+            )}
         </div>
     );
-}
+};
+
 export default CustomDatePicker;

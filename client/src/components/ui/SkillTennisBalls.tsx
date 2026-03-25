@@ -1,19 +1,10 @@
-import { GiTennisBall  } from "react-icons/gi";
-
-export const SkillBasedTennisBallsUi = ({skill}:{skill:string})=>{
-
-    const numericalSkill = parseFloat(skill) || 0;
-
-    const balls = Array.from({length:5},(_, i)=>(
-            <GiTennisBall
-            key={i}
-            className={`lg:text-xl sm:text-sm ${i < numericalSkill ? "text-green-400" : "text-gray-400 dark:text-gray-600"
-                }`}
-        />
-    ))
-    return(
-        <div>
-            <div className="flex flex-wrap items-center gap-1">{balls}</div>
-        </div>
-    )
-}
+export const SkillBasedTennisBallsUi = ({ skill }: { skill: string }) => {
+  if (!skill) return null;
+  return (
+    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full
+                     bg-[var(--accent-gold)]/15 text-[var(--accent-gold)]
+                     text-[11px] font-semibold leading-none">
+      🎾 {skill}
+    </span>
+  );
+};

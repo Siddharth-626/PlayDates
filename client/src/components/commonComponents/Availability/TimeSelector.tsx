@@ -1,4 +1,5 @@
 import React from "react";
+import { Clock } from "lucide-react";
 
 type Props = {
     time: string;
@@ -6,7 +7,6 @@ type Props = {
 };
 
 export default function TimePicker({ time, onChange }: Props) {
-    // Parse existing value (supports "HH:MM", "H:MM AM/PM")
     let currentHour = "";
     let currentMinute = "";
     let currentPeriod = "AM";
@@ -18,7 +18,6 @@ export default function TimePicker({ time, onChange }: Props) {
             currentMinute = ampmMatch[2];
             currentPeriod = ampmMatch[3].toUpperCase();
         } else {
-            // 24-hour format from <input type="time">
             const parts = time.split(":");
             if (parts.length === 2) {
                 let h = parseInt(parts[0], 10);
@@ -36,73 +35,86 @@ export default function TimePicker({ time, onChange }: Props) {
         return `${hour}:${minute} ${period}`;
     };
 
-    const handleHourChange = (h: string) => {
-        onChange(buildTimeString(h, currentMinute || "00", currentPeriod));
-    };
-
-    const handleMinuteChange = (m: string) => {
-        onChange(buildTimeString(currentHour || "12", m, currentPeriod));
-    };
-
-    const handlePeriodChange = (p: string) => {
-        onChange(buildTimeString(currentHour || "12", currentMinute || "00", p));
-    };
-
     const hours = Array.from({ length: 12 }, (_, i) => String(i + 1));
     const minutes = Array.from({ length: 12 }, (_, i) => String(i * 5).padStart(2, "0"));
 
     return (
-        <div className="w-full">
-            <label className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-1 block">
+        <div className="w-full space-y-3">
+            <div className="flex items-center gap-2 text-[13px] font-medium text-[var(--content-muted)]">
+                <Clock className="w-4 h-4 text-[var(--accent-green)]" />
                 Select Start Time
-            </label>
-            <div className="flex items-center gap-2">
-                <select
-                    value={currentHour}
-                    onChange={(e) => handleHourChange(e.target.value)}
-                    className="flex-1 p-2 rounded-md border dark:bg-gray-800 dark:text-white"
-                >
-                    <option value="">Hr</option>
+            </div>
+
+            {/* Hour row */}
+            <div>
+                <p className="text-[11px] font-semibold text-[var(--content-muted)] uppercase tracking-wide mb-1.5">Hour</p>
+                <div className="flex flex-wrap gap-1.5">
                     {hours.map((h) => (
-                        <option key={h} value={h}>{h}</option>
+                        <button
+                            key={h}
+                            type="button"
+                            onClick={() => onChange(buildTimeString(h, currentMinute || "00", currentPeriod))}
+                            className={`w-9 h-9 rounded-lg text-[13px] font-semibold transition-all border ${
+                                currentHour === h
+                                    ? "bg-[var(--accent-green)] text-white border-[var(--accent-green)] shadow-sm"
+                                    : "bg-[var(--surface-inset)] text-[var(--content-secondary)] border-[var(--border-subtle)] hover:border-[var(--accent-green)] hover:text-[var(--accent-green)]"
+                            }`}
+                        >
+                            {h}
+                        </button>
                     ))}
-                </select>
-                <span className="text-lg font-bold text-gray-500">:</span>
-                <select
-                    value={currentMinute}
-                    onChange={(e) => handleMinuteChange(e.target.value)}
-                    className="flex-1 p-2 rounded-md border dark:bg-gray-800 dark:text-white"
-                >
-                    <option value="">Min</option>
-                    {minutes.map((m) => (
-                        <option key={m} value={m}>{m}</option>
-                    ))}
-                </select>
-                <div className="flex rounded-md border overflow-hidden">
-                    <button
-                        type="button"
-                        onClick={() => handlePeriodChange("AM")}
-                        className={`px-3 py-2 text-sm font-semibold transition-colors ${
-                            currentPeriod === "AM"
-                                ? "bg-green-600 text-white"
-                                : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                        }`}
-                    >
-                        AM
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => handlePeriodChange("PM")}
-                        className={`px-3 py-2 text-sm font-semibold transition-colors ${
-                            currentPeriod === "PM"
-                                ? "bg-green-600 text-white"
-                                : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                        }`}
-                    >
-                        PM
-                    </button>
                 </div>
             </div>
+
+            {/* Minute row */}
+            <div>
+                <p className="text-[11px] font-semibold text-[var(--content-muted)] uppercase tracking-wide mb-1.5">Minute</p>
+                <div className="flex flex-wrap gap-1.5">
+                    {minutes.map((m) => (
+                        <button
+                            key={m}
+                            type="button"
+                            onClick={() => onChange(buildTimeString(currentHour || "12", m, currentPeriod))}
+                            className={`w-12 h-9 rounded-lg text-[13px] font-semibold transition-all border ${
+                                currentMinute === m
+                                    ? "bg-[var(--accent-green)] text-white border-[var(--accent-green)] shadow-sm"
+                                    : "bg-[var(--surface-inset)] text-[var(--content-secondary)] border-[var(--border-subtle)] hover:border-[var(--accent-green)] hover:text-[var(--accent-green)]"
+                            }`}
+                        >
+                            :{m}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            {/* AM/PM toggle */}
+            <div>
+                <p className="text-[11px] font-semibold text-[var(--content-muted)] uppercase tracking-wide mb-1.5">Period</p>
+                <div className="flex gap-2">
+                    {["AM", "PM"].map((p) => (
+                        <button
+                            key={p}
+                            type="button"
+                            onClick={() => onChange(buildTimeString(currentHour || "12", currentMinute || "00", p))}
+                            className={`flex-1 h-10 rounded-xl text-[14px] font-bold transition-all border ${
+                                currentPeriod === p
+                                    ? "bg-[var(--accent-green)] text-white border-[var(--accent-green)] shadow-glow-green"
+                                    : "bg-[var(--surface-inset)] text-[var(--content-secondary)] border-[var(--border-subtle)] hover:border-[var(--accent-green)] hover:text-[var(--accent-green)]"
+                            }`}
+                        >
+                            {p}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            {/* Preview */}
+            {time && (
+                <div className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-[var(--accent-green)]/10 border border-[var(--accent-green)]/20">
+                    <Clock className="w-4 h-4 text-[var(--accent-green)]" />
+                    <span className="text-[15px] font-bold text-[var(--accent-green)]">{time}</span>
+                </div>
+            )}
         </div>
     );
 }

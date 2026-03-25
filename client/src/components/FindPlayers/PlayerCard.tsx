@@ -1,38 +1,65 @@
 import { PlayerProfile } from "@/utils/TYPE";
 import { SkillBasedTennisBallsUi } from "../ui/SkillTennisBalls";
-import { User } from "lucide-react";
+import { User, UserPlus, MapPin } from "lucide-react";
 
-export default function PlayerCard({ player }: { player: PlayerProfile }) {
-    const { name, photoUrl, skill, age, gender } = player;
+export default function PlayerCard({ player, onAddPlaymate, hideAction }: {
+  player: PlayerProfile;
+  onChallenge?: (p: PlayerProfile) => void;
+  onAddPlaymate?: (p: PlayerProfile) => void;
+  hideAction?: boolean;
+}) {
+  const { name, photoUrl, skill, age, gender, locations } = player;
+  const primaryLocation = locations?.[0]?.name;
 
-    return (
-        <div className="flex items-center gap-3 bg-[#111f2e] border border-[#1e3040] rounded-2xl p-4 hover:border-[#22c55e] transition-all">
-            {/* Avatar */}
-            <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-[#22c55e] shrink-0 bg-[#1a2a3a] flex items-center justify-center">
-                {photoUrl ? (
-                    <img
-                        src={photoUrl}
-                        alt={`${name}'s profile`}
-                        className="w-full h-full object-cover"
-                    />
-                ) : (
-                    <User className="w-5 h-5 text-[#6b7280]" />
-                )}
-            </div>
-
-            {/* Info */}
-            <div className="flex-1 min-w-0">
-                <div className="text-[14px] font-bold text-[#22c55e] truncate">{name}</div>
-                <div className="text-[12px] text-[#6b7280] mt-0.5">
-                    {age && gender ? `${age} · ${gender}` : age ?? gender ?? ""}
-                </div>
-            </div>
-
-            {/* Skill */}
-            <div className="flex flex-col items-end gap-1 shrink-0">
-                <SkillBasedTennisBallsUi skill={skill} />
-                <span className="text-[11px] font-semibold text-[#22c55e]">{skill}</span>
-            </div>
+  return (
+    <div className="card flex flex-col hover:shadow-raised hover:border-[var(--border-default)] transition-all cursor-pointer overflow-hidden group">
+      {/* Card body */}
+      <div className="p-4 flex items-start gap-3.5">
+        {/* Avatar */}
+        <div className="relative shrink-0">
+          <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-[var(--border-subtle)] bg-[var(--surface-inset)] flex items-center justify-center group-hover:border-[var(--accent-green)] transition-colors">
+            {photoUrl ? (
+              <img src={photoUrl} alt={`${name}'s profile`} className="w-full h-full object-cover" />
+            ) : (
+              <User className="w-6 h-6 text-[var(--content-muted)]" />
+            )}
+          </div>
         </div>
-    );
+
+        {/* Info */}
+        <div className="flex-1 min-w-0 pt-0.5">
+          <p className="text-[15px] font-semibold text-[var(--content-primary)] truncate leading-tight">{name}</p>
+          {age && gender && (
+            <p className="text-[12px] text-[var(--content-muted)] mt-0.5">{age} · {gender}</p>
+          )}
+          {skill && (
+            <div className="mt-2">
+              <SkillBasedTennisBallsUi skill={skill} />
+            </div>
+          )}
+          {primaryLocation && (
+            <div className="flex items-center gap-1 mt-1.5">
+              <MapPin className="w-3 h-3 text-[var(--content-muted)] shrink-0" />
+              <p className="text-[11px] text-[var(--content-muted)] truncate">{primaryLocation}</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Card footer — hidden when hideAction is true */}
+      {!hideAction && (
+        <div className="border-t border-[var(--border-subtle)] px-4 py-2.5">
+          <button
+            onClick={(e) => { e.stopPropagation(); onAddPlaymate?.(player); }}
+            className="w-full flex items-center justify-center gap-1.5 h-8 px-3 rounded-lg
+                       bg-[var(--accent-green)]/10 text-[var(--accent-green)] text-[12px] font-semibold
+                       hover:bg-[var(--accent-green)]/20 transition-colors border border-[var(--accent-green)]/20"
+          >
+            <UserPlus className="w-3.5 h-3.5" />
+            Add Playmate
+          </button>
+        </div>
+      )}
+    </div>
+  );
 }

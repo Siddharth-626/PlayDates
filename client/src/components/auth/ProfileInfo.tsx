@@ -6,61 +6,105 @@ import { signOut } from "firebase/auth";
 import { useRouter } from "next/router";
 import toast from "react-hot-toast";
 import Image from "next/image";
-import { useState } from "react";
-import { User, Settings, LogOut } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { User, Settings, LogOut, ChevronDown } from "lucide-react";
 
 export const ProfileInfo = () => {
     const { user } = useAuth();
     const router = useRouter();
-    const [isDropdownVisible, setIsDropdownVisible] = useState(false);
+    const [open, setOpen] = useState(false);
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    // Close on outside click
+    useEffect(() => {
+        if (!open) return;
+        const handle = (e: MouseEvent) => {
+            if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+                setOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handle);
+        return () => document.removeEventListener("mousedown", handle);
+    }, [open]);
 
     const handleLogout = async () => {
         try {
             await signOut(auth);
-            toast.success("User logged out successfully");
-            router.push('/login');
-        } catch (error) {
-            toast.error('Error while logging out');
+            toast.success("Logged out successfully");
+            router.push("/login");
+        } catch {
+            toast.error("Error while logging out");
         }
     };
 
     if (!user) return null;
 
     return (
-        <div className="relative inline-block">
+        <div ref={containerRef} className="relative">
             <button
-                className="rounded-full border-2 border-green-400 hover:border-green-500 transition duration-300 p-[2px] bg-gradient-to-br from-white/40 via-white/10 to-white/0 dark:from-gray-600 dark:to-gray-900 shadow-md"
-                onClick={() => setIsDropdownVisible(!isDropdownVisible)}
+                onClick={() => setOpen((v) => !v)}
+                className="flex items-center gap-2 p-1 rounded-xl hover:bg-[var(--surface-inset)] transition-colors"
+                aria-label="Profile menu"
+                aria-expanded={open}
             >
                 <Image
                     src={user.photoURL || "/images/players/defaultProfilePhoto.jpg"}
                     alt="Profile"
-                    width={44}
-                    height={44}
-                    className="rounded-full object-cover w-11 h-11"
+                    width={36}
+                    height={36}
+                    className="rounded-full object-cover w-9 h-9 ring-2 ring-[var(--accent-green)] ring-offset-1 ring-offset-[var(--surface-raised)]"
+                />
+                <ChevronDown
+                    className={`w-3.5 h-3.5 text-[var(--content-muted)] transition-transform duration-200 ${open ? "rotate-180" : ""}`}
                 />
             </button>
 
-            {isDropdownVisible && (
-                <div className="absolute right-0 z-50 mt-3 w-56 border border-green-200 dark:border-green-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 rounded-2xl shadow-2xl animate-fade-in-down overflow-hidden">
-                    <a
-                        href="/profile"
-                        className="flex items-center gap-3 px-5 py-3 hover:bg-green-50 dark:hover:bg-green-900 transition-colors text-green-700 dark:text-green-300 font-semibold"
-                    >
-                        <User size={20} /> My Profile
-                    </a>
-                    <a
-                        href="/settings"
-                        className="flex items-center gap-3 px-5 py-3 hover:bg-green-50 dark:hover:bg-green-900 transition-colors"
-                    >
-                        <Settings size={20} /> Settings
-                    </a>
-                    <button
-                        onClick={handleLogout}
-                        className="flex items-center gap-3 w-full text-left px-5 py-3 text-red-500 hover:bg-red-500 hover:text-white font-semibold transition-colors"
-                    >
-                        <LogOut size={20} /> Logout
-                    </button>
+            {open && (
+                <div
+                    className="absolute right-0 z-50 mt-2 w-56 animate-scale-in
+                               bg-[var(--surface-overlay)] border border-[var(--border-subtle)]
+                               rounded-xl shadow-dropdown overflow-hidden"
+                >
+                    {/* User info header */}
+                    <div className="px-4 py-3 border-b border-[var(--border-subtle)]">
+                        <p className="text-body font-semibold text-[var(--content-primary)] truncate">
+                            {user.displayName || "Player"}
+                        </p>
+                        <p className="text-caption text-[var(--content-muted)] truncate">{user.email}</p>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="py-1">
+                        <button
+                            onClick={() => { setOpen(false); router.push("/profile"); }}
+                            className="flex items-center gap-3 w-full px-4 py-2.5 text-body
+                                       text-[var(--content-secondary)] hover:text-[var(--content-primary)]
+                                       hover:bg-[var(--surface-inset)] transition-colors"
+                        >
+                            <User className="w-4 h-4 text-[var(--accent-green)]" />
+                            My Profile
+                        </button>
+                        <button
+                            onClick={() => { setOpen(false); router.push("/settings"); }}
+                            className="flex items-center gap-3 w-full px-4 py-2.5 text-body
+                                       text-[var(--content-secondary)] hover:text-[var(--content-primary)]
+                                       hover:bg-[var(--surface-inset)] transition-colors"
+                        >
+                            <Settings className="w-4 h-4 text-[var(--content-muted)]" />
+                            Settings
+                        </button>
+                    </div>
+
+                    <div className="border-t border-[var(--border-subtle)] py-1">
+                        <button
+                            onClick={handleLogout}
+                            className="flex items-center gap-3 w-full px-4 py-2.5 text-body
+                                       text-red-500 hover:bg-red-500/10 transition-colors"
+                        >
+                            <LogOut className="w-4 h-4" />
+                            Sign Out
+                        </button>
+                    </div>
                 </div>
             )}
         </div>

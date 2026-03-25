@@ -3,8 +3,7 @@
 import { Player } from "@/utils/TYPE";
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Users, CheckCircle2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Users, CheckCircle2, X } from "lucide-react";
 import toast from "react-hot-toast";
 
 type TeamSelectorType = {
@@ -13,10 +12,21 @@ type TeamSelectorType = {
     OnSubmit: (players: Player[]) => void;
 };
 
+const TEAM_CONFIG = {
+    team1: {
+        label: "Team 1",
+        activeClass: "bg-[var(--accent-green)] text-white border-[var(--accent-green)]",
+        badgeClass: "bg-[var(--accent-green)]/10 text-[var(--accent-green)] border-[var(--accent-green)]/30",
+    },
+    team2: {
+        label: "Team 2",
+        activeClass: "bg-blue-500 text-white border-blue-500",
+        badgeClass: "bg-blue-500/10 text-blue-500 border-blue-500/30",
+    },
+};
+
 export const TeamsSelector = ({ players, OnClose, OnSubmit }: TeamSelectorType) => {
-    const [assignedPlayers, setAssignedPlayers] = useState<
-        (any & { team?: "team1" | "team2" })[]
-    >(players);
+    const [assignedPlayers, setAssignedPlayers] = useState<(any & { team?: "team1" | "team2" })[]>(players);
 
     const handleAssign = (id: string, team: "team1" | "team2") => {
         setAssignedPlayers((prev) =>
@@ -25,84 +35,88 @@ export const TeamsSelector = ({ players, OnClose, OnSubmit }: TeamSelectorType) 
     };
 
     const handleSubmit = () => {
+        const unassigned = assignedPlayers.filter((p) => !p.team);
+        if (unassigned.length > 0) {
+            toast.error(`Please assign all players to a team`);
+            return;
+        }
         OnSubmit(assignedPlayers);
         OnClose();
-        toast.success("Teams Selected")
+        toast.success("Teams updated!");
     };
+
+    const team1Count = assignedPlayers.filter((p) => p.team === "team1").length;
+    const team2Count = assignedPlayers.filter((p) => p.team === "team2").length;
 
     return (
         <motion.div
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            className="w-full bg-gradient-to-br from-green-50 via-white to-green-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 text-gray-900 dark:text-white rounded-2xl shadow-md p-6 flex flex-col"
+            className="w-full space-y-4"
         >
-            {/* Header */}
-            <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl md:text-2xl font-bold flex items-center gap-2 text-green-600 dark:text-green-400">
-                    <Users size={22} /> Select Teams
-                </h2>
+            {/* Team summary */}
+            <div className="grid grid-cols-2 gap-2">
+                {(["team1", "team2"] as const).map((team) => {
+                    const config = TEAM_CONFIG[team];
+                    const count = team === "team1" ? team1Count : team2Count;
+                    return (
+                        <div key={team} className={`flex items-center justify-between px-3 py-2 rounded-xl border ${config.badgeClass}`}>
+                            <span className="text-[13px] font-semibold">{config.label}</span>
+                            <span className="text-[12px] font-bold">{count} player{count !== 1 ? "s" : ""}</span>
+                        </div>
+                    );
+                })}
             </div>
 
-            {/* Players list */}
-            <div className="grid gap-4 md:gap-5">
+            {/* Player list */}
+            <div className="space-y-2">
                 {assignedPlayers.map((player) => (
                     <motion.div
                         key={player.profileId}
-                        whileHover={{ scale: 1.01 }}
-                        className="flex items-center justify-between p-4 border rounded-xl dark:border-neutral-700"
+                        whileHover={{ scale: 1.005 }}
+                        className="flex items-center justify-between p-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-inset)]"
                     >
-                        <span className="font-semibold text-neutral-800 dark:text-neutral-100 text-sm md:text-base">
+                        <span className="text-[14px] font-semibold text-[var(--content-primary)] flex-1 truncate mr-3">
                             {player.name}
                         </span>
-                        <div className="flex gap-2">
-                            <Button
-                                size="sm"
-                                variant={player.team === "team1" ? "default" : "outline"}
-                                className={`rounded-full px-4 ${player.team === "team1"
-                                        ? "bg-green-500 hover:bg-green-600 text-white"
-                                        : ""
-                                    }`}
-                                onClick={() => handleAssign(player.profileId, "team1")}
-                            >
-                                Team 1
-                                {player.team === "team1" && (
-                                    <CheckCircle2 className="ml-1" size={16} />
-                                )}
-                            </Button>
-                            <Button
-                                size="sm"
-                                variant={player.team === "team2" ? "default" : "outline"}
-                                className={`rounded-full px-4 ${player.team === "team2"
-                                        ? "bg-blue-500 hover:bg-blue-600 text-white"
-                                        : ""
-                                    }`}
-                                onClick={() => handleAssign(player.profileId, "team2")}
-                            >
-                                Team 2
-                                {player.team === "team2" && (
-                                    <CheckCircle2 className="ml-1" size={16} />
-                                )}
-                            </Button>
+                        <div className="flex gap-1.5">
+                            {(["team1", "team2"] as const).map((team) => {
+                                const config = TEAM_CONFIG[team];
+                                const isActive = player.team === team;
+                                return (
+                                    <button
+                                        key={team}
+                                        onClick={() => handleAssign(player.profileId, team)}
+                                        className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-[12px] font-semibold border transition-all ${
+                                            isActive
+                                                ? config.activeClass
+                                                : "bg-[var(--surface-raised)] border-[var(--border-subtle)] text-[var(--content-muted)] hover:border-[var(--border-default)]"
+                                        }`}
+                                    >
+                                        {config.label}
+                                        {isActive && <CheckCircle2 className="w-3 h-3 ml-0.5" />}
+                                    </button>
+                                );
+                            })}
                         </div>
                     </motion.div>
                 ))}
             </div>
 
-            {/* Footer */}
-            <div className="flex flex-col md:flex-row justify-end gap-3 mt-8">
-                <Button
-                    variant="outline"
+            {/* Actions */}
+            <div className="flex gap-2 pt-1">
+                <button
                     onClick={OnClose}
-                    className="rounded-full w-full md:w-auto"
+                    className="flex-1 flex items-center justify-center gap-1.5 h-10 rounded-xl border border-[var(--border-subtle)] text-[var(--content-secondary)] text-[13px] font-semibold hover:bg-[var(--surface-inset)] transition-all"
                 >
-                    Cancel
-                </Button>
-                <Button
+                    <X className="w-4 h-4" /> Cancel
+                </button>
+                <button
                     onClick={handleSubmit}
-                    className="rounded-full w-full md:w-auto bg-gradient-to-r from-green-500 to-blue-500 text-white"
+                    className="flex-1 flex items-center justify-center gap-1.5 h-10 rounded-xl bg-[var(--accent-green)] text-white text-[13px] font-semibold hover:opacity-90 transition-all"
                 >
-                    Confirm Teams
-                </Button>
+                    <Users className="w-4 h-4" /> Confirm Teams
+                </button>
             </div>
         </motion.div>
     );

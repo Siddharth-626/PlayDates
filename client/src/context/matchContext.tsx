@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { useAuth } from "./authContext";
 import { useProfile } from "./profileContext";
-import { collection, onSnapshot } from "firebase/firestore";
+import { collection, doc, getDoc, onSnapshot } from "firebase/firestore";
 import { db } from "@/services/config";
 
 
@@ -32,13 +32,49 @@ export const MatchProvider = ({ children }: { children: React.ReactNode }) => {
         setLoading(true);
         const colectionRef = collection(db, "users", user.uid, "profile", selectedProfile.id, "matches");
 
-        const unsubscribe = onSnapshot(colectionRef, (snapshot) => {
-            const MatchData = snapshot.docs.map((doc) => ({
-                id: doc.id,
-                ...doc.data()
+        const unsubscribe = onSnapshot(colectionRef, async (snapshot) => {
+            const profileMatches = snapshot.docs.map((matchDoc) => ({
+                id: matchDoc.id,
+                ...matchDoc.data()
             }));
-            setMatches(MatchData);
-            setLoading(false);
+
+            if (profileMatches.length === 0) {
+                setMatches([]);
+                setLoading(false);
+                return;
+            }
+
+            try {
+                const hydratedMatches = await Promise.all(
+                    profileMatches.map(async (profileMatch) => {
+                        const matchId =
+                            typeof profileMatch.matchId === "string" && profileMatch.matchId.length > 0
+                                ? profileMatch.matchId
+                                : profileMatch.id;
+
+                        if (!matchId) return profileMatch;
+
+                        const matchSnap = await getDoc(doc(db, "matches", matchId));
+                        if (!matchSnap.exists()) return profileMatch;
+
+                        const matchData = matchSnap.data();
+                        return {
+                            ...profileMatch,
+                            date: profileMatch.date ?? matchData.date,
+                            startTime: profileMatch.startTime ?? matchData.startTime,
+                            endTime: profileMatch.endTime ?? matchData.endTime,
+                            matchDate: profileMatch.matchDate ?? matchData.date,
+                        };
+                    })
+                );
+
+                setMatches(hydratedMatches);
+            } catch (error) {
+                console.error("Failed to hydrate matches:", error);
+                setMatches(profileMatches);
+            } finally {
+                setLoading(false);
+            }
         }, (error) => {
             console.error("Failed to fetch matches:", error);
             setLoading(false);

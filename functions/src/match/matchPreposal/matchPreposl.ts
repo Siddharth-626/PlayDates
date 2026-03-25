@@ -99,23 +99,48 @@ export const preposeMatch = onDocumentCreated(
                             const selectedPlayers = PlayersBasedOnPrefernce(preference, players);
                             if (!selectedPlayers) continue;
 
-                            const commonTime = getCommonTime(currentUserAvailability, playmateAvailability);
-                            const matchProposal = {
-                                players: selectedPlayers,
-                                courtId: currentUserProfileLocations.find((courtId) =>
-                                    playmateLocations.includes(courtId)
-                                ),
-                                date: currentUserAvailability.date,
-                                startTime: commonTime?.startTime,
-                                endTime: commonTime?.endTime,
-                                createdAt: admin.firestore.FieldValue.serverTimestamp(),
-                                status: "proposed",
-                                MatchType: preference,
-                                host: { userUid: "system", profileId: "system", name: "system" }
-                            };
+                            const courtId = currentUserProfileLocations.find((cid) =>
+                                playmateLocations.includes(cid)
+                            );
 
-                            await db.collection("matches").add(matchProposal);
-                            console.log(`preposeMatch: proposed match created with ${selectedPlayers.length} players, type=${preference}`);
+                            // Duplicate guard: check if a proposed match already exists
+                            // for the same players, court, and date
+                            const selectedIds = new Set(selectedPlayers.map(p => p.profileId));
+                            const existingSnap = await db.collection("matches")
+                                .where("status", "==", "proposed")
+                                .where("courtId", "==", courtId)
+                                .where("date", "==", currentUserAvailability.date)
+                                .limit(50)
+                                .get();
+
+                            const isDuplicate = existingSnap.docs.some(d => {
+                                const ep = d.data().players || [];
+                                if (ep.length !== selectedPlayers.length) return false;
+                                return ep.every((p: any) => selectedIds.has(p.profileId));
+                            });
+
+                            if (isDuplicate) {
+                                console.log("preposeMatch: duplicate proposal detected, skipping");
+                            } else {
+                                const commonTime = getCommonTime(currentUserAvailability, playmateAvailability);
+                                const matchProposal = {
+                                    players: selectedPlayers,
+                                    courtId,
+                                    date: currentUserAvailability.date,
+                                    startTime: commonTime?.startTime ?? null,
+                                    endTime: commonTime?.endTime ?? null,
+                                    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+                                    status: "proposed",
+                                    MatchType: preference,
+                                    host: { userUid: "system", profileId: "system", name: "system" }
+                                };
+
+                                await db.collection("matches").add(matchProposal);
+                                console.log(`preposeMatch: proposed match created with ${selectedPlayers.length} players, type=${preference}`);
+                            }
+
+                            // Reset players array to avoid bleeding into next iteration
+                            players.length = 1;
                         }
                     }
                 }

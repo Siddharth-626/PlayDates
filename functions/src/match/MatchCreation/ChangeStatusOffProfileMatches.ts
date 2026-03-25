@@ -2,31 +2,40 @@ import { onDocumentUpdated } from "firebase-functions/v2/firestore";
 import { admin } from "../../utils/admin";
 
 const db = admin.firestore();
-const Change = async (BeforeMatchData: any, AfterMatchData: any, status: string, matchId: string) => {
 
-    if (!BeforeMatchData || !AfterMatchData) return
-    if (BeforeMatchData.status != status && AfterMatchData.status == status) {
-        const players = AfterMatchData.players;
-
-        const batch = db.batch();
-        for (const player of players) {
-            const { userUid, profileId } = player;
-            const ref = db.doc(`users/${userUid}/profile/${profileId}/matches/${matchId}`);
-            batch.update(ref, { status: status });
-        }
-        await batch.commit();
-    }
-}
 export const ChangeStatusOffProfileMatches = onDocumentUpdated({
     document: "matches/{matchId}",
     region: "asia-south1",
 }, async (event) => {
     try {
-        const BeforeMatchData = event.data?.before.data();
-        const AfterMatchData = event.data?.after.data();
+        const beforeData = event.data?.before.data();
+        const afterData = event.data?.after.data();
         const matchId = event.params.matchId;
 
-        await Change(BeforeMatchData, AfterMatchData, AfterMatchData?.status, matchId);
+        if (!beforeData || !afterData) return;
+        if (beforeData.status === afterData.status) return; // no status change
+
+        const players = afterData.players;
+        if (!Array.isArray(players) || players.length === 0) return;
+
+        const newStatus = afterData.status;
+
+        const batch = db.batch();
+        for (const player of players) {
+            const { userUid, profileId } = player;
+            const ref = db.doc(`users/${userUid}/profile/${profileId}/matches/${matchId}`);
+            const update: Record<string, any> = {
+                status: newStatus,
+                matchStatus: newStatus,
+            };
+            // Also sync time/date fields when they change (e.g. time_proposed)
+            if (afterData.startTime !== undefined) update.startTime = afterData.startTime;
+            if (afterData.endTime !== undefined) update.endTime = afterData.endTime;
+            if (afterData.date !== undefined) update.date = afterData.date;
+            batch.update(ref, update);
+        }
+        await batch.commit();
+        console.log(`ChangeStatusOffProfileMatches: synced status "${newStatus}" to ${players.length} profile matches for match ${matchId}`);
     } catch (error) {
         console.error("ChangeStatusOffProfileMatches: error:", error);
     }

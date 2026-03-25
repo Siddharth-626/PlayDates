@@ -32,11 +32,11 @@ export const GetTimeLeft = ({
     const [timeLeft, setTimeLeft] = useState<string | null>("");
 
     useEffect(() => {
-        const update = () => setTimeLeft(getTimeLeft(startTime));
+        const update = () => setTimeLeft(getTimeLeft(startTime, date));
         update();
         const interval = setInterval(update, 1000);
         return () => clearInterval(interval);
-    }, [startTime]);
+    }, [startTime, date]);
 
     const isEnded = hasMatchEnded(date, endTime);
     const hoursLeft = parseHoursLeft(timeLeft);

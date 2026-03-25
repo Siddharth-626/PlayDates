@@ -11,9 +11,11 @@ const SendNotifications = async (status: string, matchId: string, players: any[]
     const batch = db.batch();
     for (const player of players) {
         const notification = {
-            type: "match proposal result",
+            type: "match_result",
+            matchId: matchId,
             message: `The Match at ${startTimeDisplay} is ${status}`,
             isRead: false,
+            status: status,
             createdAt: admin.firestore.FieldValue.serverTimestamp(),
         };
         const notifRef = db.collection(`users/${player.userUid}/profile/${player.profileId}/notifications`).doc();

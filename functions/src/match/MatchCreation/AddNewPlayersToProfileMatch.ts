@@ -1,5 +1,6 @@
 import { onDocumentUpdated } from "firebase-functions/v2/firestore";
 import { admin } from "../../utils/admin";
+import { buildProfileMatchDoc } from "../../utils/matchTypes";
 
 const db = admin.firestore();
 
@@ -13,7 +14,6 @@ export const AddNewPlayersToProfileMatch = onDocumentUpdated({
         const { matchId } = event.params;
 
         if (!beforeMatchData || !afterMatchData) return;
-        const type = afterMatchData.status == "proposed" ? "match proposal" : "created match"
 
         const beforeIds = new Set(beforeMatchData.players.map((player: any) => (player.profileId)));
 
@@ -24,16 +24,8 @@ export const AddNewPlayersToProfileMatch = onDocumentUpdated({
         const batch = db.batch();
         for (const player of newPlayers) {
             const { userUid, profileId } = player;
-
-            const matchProposal = {
-                type: type,
-                matchId: matchId,
-                isRead: false,
-                status: "pending"
-            };
-
             const ref = db.doc(`users/${userUid}/profile/${profileId}/matches/${matchId}`);
-            batch.set(ref, matchProposal);
+            batch.set(ref, buildProfileMatchDoc(matchId, afterMatchData, "pending"));
         }
         await batch.commit();
         console.log(`AddNewPlayersToProfileMatch: added ${newPlayers.length} new players to profile matches for match ${matchId}`);

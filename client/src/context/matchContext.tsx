@@ -7,7 +7,14 @@ import { db } from "@/services/config";
 
 type MatchRecord = {
     id: string;
-    [key: string]: unknown;
+    status?: string;
+    date?: any;
+    startTime?: any;
+    endTime?: any;
+    matchDate?: any;
+    matchStatus?: string;
+    matchId?: string;
+    [key: string]: any;
 };
 
 type MatchContextType = {
@@ -33,7 +40,7 @@ export const MatchProvider = ({ children }: { children: React.ReactNode }) => {
         const colectionRef = collection(db, "users", user.uid, "profile", selectedProfile.id, "matches");
 
         const unsubscribe = onSnapshot(colectionRef, async (snapshot) => {
-            const profileMatches = snapshot.docs.map((matchDoc) => ({
+            const profileMatches: MatchRecord[] = snapshot.docs.map((matchDoc) => ({
                 id: matchDoc.id,
                 ...matchDoc.data()
             }));
@@ -47,6 +54,11 @@ export const MatchProvider = ({ children }: { children: React.ReactNode }) => {
             try {
                 const hydratedMatches = await Promise.all(
                     profileMatches.map(async (profileMatch) => {
+                        // Rich fanout already provides date/time fields — skip hydration
+                        if (profileMatch.date && (profileMatch.startTime || profileMatch.endTime)) {
+                            return profileMatch;
+                        }
+
                         const matchId =
                             typeof profileMatch.matchId === "string" && profileMatch.matchId.length > 0
                                 ? profileMatch.matchId
@@ -64,6 +76,7 @@ export const MatchProvider = ({ children }: { children: React.ReactNode }) => {
                             startTime: profileMatch.startTime ?? matchData.startTime,
                             endTime: profileMatch.endTime ?? matchData.endTime,
                             matchDate: profileMatch.matchDate ?? matchData.date,
+                            matchStatus: profileMatch.matchStatus ?? matchData.status,
                         };
                     })
                 );

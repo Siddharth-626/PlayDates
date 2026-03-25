@@ -114,6 +114,9 @@ export const isUpcomingMatch = (match: MatchLike, now: Date): boolean => {
 };
 
 export const isPastMatch = (match: MatchLike, now: Date): boolean => {
+    // Completed/expired matches are always past regardless of time
+    if (match.status === "completed" || match.status === "expired") return true;
+
     if (match.status === "pending") return false;
 
     const endDateTime = getMatchEndDateTime(match);

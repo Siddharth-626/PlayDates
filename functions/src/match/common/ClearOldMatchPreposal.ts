@@ -24,7 +24,8 @@ export const clearOldMatchPreposal = onSchedule(
 
             for (const matchDoc of matchSnap.docs) {
                 const matchData = matchDoc.data();
-                if (matchData.status === "accepted") continue;
+                // Keep accepted and completed matches (real matches with potential score data)
+                if (matchData.status === "accepted" || matchData.status === "completed") continue;
 
                 batch.delete(matchDoc.ref);
                 count++;

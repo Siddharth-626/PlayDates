@@ -1,3 +1,4 @@
+import { isMatchResultNotification } from "@/utils/Match/matchTypes";
 import { respontToPlaymatesRequest } from "@/utils/Playmates/respondToPlaymatesRequest";
 import PlaymateRequestNotification from "./NewPLaymateNotification";
 import { useAuth } from "@/context/authContext";
@@ -61,7 +62,7 @@ export const NotificationTab = ({ notifications, setNotifications }: Notificatio
                     onRespond={handlePlaymateResponse}
                 />
             );
-        } else if (note.type === "match preposal result") {
+        } else if (isMatchResultNotification(note.type)) {
             content = <MatchResultNotification note={note} />;
         }
         if (!content) return null;

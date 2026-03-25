@@ -59,7 +59,7 @@ export const TimeSelctorPopUp = ({
         setLoading(true);
         const matchRef = doc(db, "matches", matchId);
         await updateDoc(matchRef, {
-            status: "Time-Preposed",
+            status: "time_proposed",
             startTime: Timestamp.fromDate(startDate),
             endTime: Timestamp.fromDate(endDate),
             date: Timestamp.fromDate(date),

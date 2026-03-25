@@ -25,13 +25,19 @@ service cloud.firestore {
       allow write: if isAuthenticated() || isAdmin();
     }
 
-    // Matches: any authenticated user can create; only participants can update/delete
+    // Matches: any authenticated user can create; only participants can update.
+    // Score can only be set once (no overwrite). Players array structure is preserved.
     match /matches/{matchId} {
       allow read: if isAuthenticated();
       allow create: if isAuthenticated();
-      allow update: if isAuthenticated() &&
-        (resource.data.players.size() > 0 &&
-        isParticipant(resource.data.players)) || isAdmin();
+      allow update: if (isAuthenticated() &&
+        resource.data.players.size() > 0 &&
+        isParticipant(resource.data.players) &&
+        // Prevent removing required fields
+        request.resource.data.keys().hasAll(['players', 'status', 'date']) &&
+        // If existing doc has a score, prevent score overwrite (immutable once set)
+        (!(('score' in resource.data) && resource.data.score != null) || request.resource.data.score == resource.data.score)
+      ) || isAdmin();
       allow delete: if isAdmin();
     }
 
@@ -114,10 +120,10 @@ service cloud.firestore {
                     request.resource.data.isRead == false) || isAdmin();
     }
 
-    // Collection group access to 'profile' — authenticated users only
+    // Collection group access to 'profile' — read-only for authenticated users.
+    // Writes are restricted to the nested owner-scoped rules above.
     match /{documentPath=**}/profile/{profileId} {
       allow read: if isAuthenticated();
-      allow write: if isAuthenticated() || isAdmin();
     }
 
     match /users/{userUid}/profile/{profileId}/selectedCourts/{docId} {

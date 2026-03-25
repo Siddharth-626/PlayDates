@@ -1,3 +1,4 @@
+import { isMatchResultNotification } from "@/utils/Match/matchTypes";
 import { useAuth } from "@/context/authContext";
 import { useProfile } from "@/context/profileContext";
 import { db } from "@/services/config";
@@ -21,7 +22,7 @@ export const MatchResultNotification = ({ note }: { note: any }) => {
         updateDoc(noteRef, { isRead: true }).catch(() => {});
     }, [user?.uid, selectedProfile?.id, note?.id, isRead]);
 
-    if (type !== "match preposal result") return null;
+    if (!isMatchResultNotification(type)) return null;
 
     const isSuccess = status === "accepted";
 

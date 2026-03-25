@@ -8,6 +8,7 @@ import { CreateMatch } from "./CreateMatch";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, X, Trophy } from "lucide-react";
 import { isPastMatch, isUpcomingMatch } from "@/utils/Match/matchDate";
+import { isActionableInvite } from "@/utils/Match/matchTypes";
 
 export const DisplayMatches = ({ matches }: { matches: any[] | undefined }) => {
     const { user } = useAuth();
@@ -29,7 +30,7 @@ export const DisplayMatches = ({ matches }: { matches: any[] | undefined }) => {
 
     if (!matches) return null;
 
-    const pendingCount = matches.filter((m) => m.status === "pending").length;
+    const pendingCount = matches.filter((m) => isActionableInvite(m.status as string | undefined)).length;
 
     const filters: { key: "all" | "upcoming" | "past" | "pending"; label: string }[] = [
         { key: "all", label: "All" },
@@ -49,7 +50,7 @@ export const DisplayMatches = ({ matches }: { matches: any[] | undefined }) => {
             return isPastMatch(m, now);
         }
 
-        if (activeFilter === "pending") return m.status === "pending";
+        if (activeFilter === "pending") return isActionableInvite(m.status as string | undefined);
 
         return true; // "all"
     });

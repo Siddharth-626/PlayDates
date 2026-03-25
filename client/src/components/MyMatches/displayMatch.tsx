@@ -164,11 +164,13 @@ export const DisplayMatch = ({ match, onRespond }: DisplayMatchProps) => {
     };
 
     useEffect(() => {
-        if (matchData?.status === "Time-Preposed" && match.status === "Time-Preposed") {
+        const isTimeProposed = (s: string | undefined) =>
+            s === "time_proposed" || s === "Time-Preposed";
+        if (isTimeProposed(matchData?.status) && isTimeProposed(match.status)) {
             setIsTimePreposed(true);
             setResponseStatus("Time");
         }
-        if (matchData?.status === "accepted" || matchData?.status === "rejected") {
+        if (matchData?.status === "accepted" || matchData?.status === "rejected" || matchData?.status === "completed") {
             setResponseStatus(matchData.status);
         }
     }, [matchData?.status]);
@@ -204,7 +206,7 @@ export const DisplayMatch = ({ match, onRespond }: DisplayMatchProps) => {
     if (!date || !MatchType || !court || !players) return <Loading />;
 
     let title = "Match Proposal";
-    const isMatchCreation = match.type === "created match";
+    const isMatchCreation = match.type === "created match" || match.type === "created_match";
     let isTimeGiven = true;
 
     if (isMatchCreation) {
@@ -431,7 +433,7 @@ export const DisplayMatch = ({ match, onRespond }: DisplayMatchProps) => {
                 <ScoreSelectorPopup
                     isOpen
                     onClose={() => { setIsDisplayMatch(true); setIsScoreDropdownOpen(false); }}
-                    onSubmit={(s: any) => handleScoreSubmit(s, matchId)}
+                    onSubmit={(s: any) => handleScoreSubmit(s, matchId, user?.uid)}
                     teamNames={{ team1, team2 }}
                 />
             )}

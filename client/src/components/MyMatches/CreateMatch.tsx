@@ -121,7 +121,7 @@ export const CreateMatch = ({ CloseTab }: { CloseTab: () => void }) => {
                             <Calendar className="text-green-500" size={20} />
                             Match Schedule
                         </span>
-                        <span className="" onClick={() => setShowSchedule(!showSchedule)}>
+                        <span>
                             {showSchedule ? <X size={18} /> : <Plus size={18} />}
                         </span>
                     </button>

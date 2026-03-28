@@ -64,9 +64,13 @@ export const ChatDisplay = ({
             <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
                 <div className="flex items-center">
                     {!isDesktop && (
-                        <div onClick={OnClose} className="mr-2 cursor-pointer">
+                        <button
+                            onClick={OnClose}
+                            className="mr-2 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors focus-visible:ring-2 focus-visible:ring-green-500 outline-none"
+                            aria-label="Back to chat list"
+                        >
                             <ChevronLeft className="w-5 h-5 text-green-600" />
-                        </div>
+                        </button>
                     )}
 
                     {/* Avatar */}

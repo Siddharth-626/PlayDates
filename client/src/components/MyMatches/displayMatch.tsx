@@ -207,9 +207,13 @@ export const DisplayMatch = ({ match, onRespond }: DisplayMatchProps) => {
                         </h2>
 
                         <div className="flex flex-wrap items-center gap-2">
-                            <div className=" flex items-center px-2 py-2 rounded-full border border-blue-600" onClick={handleChatClick}>
-                                <Send className="text-blue-600" />
-                            </div>
+                            <button
+                                aria-label="Open match chat"
+                                className="flex items-center p-2 rounded-full border border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 focus-visible:ring-2 focus-visible:ring-blue-500 focus:outline-none transition-colors active:scale-95"
+                                onClick={handleChatClick}
+                            >
+                                <Send className="w-5 h-5 text-blue-600" />
+                            </button>
 
                             {!isTimeGiven && isHost && (
                                 <button

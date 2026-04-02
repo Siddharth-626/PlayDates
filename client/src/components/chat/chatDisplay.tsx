@@ -64,9 +64,13 @@ export const ChatDisplay = ({
             <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
                 <div className="flex items-center">
                     {!isDesktop && (
-                        <div onClick={OnClose} className="mr-2 cursor-pointer">
+                        <button
+                            onClick={OnClose}
+                            className="mr-2 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-600 focus-visible:ring-offset-2 transition-colors"
+                            aria-label="Back to chat list"
+                        >
                             <ChevronLeft className="w-5 h-5 text-green-600" />
-                        </div>
+                        </button>
                     )}
 
                     {/* Avatar */}
@@ -125,7 +129,8 @@ export const ChatDisplay = ({
                 {chatDisplayData.type === "group" && (
                     <button
                         onClick={() => setShowEditPopup(true)}
-                        className="ml-auto text-green-500 hover:text-green-600"
+                        className="ml-auto text-green-500 hover:text-green-600 p-1 rounded-full hover:bg-green-50 dark:hover:bg-green-900/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-600 focus-visible:ring-offset-2 transition-colors"
+                        aria-label="Edit group"
                     >
                         <Edit className="w-5 h-5" />
                     </button>
@@ -250,7 +255,8 @@ export const ChatDisplay = ({
                 />
                 <button
                     onClick={handleSendMessage}
-                    className="ml-3 bg-green-500 hover:bg-green-600 text-white rounded-full p-2"
+                    className="ml-3 bg-green-500 hover:bg-green-600 text-white rounded-full p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-600 focus-visible:ring-offset-2 transition-colors"
+                    aria-label="Send message"
                 >
                     <Send className="w-5 h-5" />
                 </button>
